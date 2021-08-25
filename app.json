@@ -1,6 +1,6 @@
 {
-  "name": "Start on Heroku: Scala",
-  "description": "A barebones Scala app (using the Play framework), which can easily be deployed to Heroku.",
+  "name": "Ben Lipson IO",
+  "description": "Ben Lipson's personal website.",
   "image": "heroku/scala",
-  "addons": [ "heroku-postgresql" ]
+  "addons": []
 }
