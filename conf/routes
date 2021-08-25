@@ -7,7 +7,9 @@ GET     /                           controllers.HomeController.home()
 
 # Blog page
 GET     /blog                       controllers.BlogController.blog()
-GET     /blog/onTravel              controllers.BlogController.onTravel()
+GET     /blog/ontravel              controllers.BlogController.onTravel()
+GET     /blog/ontechnology          controllers.BlogController.onTechnology()
+GET     /blog/graphicshistory       controllers.BlogController.graphicsHistory()
 
 
 # Projects page
