@@ -6,6 +6,10 @@ import javax.inject.{Inject, Singleton}
 
 @Singleton
 class BlogController @Inject()(cc: ControllerComponents) extends AbstractController(cc) {
+  def onTravel(): Action[AnyContent] = Action { implicit  request: Request[AnyContent] =>
+    Ok(views.html.onTravel())
+  }
+
   def blog(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.blog())
   }

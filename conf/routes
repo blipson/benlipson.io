@@ -7,6 +7,11 @@ GET     /                           controllers.HomeController.home()
 
 # Blog page
 GET     /blog                       controllers.BlogController.blog()
+GET     /blog/onTravel              controllers.BlogController.onTravel()
+
+
+# Projects page
+GET     /projects                       controllers.ProjectsController.projects()
 
 
 # Map static resources from the /public folder to the /assets URL path
