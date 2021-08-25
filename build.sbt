@@ -1,4 +1,4 @@
-name := """play-getting-started"""
+name := """benlipson-io"""
 
 version := "1.0-SNAPSHOT"
 
