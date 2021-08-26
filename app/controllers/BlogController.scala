@@ -21,4 +21,8 @@ class BlogController @Inject()(cc: ControllerComponents) extends AbstractControl
   def graphicsHistory(): Action[AnyContent] = Action { implicit  request: Request[AnyContent] =>
     Ok(views.html.graphicsHistory())
   }
+
+  def onSports(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.onSports())
+  }
 }

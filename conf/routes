@@ -10,6 +10,7 @@ GET     /blog                       controllers.BlogController.blog()
 GET     /blog/ontravel              controllers.BlogController.onTravel()
 GET     /blog/ontechnology          controllers.BlogController.onTechnology()
 GET     /blog/graphicshistory       controllers.BlogController.graphicsHistory()
+GET     /blog/onsports              controllers.BlogController.onSports()
 
 
 # Projects page
