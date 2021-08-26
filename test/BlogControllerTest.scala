@@ -2067,29 +2067,29 @@ class BlogControllerTest extends PlaySpec {
           |    &emsp;&emsp;All the code for this project will be C++, by the way. Anyway let's start by defining a header for a class to deal with TGA images.
           |</p>
           |<pre><code>
-          |class TgaImage
-          |{
-          |  protected:
-          |    unsigned char* data;
-          |    int width;
-          |    int height;
-          |    int bytesPerPixel;
+          |        class TgaImage
+          |        {
+          |          protected:
+          |            unsigned char* data;
+          |            int width;
+          |            int height;
+          |            int bytesPerPixel;
           |
-          |  public:
-          |    enum Format
-          |    {
-          |        GRAYSCALE = 1,
-          |        RGB = 3,
-          |        RGBA = 4
-          |    };
+          |          public:
+          |            enum Format
+          |            {
+          |                GRAYSCALE = 1,
+          |                RGB = 3,
+          |                RGBA = 4
+          |            };
           |
-          |    TgaImage();
-          |    TgaImage(int w, int h, int bpp);
-          |    TgaImage(const TgaImage &img);
-          |    ~TgaImage();
+          |            TgaImage();
+          |            TgaImage(int w, int h, int bpp);
+          |            TgaImage(const TgaImage &img);
+          |            ~TgaImage();
           |
-          |    TgaImage &operator =(const TgaImage &img);
-          |}
+          |            TgaImage &operator =(const TgaImage &img);
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;The basic fields for the header are width, height, and bytesPerPixel. Our data field represents the body of the TGA image. There's
@@ -2098,150 +2098,150 @@ class BlogControllerTest extends PlaySpec {
           |    implement this header.
           |</p>
           |<pre><code>
-          |TgaImage::TgaImage() : data(nullptr), width(0), height(0), bytesPerPixel(0)
-          |{}
+          |        TgaImage::TgaImage() : data(nullptr), width(0), height(0), bytesPerPixel(0)
+          |        {}
           |
-          |TgaImage::TgaImage(int w, int h, int bpp) : data(nullptr), width(w), height(h), bytesPerPixel(bpp)
-          |{
-          |    unsigned long numberOfBytes = width * height * bytesPerPixel;
-          |    data = new unsigned char[numberOfBytes];
-          |    memset(data, 0, numberOfBytes);
-          |}
+          |        TgaImage::TgaImage(int w, int h, int bpp) : data(nullptr), width(w), height(h), bytesPerPixel(bpp)
+          |        {
+          |            unsigned long numberOfBytes = width * height * bytesPerPixel;
+          |            data = new unsigned char[numberOfBytes];
+          |            memset(data, 0, numberOfBytes);
+          |        }
           |
-          |TgaImage::TgaImage(const TgaImage &img)
-          |{
-          |    width = img.width;
-          |    height = img.height;
-          |    bytesPerPixel = img.bytesPerPixel;
-          |    unsigned long numberOfBytes = width * height * bytesPerPixel;
-          |    data = new unsigned char[numberOfBytes];
-          |    memcpy(data, img.data, numberOfBytes);
-          |}
+          |        TgaImage::TgaImage(const TgaImage &img)
+          |        {
+          |            width = img.width;
+          |            height = img.height;
+          |            bytesPerPixel = img.bytesPerPixel;
+          |            unsigned long numberOfBytes = width * height * bytesPerPixel;
+          |            data = new unsigned char[numberOfBytes];
+          |            memcpy(data, img.data, numberOfBytes);
+          |        }
           |
-          |TgaImage::~TgaImage()
-          |{
-          |    delete[] data;
-          |}
+          |        TgaImage::~TgaImage()
+          |        {
+          |            delete[] data;
+          |        }
           |
-          |TgaImage &TgaImage::operator=(const TgaImage &img)
-          |{
-          |    if (this != &img)
-          |    {
-          |        delete[] data;
-          |        width = img.width;
-          |        height = img.height;
-          |        bytesPerPixel = img.bytesPerPixel;
-          |        unsigned long numberOfBytes = width * height * bytesPerPixel;
-          |        data = new unsigned char[numberOfBytes];
-          |        memcpy(data, img.data, numberOfBytes);
-          |    }
-          |    return *this;
-          |}
+          |        TgaImage &TgaImage::operator=(const TgaImage &img)
+          |        {
+          |            if (this != &img)
+          |            {
+          |                delete[] data;
+          |                width = img.width;
+          |                height = img.height;
+          |                bytesPerPixel = img.bytesPerPixel;
+          |                unsigned long numberOfBytes = width * height * bytesPerPixel;
+          |                data = new unsigned char[numberOfBytes];
+          |                memcpy(data, img.data, numberOfBytes);
+          |            }
+          |            return *this;
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Overall it's pretty self-explanatory. Just allocating and deallocating memory appropriately. Next we'll define and implement a few
           |    getters and setters.
           |</p>
           |<pre><code>
-          |int getWidth();
-          |int getHeight();
-          |int getBytesPerPixel();
-          |unsigned char* buffer();
-          |void clear();
+          |        int getWidth();
+          |        int getHeight();
+          |        int getBytesPerPixel();
+          |        unsigned char* buffer();
+          |        void clear();
           |
-          |int TgaImage::getWidth()
-          |{
-          |    return width;
-          |}
+          |        int TgaImage::getWidth()
+          |        {
+          |            return width;
+          |        }
           |
-          |int TgaImage::getHeight()
-          |{
-          |    return height;
-          |}
+          |        int TgaImage::getHeight()
+          |        {
+          |            return height;
+          |        }
           |
-          |int TgaImage::getBytesPerPixel()
-          |{
-          |    return bytesPerPixel;
-          |}
+          |        int TgaImage::getBytesPerPixel()
+          |        {
+          |            return bytesPerPixel;
+          |        }
           |
-          |unsigned char* TgaImage::buffer()
-          |{
-          |    return data;
-          |}
+          |        unsigned char* TgaImage::buffer()
+          |        {
+          |            return data;
+          |        }
           |
-          |void TgaImage::clear()
-          |{
-          |    memset((void*) data, 0, width * height * bytesPerPixel);
-          |}
+          |        void TgaImage::clear()
+          |        {
+          |            memset((void*) data, 0, width * height * bytesPerPixel);
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Again pretty obvious, the only slightly tricky one being <code>clear()</code>, which just clears and reallocates the data array. Now
           |    we can get into the meat of this class by defining the methods that'll do the actual interaction with the TGA files.
           |</p>
           |<pre><code>
-          |bool flipHorizontally();
-          |bool flipVertically();
-          |bool readTgaFile(const char* filename);
-          |bool writeTgaFile(const char* filename);
+          |        bool flipHorizontally();
+          |        bool flipVertically();
+          |        bool readTgaFile(const char* filename);
+          |        bool writeTgaFile(const char* filename);
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Let's go through these implementations one-by-one, starting with <code>flipHorizontally</code> and <code>flipVertically</code>.
           |</p>
           |<pre><code>
-          |bool TgaImage::flipHorizontally()
-          |{
-          |    if (!data)
-          |    {
-          |        return false;
-          |    }
-          |    int half = width >> 1u; // bit shift by 1 to divide by 2 without having to handle rounding manually.
-          |    for (int i = 0; i < half; i++)
-          |    {
-          |        for (int j = 0; j < height; j++)
+          |        bool TgaImage::flipHorizontally()
           |        {
-          |            // Loop through each row, and flip the bits on the Y axis
-          |            // going inwards from the outside.
-          |            // [p1, p2, p3, p4,
-          |            // p5, p6, p7, p8]
-          |            // with width 4 and height 2 becomes
-          |            // [p4, p3, p2, p1,
-          |            //  p8, p7, p6, p5]
-          |            TgaColor c1 = get(i, j);
-          |            TgaColor c2 = get(width - 1 - i, j);
-          |            set(i, j, c2);
-          |            set(width - 1 -i, j, c1);
+          |            if (!data)
+          |            {
+          |                return false;
+          |            }
+          |            int half = width >> 1u; // bit shift by 1 to divide by 2 without having to handle rounding manually.
+          |            for (int i = 0; i < half; i++)
+          |            {
+          |                for (int j = 0; j < height; j++)
+          |                {
+          |                    // Loop through each row, and flip the bits on the Y axis
+          |                    // going inwards from the outside.
+          |                    // [p1, p2, p3, p4,
+          |                    // p5, p6, p7, p8]
+          |                    // with width 4 and height 2 becomes
+          |                    // [p4, p3, p2, p1,
+          |                    //  p8, p7, p6, p5]
+          |                    TgaColor c1 = get(i, j);
+          |                    TgaColor c2 = get(width - 1 - i, j);
+          |                    set(i, j, c2);
+          |                    set(width - 1 -i, j, c1);
+          |                }
+          |            }
+          |            return true;
           |        }
-          |    }
-          |    return true;
-          |}
           |
-          |bool TgaImage::flipVertically()
-          |{
-          |    if (!data)
-          |    {
-          |        return false;
-          |    }
-          |    unsigned long bytesPerLine = width * bytesPerPixel;
-          |    auto* line = new unsigned char[bytesPerLine];
-          |    int half = height >> 1u; // bit shift by 1 to divide by 2 without having to handle rounding manually.
-          |    for (int j = 0; j < half; j++)
-          |    {
-          |        // Flip on a per-row basis, going from outside in.
-          |        // [p1, p2, p3, p4,
-          |        // p5, p6, p7, p8]
-          |        // with width 4 and height 2 becomes
-          |        // [p5, p6, p7, p8,
-          |        //  p1, p2, p3, p4]
-          |        // Use line as a temporary storage so we can swap the lines.
-          |        unsigned long l1 = j * bytesPerLine;
-          |        unsigned long l2 = (height - 1 - j) * bytesPerLine;
-          |        memmove((void*) line, (void*) (data + l1), bytesPerLine);
-          |        memmove((void*) (data + l1), (void*) (data + l2), bytesPerLine);
-          |        memmove((void*) (data + l2), (void*) line, bytesPerLine);
-          |    }
-          |    delete [] line;
-          |    return true;
-          |}
+          |        bool TgaImage::flipVertically()
+          |        {
+          |            if (!data)
+          |            {
+          |                return false;
+          |            }
+          |            unsigned long bytesPerLine = width * bytesPerPixel;
+          |            auto* line = new unsigned char[bytesPerLine];
+          |            int half = height >> 1u; // bit shift by 1 to divide by 2 without having to handle rounding manually.
+          |            for (int j = 0; j < half; j++)
+          |            {
+          |                // Flip on a per-row basis, going from outside in.
+          |                // [p1, p2, p3, p4,
+          |                // p5, p6, p7, p8]
+          |                // with width 4 and height 2 becomes
+          |                // [p5, p6, p7, p8,
+          |                //  p1, p2, p3, p4]
+          |                // Use line as a temporary storage so we can swap the lines.
+          |                unsigned long l1 = j * bytesPerLine;
+          |                unsigned long l2 = (height - 1 - j) * bytesPerLine;
+          |                memmove((void*) line, (void*) (data + l1), bytesPerLine);
+          |                memmove((void*) (data + l1), (void*) (data + l2), bytesPerLine);
+          |                memmove((void*) (data + l2), (void*) line, bytesPerLine);
+          |            }
+          |            delete [] line;
+          |            return true;
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;You may have noticed that the <code>flipHorizontally</code> function calls two methods that haven't been defined, <code>get</code>
@@ -2249,70 +2249,70 @@ class BlogControllerTest extends PlaySpec {
           |    at a given X, Y location respectively. Let's define and implement those methods.
           |</p>
           |<pre><code>
-          |TgaColor get(int x, int y);
-          |bool set(int x, int y, TgaColor c);
+          |        TgaColor get(int x, int y);
+          |        bool set(int x, int y, TgaColor c);
           |
-          |TgaColor TgaImage::get(int x, int y)
-          |{
-          |    if (!data || x < 0 || y < 0 || x >= width || y >= height)
-          |    {
-          |        return TgaColor();
-          |    }
-          |    return TgaColor(data + (x + y * width) * bytesPerPixel, bytesPerPixel);
-          |}
+          |        TgaColor TgaImage::get(int x, int y)
+          |        {
+          |            if (!data || x < 0 || y < 0 || x >= width || y >= height)
+          |            {
+          |                return TgaColor();
+          |            }
+          |            return TgaColor(data + (x + y * width) * bytesPerPixel, bytesPerPixel);
+          |        }
           |
-          |bool TgaImage::set(int x, int y, TgaColor c)
-          |{
-          |    if (!data || x < 0 || y < 0 || x >= width || y >= height)
-          |    {
-          |        return false;
-          |    }
-          |    memcpy(data + (x + y * width) * bytesPerPixel, c.raw, bytesPerPixel);
-          |    return true;
-          |}
+          |        bool TgaImage::set(int x, int y, TgaColor c)
+          |        {
+          |            if (!data || x < 0 || y < 0 || x >= width || y >= height)
+          |            {
+          |                return false;
+          |            }
+          |            memcpy(data + (x + y * width) * bytesPerPixel, c.raw, bytesPerPixel);
+          |            return true;
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Both methods just run some sanity checking making sure the coordinates exist in our plane, then either return or set the color values
           |    at a given location. We used a new data structure <code>TgaColor</code> to represent the RGBA values. Here's the definition of that.
           |</p>
           |<pre><code>
-          |struct TgaColor
-          |{
-          |    union
-          |    {
-          |        struct
+          |        struct TgaColor
           |        {
-          |            unsigned char r, g, b, a;
-          |        };
-          |        unsigned char raw[4];
-          |        unsigned int val;
-          |    };
+          |            union
+          |            {
+          |                struct
+          |                {
+          |                    unsigned char r, g, b, a;
+          |                };
+          |                unsigned char raw[4];
+          |                unsigned int val;
+          |            };
           |
-          |    int bytesPerPixel;
-          |}
+          |            int bytesPerPixel;
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Note the union field. That's to make it so you can either input 4 defined chars, 4 raw chars, or simply define a single int value all in the same field without allocating more memory than necessary. Now just like
           |    with most classes we'll want a default constructor;
           |</p>
           |<pre><code>
-          |TgaColor() : val(0), bytesPerPixel(1) {}
+          |        TgaColor() : val(0), bytesPerPixel(1) {}
           |</code></pre>
           |<p>
           |    &emsp;&emsp;And now let's make constructors for our 3 different types in the union:
           |</p>
           |<pre><code>
-          |TgaColor(unsigned char R, unsigned char G, unsigned char B, unsigned char A) : r(R), g(G), b(B), a(A), bytesPerPixel(4) {}
+          |        TgaColor(unsigned char R, unsigned char G, unsigned char B, unsigned char A) : r(R), g(G), b(B), a(A), bytesPerPixel(4) {}
           |
-          |TgaColor(int v, int bpp) : val(v), bytesPerPixel(bpp) {}
+          |        TgaColor(int v, int bpp) : val(v), bytesPerPixel(bpp) {}
           |
-          |TgaColor(const unsigned char* p, int bpp) : val(0), bytesPerPixel(bpp)
-          |{
-          |    for (int i = 0; i < bpp; i++)
-          |    {
-          |        raw[i] = p[i];
-          |    }
-          |}
+          |        TgaColor(const unsigned char* p, int bpp) : val(0), bytesPerPixel(bpp)
+          |        {
+          |            for (int i = 0; i < bpp; i++)
+          |            {
+          |                raw[i] = p[i];
+          |            }
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;In the first constructor it assumes we use the strictly defined RGBA, which means we need 4 bytes per pixel to handle the 4 channels. The second one takes the arbitrary integer value and allows the user to define
@@ -2321,232 +2321,232 @@ class BlogControllerTest extends PlaySpec {
           |    already-created instance.
           |</p>
           |<pre><code>
-          |TgaColor & operator =(const TgaColor &c)
-          |{
-          |    if (this != &c)
-          |    {
-          |        bytesPerPixel = c.bytesPerPixel;
-          |        val = c.val;
-          |    }
-          |    return *this;
-          |}
+          |        TgaColor & operator =(const TgaColor &c)
+          |        {
+          |            if (this != &c)
+          |            {
+          |                bytesPerPixel = c.bytesPerPixel;
+          |                val = c.val;
+          |            }
+          |            return *this;
+          |        }
           |</code></pre>
           |<p>&emsp;&emsp;Now that we've got all that sorted for <code>flipHorizontally</code> and <code>flipVertically</code> we can move on to <code>readTgaFile</code>.</p>
           |<pre><code>
-          |bool TgaImage::readTgaFile(const char *filename)
-          |{
-          |    // Make sure data is empty before we start.
-          |    delete[] data;
-          |    data = nullptr;
-          |
-          |    // First, we open the file.
-          |    std::ifstream in;
-          |    in.open(filename, std::ios::binary);
-          |    if (!in.is_open())
-          |    {
-          |        std::cerr << "can't open file " << filename << "\n";
-          |        in.close();
-          |        return false;
-          |    }
-          |
-          |    // Handle the header and set the appropriate fields on our class as we read them in.
-          |    TgaHeader header;
-          |    in.read((char *) &header, sizeof(header));
-          |    if (!in.good())
-          |    {
-          |        in.close();
-          |        std::cerr << "an error occured while reading the header\n";
-          |        return false;
-          |    }
-          |    width = header.width;
-          |    height = header.height;
-          |    bytesPerPixel = header.bitsPerPixel >> 3;
-          |    if (width <= 0 || height <= 0 || (bytesPerPixel != GRAYSCALE && bytesPerPixel != RGB && bytesPerPixel != RGBA))
-          |    {
-          |        in.close();
-          |        std::cerr << "bad bpp (or width/height) value\n";
-          |        return false;
-          |    }
-          |
-          |    // Handle the body as we read data in and allocate memory accordingly.
-          |    unsigned long numberOfBytes = bytesPerPixel * width * height;
-          |    data = new unsigned char[numberOfBytes];
-          |
-          |    // 2 and 3 are normal RGB images and 10 and 11 use run length encoding.
-          |    if (header.datatypeCode == 2 || header.datatypeCode == 3)
-          |    {
-          |        in.read((char *) data, numberOfBytes);
-          |        if (!in.good())
+          |        bool TgaImage::readTgaFile(const char *filename)
           |        {
+          |            // Make sure data is empty before we start.
+          |            delete[] data;
+          |            data = nullptr;
+          |
+          |            // First, we open the file.
+          |            std::ifstream in;
+          |            in.open(filename, std::ios::binary);
+          |            if (!in.is_open())
+          |            {
+          |                std::cerr << "can't open file " << filename << "\n";
+          |                in.close();
+          |                return false;
+          |            }
+          |
+          |            // Handle the header and set the appropriate fields on our class as we read them in.
+          |            TgaHeader header;
+          |            in.read((char *) &header, sizeof(header));
+          |            if (!in.good())
+          |            {
+          |                in.close();
+          |                std::cerr << "an error occured while reading the header\n";
+          |                return false;
+          |            }
+          |            width = header.width;
+          |            height = header.height;
+          |            bytesPerPixel = header.bitsPerPixel >> 3;
+          |            if (width <= 0 || height <= 0 || (bytesPerPixel != GRAYSCALE && bytesPerPixel != RGB && bytesPerPixel != RGBA))
+          |            {
+          |                in.close();
+          |                std::cerr << "bad bpp (or width/height) value\n";
+          |                return false;
+          |            }
+          |
+          |            // Handle the body as we read data in and allocate memory accordingly.
+          |            unsigned long numberOfBytes = bytesPerPixel * width * height;
+          |            data = new unsigned char[numberOfBytes];
+          |
+          |            // 2 and 3 are normal RGB images and 10 and 11 use run length encoding.
+          |            if (header.datatypeCode == 2 || header.datatypeCode == 3)
+          |            {
+          |                in.read((char *) data, numberOfBytes);
+          |                if (!in.good())
+          |                {
+          |                    in.close();
+          |                    std::cerr << "an error occured while reading the data\n";
+          |                    return false;
+          |                }
+          |            }
+          |            else if (10 == header.datatypeCode || 11 == header.datatypeCode)
+          |            {
+          |                if (!loadRleData(in))
+          |                {
+          |                    in.close();
+          |                    std::cerr << "an error occured while reading the data\n";
+          |                    return false;
+          |                }
+          |            }
+          |            else
+          |            {
+          |                in.close();
+          |                std::cerr << "unknown file format " << (int) header.datatypeCode << "\n";
+          |                return false;
+          |            }
+          |            if (!(header.imageDescriptor & 0x20))
+          |            {
+          |                flipVertically();
+          |            }
+          |            if (header.imageDescriptor & 0x10)
+          |            {
+          |                flipHorizontally();
+          |            }
+          |            std::cerr << width << "x" << height << "/" << bytesPerPixel * 8 << "\n";
           |            in.close();
-          |            std::cerr << "an error occured while reading the data\n";
-          |            return false;
+          |            return true;
           |        }
-          |    }
-          |    else if (10 == header.datatypeCode || 11 == header.datatypeCode)
-          |    {
-          |        if (!loadRleData(in))
-          |        {
-          |            in.close();
-          |            std::cerr << "an error occured while reading the data\n";
-          |            return false;
-          |        }
-          |    }
-          |    else
-          |    {
-          |        in.close();
-          |        std::cerr << "unknown file format " << (int) header.datatypeCode << "\n";
-          |        return false;
-          |    }
-          |    if (!(header.imageDescriptor & 0x20))
-          |    {
-          |        flipVertically();
-          |    }
-          |    if (header.imageDescriptor & 0x10)
-          |    {
-          |        flipHorizontally();
-          |    }
-          |    std::cerr << width << "x" << height << "/" << bytesPerPixel * 8 << "\n";
-          |    in.close();
-          |    return true;
-          |}
           |</code></pre>
           |<p>
           |    &emsp;&emsp;This again uses a new data structure. It's called TgaHeader and it just represents the header fields we talked about earlier. Here's a
           |    quick definition for that structure.
           |</p>
           |<pre><code>
-          |struct TgaHeader
-          |{
-          |    char idLength;
-          |    char colorMapType;
-          |    char datatypeCode;
-          |    short colorMapOrigin;
-          |    short colorMapLength;
-          |    char colorMapDepth;
-          |    short xOrigin;
-          |    short yOrigin;
-          |    short width;
-          |    short height;
-          |    char bitsPerPixel;
-          |    char imageDescriptor;
-          |};
+          |        struct TgaHeader
+          |        {
+          |            char idLength;
+          |            char colorMapType;
+          |            char datatypeCode;
+          |            short colorMapOrigin;
+          |            short colorMapLength;
+          |            char colorMapDepth;
+          |            short xOrigin;
+          |            short yOrigin;
+          |            short width;
+          |            short height;
+          |            char bitsPerPixel;
+          |            char imageDescriptor;
+          |        };
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Now we can read TGA files into memory! But what about writing them to disk? Here's the implementation for that.
           |</p>
           |<pre><code>
-          |bool TgaImage::writeTgaFile(const char *filename, bool rle)
-          |{
-          |    unsigned char developer_area_ref[4] = {0, 0, 0, 0};
-          |    unsigned char extension_area_ref[4] = {0, 0, 0, 0};
-          |    unsigned char footer[18] = {'T', 'R', 'U', 'E', 'V', 'I', 'S', 'I', 'O', 'N', '-', 'X', 'F', 'I', 'L', 'E', '.',
-          |                                '\0'};
-          |    std::ofstream out;
-          |    out.open(filename, std::ios::binary);
-          |    if (!out.is_open())
-          |    {
-          |        std::cerr << "can't open file " << filename << "\n";
-          |        out.close();
-          |        return false;
-          |    }
-          |    TgaHeader header;
-          |    memset((void *) &header, 0, sizeof(header));
-          |    header.bitsPerPixel = bytesPerPixel << 3;
-          |    header.width = width;
-          |    header.height = height;
-          |    header.datatypeCode = (bytesPerPixel == GRAYSCALE ? (rle ? 11 : 3) : (rle ? 10 : 2));
-          |    header.imageDescriptor = 0x20; // top-left origin
-          |    out.write((char *) &header, sizeof(header));
-          |    if (!out.good())
-          |    {
-          |        out.close();
-          |        std::cerr << "can't dump the tga file\n";
-          |        return false;
-          |    }
+          |        bool TgaImage::writeTgaFile(const char *filename, bool rle)
+          |        {
+          |            unsigned char developer_area_ref[4] = {0, 0, 0, 0};
+          |            unsigned char extension_area_ref[4] = {0, 0, 0, 0};
+          |            unsigned char footer[18] = {'T', 'R', 'U', 'E', 'V', 'I', 'S', 'I', 'O', 'N', '-', 'X', 'F', 'I', 'L', 'E', '.',
+          |                                        '\0'};
+          |            std::ofstream out;
+          |            out.open(filename, std::ios::binary);
+          |            if (!out.is_open())
+          |            {
+          |                std::cerr << "can't open file " << filename << "\n";
+          |                out.close();
+          |                return false;
+          |            }
+          |            TgaHeader header;
+          |            memset((void *) &header, 0, sizeof(header));
+          |            header.bitsPerPixel = bytesPerPixel << 3;
+          |            header.width = width;
+          |            header.height = height;
+          |            header.datatypeCode = (bytesPerPixel == GRAYSCALE ? (rle ? 11 : 3) : (rle ? 10 : 2));
+          |            header.imageDescriptor = 0x20; // top-left origin
+          |            out.write((char *) &header, sizeof(header));
+          |            if (!out.good())
+          |            {
+          |                out.close();
+          |                std::cerr << "can't dump the tga file\n";
+          |                return false;
+          |            }
           |
-          |    // Handle run length encoding. I don't want to go into depth about this
-          |    // for this post because it's supposed to be about rendering not encoding.
-          |    if (!rle)
-          |    {
-          |        out.write((char *) data, width * height * bytesPerPixel);
-          |        if (!out.good())
-          |        {
-          |            std::cerr << "can't unload raw data\n";
+          |            // Handle run length encoding. I don't want to go into depth about this
+          |            // for this post because it's supposed to be about rendering not encoding.
+          |            if (!rle)
+          |            {
+          |                out.write((char *) data, width * height * bytesPerPixel);
+          |                if (!out.good())
+          |                {
+          |                    std::cerr << "can't unload raw data\n";
+          |                    out.close();
+          |                    return false;
+          |                }
+          |            } else
+          |            {
+          |                if (!unloadRleData(out))
+          |                {
+          |                    out.close();
+          |                    std::cerr << "can't unload rle data\n";
+          |                    return false;
+          |                }
+          |            }
+          |            out.write((char *) developer_area_ref, sizeof(developer_area_ref));
+          |            if (!out.good())
+          |            {
+          |                std::cerr << "can't dump the tga file\n";
+          |                out.close();
+          |                return false;
+          |            }
+          |            out.write((char *) extension_area_ref, sizeof(extension_area_ref));
+          |            if (!out.good())
+          |            {
+          |                std::cerr << "can't dump the tga file\n";
+          |                out.close();
+          |                return false;
+          |            }
+          |            out.write((char *) footer, sizeof(footer));
+          |            if (!out.good())
+          |            {
+          |                std::cerr << "can't dump the tga file\n";
+          |                out.close();
+          |                return false;
+          |            }
           |            out.close();
-          |            return false;
+          |            return true;
           |        }
-          |    } else
-          |    {
-          |        if (!unloadRleData(out))
-          |        {
-          |            out.close();
-          |            std::cerr << "can't unload rle data\n";
-          |            return false;
-          |        }
-          |    }
-          |    out.write((char *) developer_area_ref, sizeof(developer_area_ref));
-          |    if (!out.good())
-          |    {
-          |        std::cerr << "can't dump the tga file\n";
-          |        out.close();
-          |        return false;
-          |    }
-          |    out.write((char *) extension_area_ref, sizeof(extension_area_ref));
-          |    if (!out.good())
-          |    {
-          |        std::cerr << "can't dump the tga file\n";
-          |        out.close();
-          |        return false;
-          |    }
-          |    out.write((char *) footer, sizeof(footer));
-          |    if (!out.good())
-          |    {
-          |        std::cerr << "can't dump the tga file\n";
-          |        out.close();
-          |        return false;
-          |    }
-          |    out.close();
-          |    return true;
-          |}
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Huzzah! We're now able to handle TGA image interaction for both inputting and outputting files. Now it's time to create a main program
           |    that will test all our functionality and create our very first rendered image!
           |</p>
           |<pre><code>
-          |#include "TgaImage.h"
+          |        #include "TgaImage.h"
           |
-          |const TgaColor white = TgaColor(255, 255, 255, 255);
-          |const TgaColor red   = TgaColor(255, 0, 0, 255);
+          |        const TgaColor white = TgaColor(255, 255, 255, 255);
+          |        const TgaColor red   = TgaColor(255, 0, 0, 255);
           |
-          |int main(int argc, char** argv) {
-          |    TgaImage image(100, 100, TgaImage::RGB);
-          |    // Define a small, red rectangle near the center of the screen.
-          |    image.set(52, 41, red);
-          |    image.set(53, 41, red);
-          |    image.set(54, 41, red);
-          |    image.set(55, 41, red);
-          |    image.set(56, 41, red);
-          |    image.set(57, 41, red);
-          |    image.set(52, 42, red);
-          |    image.set(53, 42, red);
-          |    image.set(54, 42, red);
-          |    image.set(55, 42, red);
-          |    image.set(56, 42, red);
-          |    image.set(57, 42, red);
-          |    image.set(52, 43, red);
-          |    image.set(53, 43, red);
-          |    image.set(54, 43, red);
-          |    image.set(55, 43, red);
-          |    image.set(56, 43, red);
-          |    image.set(57, 43, red);
-          |    image.flipVertically(); // I want to have the origin at the left bottom corner of the image.
-          |    image.writeTgaFile("output.tga");
-          |    return 0;
-          |}
+          |        int main(int argc, char** argv) {
+          |            TgaImage image(100, 100, TgaImage::RGB);
+          |            // Define a small, red rectangle near the center of the screen.
+          |            image.set(52, 41, red);
+          |            image.set(53, 41, red);
+          |            image.set(54, 41, red);
+          |            image.set(55, 41, red);
+          |            image.set(56, 41, red);
+          |            image.set(57, 41, red);
+          |            image.set(52, 42, red);
+          |            image.set(53, 42, red);
+          |            image.set(54, 42, red);
+          |            image.set(55, 42, red);
+          |            image.set(56, 42, red);
+          |            image.set(57, 42, red);
+          |            image.set(52, 43, red);
+          |            image.set(53, 43, red);
+          |            image.set(54, 43, red);
+          |            image.set(55, 43, red);
+          |            image.set(56, 43, red);
+          |            image.set(57, 43, red);
+          |            image.flipVertically(); // I want to have the origin at the left bottom corner of the image.
+          |            image.writeTgaFile("output.tga");
+          |            return 0;
+          |        }
           |</code></pre>
-          |<img src="/images/firstrenderedimage.png" height="600" width="800" alt="Placeholder image">
+          |<img src="/assets/images/firstrenderedimage.png" height="600" width="800" alt="Placeholder image">
           |<p>&emsp;&emsp;Tada! We did it! We made a rendered image! Look at that red rectangle. Isn't it glorious? Next time we'll be discussing defining geometry and drawing lines.</p>
           |<p>&emsp;&emsp;Code for this blog post can be found <a href="https://github.com/blipson/simplerenderer/tree/tga-files">here</a>.</p>
           |<p>&emsp;&emsp;Click <a href="/blog/renderer/drawinglines">here</a> to go to part 2.</p>
@@ -2604,7 +2604,7 @@ class BlogControllerTest extends PlaySpec {
           |    the most common way to write an equation of a line looks like this:
           |</p>
           |<p>
-          |    <img src="/static/linearequation.svg"  alt=""/>
+          |    <img src="/assets/images/linearequation.svg"  alt=""/>
           |</p>
           |<p>
           |    &emsp;&emsp;Where x and y represent any given point along the line, m represents the slope of the line (or how steep the line is), and y<sub>0</sub>
@@ -2612,7 +2612,7 @@ class BlogControllerTest extends PlaySpec {
           |    y axis on a graph). Here are a few good examples of lines with their equations that I lifted from Wikipedia:
           |</p>
           |<p>
-          |    <img src="/static/linearfunctiongraph.png" width="250"  alt=""/>
+          |    <img src="/assets/images/linearfunctiongraph.png"  width="250"  alt=""/>
           |</p>
           |<p>
           |    &emsp;&emsp;So how do we represent this as C++ code? Well you notice that lines are a lot like how walking my dog feels in Winter in that they go on
@@ -2622,7 +2622,7 @@ class BlogControllerTest extends PlaySpec {
           |    those be user inputs. So the specification for our function would look like this:
           |</p>
           |<pre><code>
-          |void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
+          |        void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Once we have the start point and the end point specified, we can then determine how far the line has risen or fallen (or change in
@@ -2632,9 +2632,9 @@ class BlogControllerTest extends PlaySpec {
           |    smaller, which seems to make more intuitive sense to most people. Anyway let's represent our slope calculation in code.
           |</p>
           |<pre><code>
-          |    int dx = x1 - x0;
-          |    int dy = y1 - y0;
-          |    float m = (float) dy / (float) dx;
+          |        int dx = x1 - x0;
+          |        int dy = y1 - y0;
+          |        float m = (float) dy / (float) dx;
           |</code></pre>
           |<p>
           |    &emsp;&emsp;(Note: we're using (float) typecasting because we need the precision floating point numbers provide. If a line has a slope of 3/4 we
@@ -2644,11 +2644,11 @@ class BlogControllerTest extends PlaySpec {
           |    names):
           |</p>
           |<pre><code>
-          |    y = (m * x) + b
-          |    y - b = (m * x) // subtract b from both sides
-          |    -b = (m * x) - y // subtract y from both sides
-          |    -b = -y + (m * x) // flip right side around
-          |    b = y - (m * x) // negate both sides
+          |        y = (m * x) + b
+          |        y - b = (m * x) // subtract b from both sides
+          |        -b = (m * x) - y // subtract y from both sides
+          |        -b = -y + (m * x) // flip right side around
+          |        b = y - (m * x) // negate both sides
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Now we can calculate any value within the equation! This means that we can draw our full line. All we have to do is start at our
@@ -2656,20 +2656,20 @@ class BlogControllerTest extends PlaySpec {
           |    iterating through Y and calculating X, but this way seemed simpler to me.
           |</p>
           |<pre><code>
-          |    for (int x = x0; x <= x1; x++)
-          |    {
-          |        int y = (m * x) + b;
-          |        image.set(x, y, color);
-          |    }
+          |        for (int x = x0; x <= x1; x++)
+          |        {
+          |            int y = (m * x) + b;
+          |            image.set(x, y, color);
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Finally, we can call our line function and we'll have our first line! This example goes from (13, 20) to (80, 40).
           |</p>
           |<pre><code>
-          |    line(13, 20, 80, 40, image, white);
+          |        line(13, 20, 80, 40, image, white);
           |</code></pre>
           |<p>
-          |    <img src="/static/firstline.png" width="250"  alt=""/>
+          |    <img src="/assets/images/firstline.png" width="250"  alt=""/>
           |</p>
           |<p>
           |    &emsp;&emsp;Neat! But there are still some problems with this code. See if you can sort out a few of them yourself before reading on! Ready?
@@ -2677,7 +2677,7 @@ class BlogControllerTest extends PlaySpec {
           |    <code>for (int x = x0; x <= x1; x += 10)</code> for example, changing the constant from 1 to 10, we get:
           |</p>
           |<p>
-          |    <img src="/static/sadline.png" width="250"  alt=""/>
+          |    <img src="/assets/images/sadline.png" width="250"  alt=""/>
           |</p>
           |<p>
           |    &emsp;&emsp;That's a pretty sad line. The larger our constant is the less precise our line will be, which can lead to some efficiency problems
@@ -2688,13 +2688,13 @@ class BlogControllerTest extends PlaySpec {
           |    actually a huge deal. We can still remedy this though by always getting the minimum x and looping to the maximum x.
           |</p>
           |<pre><code>
-          |    int minX = std::min(x0, x1);
-          |    int maxX = std::max(x0, x1);
-          |    for (int x = minX; x <= maxX; x++)
-          |    {
-          |        int y = (m * x) + b;
-          |        image.set(x, y, color);
-          |    }
+          |        int minX = std::min(x0, x1);
+          |        int maxX = std::max(x0, x1);
+          |        for (int x = minX; x <= maxX; x++)
+          |        {
+          |            int y = (m * x) + b;
+          |            image.set(x, y, color);
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;In the same vein, what about straight up and down lines where the x values for both points are equal? Right now those types of lines
@@ -2705,35 +2705,35 @@ class BlogControllerTest extends PlaySpec {
           |    After fixing those few bugs, here we have our (relatively) bug-free (albeit very inefficient), rudimentary line-drawing algorithm:
           |</p>
           |<pre><code>
-          |void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
-          |{
-          |    int dx = x1 - x0;
-          |    int dy = y1 - y0;
-          |    float m = (float) dy / (float) dx;
-          |    float b = y1 - (m * x1);
-          |
-          |    int minX = std::min(x0, x1);
-          |    int maxX = std::max(x0, x1);
-          |
-          |    if (minX == maxX || std::abs(dx) < std::abs(dy))
-          |    {
-          |        int minY = std::min(y0, y1);
-          |        int maxY = std::max(y0, y1);
-          |        for (int y = minY; y <= maxY; y++)
+          |        void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
           |        {
-          |            int x = (y - b) / m;
-          |            image.set(x, y, color);
+          |            int dx = x1 - x0;
+          |            int dy = y1 - y0;
+          |            float m = (float) dy / (float) dx;
+          |            float b = y1 - (m * x1);
+          |
+          |            int minX = std::min(x0, x1);
+          |            int maxX = std::max(x0, x1);
+          |
+          |            if (minX == maxX || std::abs(dx) < std::abs(dy))
+          |            {
+          |                int minY = std::min(y0, y1);
+          |                int maxY = std::max(y0, y1);
+          |                for (int y = minY; y <= maxY; y++)
+          |                {
+          |                    int x = (y - b) / m;
+          |                    image.set(x, y, color);
+          |                }
+          |            }
+          |            else
+          |            {
+          |                for (int x = minX; x <= maxX; x++)
+          |                {
+          |                    int y = (m * x) + b;
+          |                    image.set(x, y, color);
+          |                }
+          |            }
           |        }
-          |    }
-          |    else
-          |    {
-          |        for (int x = minX; x <= maxX; x++)
-          |        {
-          |            int y = (m * x) + b;
-          |            image.set(x, y, color);
-          |        }
-          |    }
-          |}
           |</code></pre>
           |<h3>
           |    Using Lines to Draw Objects
@@ -2753,56 +2753,56 @@ class BlogControllerTest extends PlaySpec {
           |    &emsp;&emsp;The bare minimum of this format is overall very simple. It consists of 3 main sets of information. It has geometric vertices, texture vertices, and vertex normals represented through these formats:
           |</p>
           |<pre><code>
-          |    typedef struct
-          |    {
-          |        char type = "v";
-          |        float x, y, z;
-          |    } GEOMETRIC_VERTEX;
+          |        typedef struct
+          |        {
+          |            char type = "v";
+          |            float x, y, z;
+          |        } GEOMETRIC_VERTEX;
           |
-          |    typedef struct
-          |    {
-          |        char type = "vt";
-          |        float x, y, z;
-          |    } TEXTURE_VERTEX;
+          |        typedef struct
+          |        {
+          |            char type = "vt";
+          |            float x, y, z;
+          |        } TEXTURE_VERTEX;
           |
-          |    typedef struct
-          |    {
-          |        char type = "vn";
-          |        float x, y, z;
-          |    } VERTEX_NORMAL;
+          |        typedef struct
+          |        {
+          |            char type = "vn";
+          |            float x, y, z;
+          |        } VERTEX_NORMAL;
           |</code></pre>
           |<p>
           |    &emsp;&emsp;This portion of the file itself looks like this:
           |</p>
           |<pre><code>
-          |v -0.000581696 -0.734665 -0.623267
-          |v 0.000283538 -1 0.286843
-          |v -0.117277 -0.973564 0.306907
-          |v -0.382144 -0.890788 0.221243
-          |v -0.247144 -0.942602 0.276051
-          |v -0.656078 -0.718512 -0.109025
-          |v -0.609847 -0.786562 0.0198068
-          |... etc ...
+          |        v -0.000581696 -0.734665 -0.623267
+          |        v 0.000283538 -1 0.286843
+          |        v -0.117277 -0.973564 0.306907
+          |        v -0.382144 -0.890788 0.221243
+          |        v -0.247144 -0.942602 0.276051
+          |        v -0.656078 -0.718512 -0.109025
+          |        v -0.609847 -0.786562 0.0198068
+          |        ... etc ...
           |
-          |vt  0.532 0.923 0.000
-          |vt  0.535 0.917 0.000
-          |vt  0.542 0.923 0.000
-          |vt  0.541 0.929 0.000
-          |vt  0.521 0.984 0.000
-          |vt  0.521 0.996 0.000
-          |vt  0.505 0.998 0.000
-          |vt  0.500 0.985 0.000
-          |... etc ...
+          |        vt  0.532 0.923 0.000
+          |        vt  0.535 0.917 0.000
+          |        vt  0.542 0.923 0.000
+          |        vt  0.541 0.929 0.000
+          |        vt  0.521 0.984 0.000
+          |        vt  0.521 0.996 0.000
+          |        vt  0.505 0.998 0.000
+          |        vt  0.500 0.985 0.000
+          |        ... etc ...
           |
-          |vn  0.001 0.482 -0.876
-          |vn  -0.001 0.661 0.751
-          |vn  0.136 0.595 0.792
-          |vn  -0.203 0.679 0.706
-          |vn  -0.092 0.474 0.876
-          |vn  -0.184 0.792 0.581
-          |vn  -0.098 0.863 0.495
-          |vn  -0.449 0.820 0.356
-          |... etc ...
+          |        vn  0.001 0.482 -0.876
+          |        vn  -0.001 0.661 0.751
+          |        vn  0.136 0.595 0.792
+          |        vn  -0.203 0.679 0.706
+          |        vn  -0.092 0.474 0.876
+          |        vn  -0.184 0.792 0.581
+          |        vn  -0.098 0.863 0.495
+          |        vn  -0.449 0.820 0.356
+          |        ... etc ...
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Geometric vertices are exactly what they sound like. They represent a given point in 3D space. Texture vertices define where to place the texture over a set of vertices, and therefore correspond 1-to-1
@@ -2813,34 +2813,34 @@ class BlogControllerTest extends PlaySpec {
           |    of our other 3 data structures. The definition for a face looks like this:
           |</p>
           |<pre><code>
-          |    typedef struct
-          |    {
           |        typedef struct
           |        {
-          |            GEOMETRIC_VERTEX geometricVertex;
-          |            TEXTURE_VERTEX textureVertex;
-          |            VERTEX_NORMAL vertexNormal;
-          |        } FACE_POINT;
+          |            typedef struct
+          |            {
+          |                GEOMETRIC_VERTEX geometricVertex;
+          |                TEXTURE_VERTEX textureVertex;
+          |                VERTEX_NORMAL vertexNormal;
+          |            } FACE_POINT;
           |
-          |        char type = "f";
-          |        float* vertex1 = new FACE_POINT[3];
-          |        float* vertex2 = new FACE_POINT[3];
-          |        float* vertex3 = new FACE_POINT[3];
-          |    } FACE;
+          |            char type = "f";
+          |            float* vertex1 = new FACE_POINT[3];
+          |            float* vertex2 = new FACE_POINT[3];
+          |            float* vertex3 = new FACE_POINT[3];
+          |        } FACE;
           |</code></pre>
           |<p>
           |    &emsp;&emsp;And the file itself for the faces section looks like:
           |</p>
           |<pre><code>
-          |f 24/1/24 25/2/25 26/3/26
-          |f 24/1/24 26/3/26 23/4/23
-          |f 28/5/28 29/6/29 30/7/30
-          |f 28/5/28 30/7/30 27/8/27
-          |f 32/9/32 33/10/33 34/11/34
-          |f 32/9/32 34/11/34 31/12/31
-          |f 36/13/36 31/12/31 34/11/34
-          |f 36/13/36 34/11/34 35/14/35
-          |... etc ...
+          |        f 24/1/24 25/2/25 26/3/26
+          |        f 24/1/24 26/3/26 23/4/23
+          |        f 28/5/28 29/6/29 30/7/30
+          |        f 28/5/28 30/7/30 27/8/27
+          |        f 32/9/32 33/10/33 34/11/34
+          |        f 32/9/32 34/11/34 31/12/31
+          |        f 36/13/36 31/12/31 34/11/34
+          |        f 36/13/36 34/11/34 35/14/35
+          |        ... etc ...
           |</code></pre>
           |<h3>
           |    Creating a class for OBJ Interaction
@@ -2849,25 +2849,25 @@ class BlogControllerTest extends PlaySpec {
           |    &emsp;&emsp;Just like in the last part we'll start by defining a header for our class.
           |</p>
           |<pre><code>
-          |    class Model
-          |    {
-          |      private:
-          |        std::vector&lt;Vec3f&gt; verts;
-          |        std::vector&lt;std::vector&lt;int&gt;&gt; faces;
+          |        class Model
+          |        {
+          |          private:
+          |            std::vector&lt;Vec3f&gt; verts;
+          |            std::vector&lt;std::vector&lt;int&gt;&gt; faces;
           |
-          |      public:
-          |        Model(const char* filename);
+          |          public:
+          |            Model(const char* filename);
           |
-          |        ~Model();
+          |            ~Model();
           |
-          |        int nVerts();
+          |            int nVerts();
           |
-          |        int nFaces();
+          |            int nFaces();
           |
-          |        Vec3f vert(int i);
+          |            Vec3f vert(int i);
           |
-          |        std::vector&lt;int&gt; face(int i);
-          |    };
+          |            std::vector&lt;int&gt; face(int i);
+          |        };
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Okay so a few a things about this code. In the private section we've got two fields <code>verts</code> and <code>faces</code> to represent the list of vertices (including geometric, textured, and normalized) and the list
@@ -2880,79 +2880,79 @@ class BlogControllerTest extends PlaySpec {
           |    class. Essentially it's a dynamic array that allows you to add or remove elements at will. <code>Vec3f</code> on the other hand is a data structure that I defined. Let's look at that definition:
           |</p>
           |<pre><code>
-          |template&lt;class t&gt;
-          |struct vec3
-          |{
-          |    union
-          |    {
-          |        struct
+          |        template&lt;class t&gt;
+          |        struct vec3
           |        {
-          |            t x, y, z;
+          |            union
+          |            {
+          |                struct
+          |                {
+          |                    t x, y, z;
+          |                };
+          |                struct
+          |                {
+          |                    t iVert, iuv, iNorm;
+          |                };
+          |                t raw[3];
+          |            };
+          |
+          |            vec3() : x(0), y(0), z(0)
+          |            {
+          |            }
+          |
+          |            vec3(t x, t y, t z) : x(x), y(y), z(z)
+          |            {
+          |            }
+          |
+          |            inline vec3&lt;t&gt; operator^(const vec3&lt;t&gt; &v) const
+          |            {
+          |                return vec3&lt;t&gt;(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+          |            }
+          |
+          |            inline vec3&lt;t&gt; operator+(const vec3&lt;t&gt; &v) const
+          |            {
+          |                return vec3&lt;t&gt;(x + v.x, y + v.y, z + v.z);
+          |            }
+          |
+          |            inline vec3&lt;t&gt; operator-(const vec3&lt;t&gt; &v) const
+          |            {
+          |                return vec3&lt;t&gt;(x - v.x, y - v.y, z - v.z);
+          |            }
+          |
+          |            inline vec3&lt;t&gt; operator*(float f) const
+          |            {
+          |                return vec3&lt;t&gt;(x * f, y * f, z * f);
+          |            }
+          |
+          |            inline t operator*(const vec3&lt;t&gt; &v) const
+          |            {
+          |                return x * v.x + y * v.y + z * v.z;
+          |            }
+          |
+          |            float norm() const
+          |            {
+          |                return std::sqrt(x * x + y * y + z * z);
+          |            }
+          |
+          |            vec3&lt;t&gt; &normalize(t l = 1)
+          |            {
+          |                *this = (*this) * (l / norm());
+          |                return *this;
+          |            }
+          |
+          |            template&lt;class&gt;
+          |            friend std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v);
           |        };
-          |        struct
+          |
+          |        typedef vec3&lt;float&gt; Vec3f;
+          |        typedef vec3&lt;int&gt; Vec3i;
+          |
+          |        template&lt;class t&gt;
+          |        std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v)
           |        {
-          |            t iVert, iuv, iNorm;
-          |        };
-          |        t raw[3];
-          |    };
-          |
-          |    vec3() : x(0), y(0), z(0)
-          |    {
-          |    }
-          |
-          |    vec3(t x, t y, t z) : x(x), y(y), z(z)
-          |    {
-          |    }
-          |
-          |    inline vec3&lt;t&gt; operator^(const vec3&lt;t&gt; &v) const
-          |    {
-          |        return vec3&lt;t&gt;(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
-          |    }
-          |
-          |    inline vec3&lt;t&gt; operator+(const vec3&lt;t&gt; &v) const
-          |    {
-          |        return vec3&lt;t&gt;(x + v.x, y + v.y, z + v.z);
-          |    }
-          |
-          |    inline vec3&lt;t&gt; operator-(const vec3&lt;t&gt; &v) const
-          |    {
-          |        return vec3&lt;t&gt;(x - v.x, y - v.y, z - v.z);
-          |    }
-          |
-          |    inline vec3&lt;t&gt; operator*(float f) const
-          |    {
-          |        return vec3&lt;t&gt;(x * f, y * f, z * f);
-          |    }
-          |
-          |    inline t operator*(const vec3&lt;t&gt; &v) const
-          |    {
-          |        return x * v.x + y * v.y + z * v.z;
-          |    }
-          |
-          |    float norm() const
-          |    {
-          |        return std::sqrt(x * x + y * y + z * z);
-          |    }
-          |
-          |    vec3&lt;t&gt; &normalize(t l = 1)
-          |    {
-          |        *this = (*this) * (l / norm());
-          |        return *this;
-          |    }
-          |
-          |    template&lt;class&gt;
-          |    friend std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v);
-          |};
-          |
-          |typedef vec3&lt;float&gt; Vec3f;
-          |typedef vec3&lt;int&gt; Vec3i;
-          |
-          |template&lt;class t&gt;
-          |std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v)
-          |{
-          |    s &lt;&lt; "(" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; ")\n";
-          |    return s;
-          |}
+          |            s &lt;&lt; "(" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; ")\n";
+          |            return s;
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;So that's a good little bit of code, and I'm not going to go over it in detail because it's tangential to the topic at hand. All I'll say is that "template&lt;class t&gt;" defines the structure as a
@@ -2968,75 +2968,75 @@ class BlogControllerTest extends PlaySpec {
           |    ordered lists of integers for our faces. Let's get to the implementation of this header before you die of boredom/confusion from my terrible teaching skills as they relate to mathematics.
           |</p>
           |<pre><code>
-          |int Model::nVerts()
-          |{
-          |    return (int) verts.size();
-          |}
+          |        int Model::nVerts()
+          |        {
+          |            return (int) verts.size();
+          |        }
           |
-          |int Model::nFaces()
-          |{
-          |    return (int) faces.size();
-          |}
+          |        int Model::nFaces()
+          |        {
+          |            return (int) faces.size();
+          |        }
           |
-          |std::vector&lt;int&gt; Model::face(int i)
-          |{
-          |    return faces[i];
-          |}
+          |        std::vector&lt;int&gt; Model::face(int i)
+          |        {
+          |            return faces[i];
+          |        }
           |
-          |Vec3f Model::vert(int i)
-          |{
-          |    return verts[i];
-          |}
+          |        Vec3f Model::vert(int i)
+          |        {
+          |            return verts[i];
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Look at how simple that implementation is! That's the power of using vectors! You'll notice I left out the constructor and destructor. That's because I wanted to show you those in isolation. Let's
           |    look at that now! Be sure to read the comments for an overview of what's happening.
           |</p>
           |<pre><code>
-          |Model::Model(const char* filename) : verts(), faces()
-          |{
-          |    // open the file and read the lines
-          |    std::ifstream in;
-          |    in.open(filename, std::ifstream::in);
-          |    if (in.fail())
-          |    {
-          |        return;
-          |    }
-          |    std::string line;
-          |    while (!in.eof())
-          |    {
-          |        std::getline(in, line);
-          |        std::istringstream iss(line);
-          |        char trash;
-          |        // check if it's a vertex (v, vt, or vn), or a face (f)
-          |        if (!line.compare(0, 2, "v "))
+          |        Model::Model(const char* filename) : verts(), faces()
           |        {
-          |            iss &gt;&gt; trash;
-          |            Vec3f v;
-          |            for (float &i : v.raw)
+          |            // open the file and read the lines
+          |            std::ifstream in;
+          |            in.open(filename, std::ifstream::in);
+          |            if (in.fail())
           |            {
-          |                iss &gt;&gt; i;
+          |                return;
           |            }
-          |            verts.push_back(v); // if it's a vertex then read in the raw geomtry data and add it to our vertex list
-          |        }
-          |        else if (!line.compare(0, 2, "f "))
-          |        {
-          |            std::vector&lt;int&gt; f;
-          |            int itrash, idx;
-          |            iss &gt;&gt; trash;
-          |            while (iss &gt;&gt; idx &gt;&gt; trash &gt;&gt; itrash &gt;&gt; trash &gt;&gt; itrash)
+          |            std::string line;
+          |            while (!in.eof())
           |            {
-          |                idx--; // in wavefront obj all indices start at 1, not zero
-          |                f.push_back(idx);
+          |                std::getline(in, line);
+          |                std::istringstream iss(line);
+          |                char trash;
+          |                // check if it's a vertex (v, vt, or vn), or a face (f)
+          |                if (!line.compare(0, 2, "v "))
+          |                {
+          |                    iss &gt;&gt; trash;
+          |                    Vec3f v;
+          |                    for (float &i : v.raw)
+          |                    {
+          |                        iss &gt;&gt; i;
+          |                    }
+          |                    verts.push_back(v); // if it's a vertex then read in the raw geomtry data and add it to our vertex list
+          |                }
+          |                else if (!line.compare(0, 2, "f "))
+          |                {
+          |                    std::vector&lt;int&gt; f;
+          |                    int itrash, idx;
+          |                    iss &gt;&gt; trash;
+          |                    while (iss &gt;&gt; idx &gt;&gt; trash &gt;&gt; itrash &gt;&gt; trash &gt;&gt; itrash)
+          |                    {
+          |                        idx--; // in wavefront obj all indices start at 1, not zero
+          |                        f.push_back(idx);
+          |                    }
+          |                    faces.push_back(f); // if it's a face then read in the raw face data, ignoring the slashes between values, and add it to our faces list
+          |                }
           |            }
-          |            faces.push_back(f); // if it's a face then read in the raw face data, ignoring the slashes between values, and add it to our faces list
+          |            std::cerr &lt;&lt; "# v# " &lt;&lt; verts.size() &lt;&lt; " f# " &lt;&lt; faces.size() &lt;&lt; std::endl;
           |        }
-          |    }
-          |    std::cerr &lt;&lt; "# v# " &lt;&lt; verts.size() &lt;&lt; " f# " &lt;&lt; faces.size() &lt;&lt; std::endl;
-          |}
           |
-          |Model::~Model()
-          |= default;
+          |        Model::~Model()
+          |        = default;
           |</code></pre>
           |<p>
           |    &emsp;&emsp;Bada bing bada boom that's all we need to read in OBJ files! Now we can create a 3D object in memory within our program using something like <code>auto* model = new Model("head.obj");</code>.
@@ -3044,42 +3044,42 @@ class BlogControllerTest extends PlaySpec {
           |    They're grouped in loops of length three because, as stated earlier, each face must be a triangle, meaning the three points of the face have to connect to one another.
           |</p>
           |<pre><code>
-          |int main(int argc, char** argv)
-          |{
-          |    auto* model = new Model("head.obj");
-          |    const int width = 800;
-          |    const int height = 800;
-          |
-          |    TgaImage image(width, height, TgaImage::RGB);
-          |    for (int i = 0; i < model->nFaces(); i++)
-          |    {
-          |        std::vector&lt;int&gt; face = model->face(i);
-          |        for (int j = 0; j < 3; j++)
+          |        int main(int argc, char** argv)
           |        {
-          |            Vec3f v0 = model->vert(face[j]);
-          |            // use the modulo to go back to 0 and connect the triangle when on the last two vertices of the face
-          |            Vec3f v1 = model->vert(face[(j + 1) % 3]);
-          |            // scale the model appropriately to the correct size
-          |            int x0 = (v0.x + 1) * width / 2;
-          |            int y0 = (v0.y + 1) * height / 2;
-          |            int x1 = (v1.x + 1) * width / 2;
-          |            int y1 = (v1.y + 1) * height / 2;
-          |            line(x0, y0, x1, y1, image, white); // draw a line for each pair of vertices in this triangle
-          |        }
-          |    }
+          |            auto* model = new Model("head.obj");
+          |            const int width = 800;
+          |            const int height = 800;
           |
-          |    image.flipVertically(); // i want to have the origin at the left bottom corner of the image
-          |    image.writeTgaFile("output.tga");
-          |    delete model;
-          |    return 0;
-          |}
+          |            TgaImage image(width, height, TgaImage::RGB);
+          |            for (int i = 0; i < model->nFaces(); i++)
+          |            {
+          |                std::vector&lt;int&gt; face = model->face(i);
+          |                for (int j = 0; j < 3; j++)
+          |                {
+          |                    Vec3f v0 = model->vert(face[j]);
+          |                    // use the modulo to go back to 0 and connect the triangle when on the last two vertices of the face
+          |                    Vec3f v1 = model->vert(face[(j + 1) % 3]);
+          |                    // scale the model appropriately to the correct size
+          |                    int x0 = (v0.x + 1) * width / 2;
+          |                    int y0 = (v0.y + 1) * height / 2;
+          |                    int x1 = (v1.x + 1) * width / 2;
+          |                    int y1 = (v1.y + 1) * height / 2;
+          |                    line(x0, y0, x1, y1, image, white); // draw a line for each pair of vertices in this triangle
+          |                }
+          |            }
+          |
+          |            image.flipVertically(); // i want to have the origin at the left bottom corner of the image
+          |            image.writeTgaFile("output.tga");
+          |            delete model;
+          |            return 0;
+          |        }
           |</code></pre>
           |<p>
           |    &emsp;&emsp;If we do that with an actual OBJ file (the test one I'm using can be found <a href="https://github.com/blipson/simplerenderer/blob/drawing-lines/head.obj">here</a>,
           |    then the program should fairly accurately draw the wireframe for the triangles that make up the geometry of that 3D object! Here's the final output:
           |</p>
           |<p>
-          |    <img src="/images/head.png" width="500" alt="" />
+          |    <img src="/assets/images/head.png" width="500" alt="" />
           |</p>
           |<p>
           |    &emsp;&emsp;Look at it! It's beautiful! I hope you learned something about lines and stuff throughout this post. Next time we'll be spicing up our line drawing function by looking at different algorithms

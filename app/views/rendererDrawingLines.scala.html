@@ -42,7 +42,7 @@
     the most common way to write an equation of a line looks like this:
 </p>
 <p>
-    <img src="/static/linearequation.svg"  alt=""/>
+    <img src="@routes.Assets.at("images/linearequation.svg")"  alt=""/>
 </p>
 <p>
     &emsp;&emsp;Where x and y represent any given point along the line, m represents the slope of the line (or how steep the line is), and y<sub>0</sub>
@@ -50,7 +50,7 @@
     y axis on a graph). Here are a few good examples of lines with their equations that I lifted from Wikipedia:
 </p>
 <p>
-    <img src="/static/linearfunctiongraph.png" width="250"  alt=""/>
+    <img src="@routes.Assets.at("images/linearfunctiongraph.png")"  width="250"  alt=""/>
 </p>
 <p>
     &emsp;&emsp;So how do we represent this as C++ code? Well you notice that lines are a lot like how walking my dog feels in Winter in that they go on
@@ -60,7 +60,7 @@
     those be user inputs. So the specification for our function would look like this:
 </p>
 <pre><code>
-void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
+        void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
 </code></pre>
 <p>
     &emsp;&emsp;Once we have the start point and the end point specified, we can then determine how far the line has risen or fallen (or change in
@@ -70,9 +70,9 @@ void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color
     smaller, which seems to make more intuitive sense to most people. Anyway let's represent our slope calculation in code.
 </p>
 <pre><code>
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-    float m = (float) dy / (float) dx;
+        int dx = x1 - x0;
+        int dy = y1 - y0;
+        float m = (float) dy / (float) dx;
 </code></pre>
 <p>
     &emsp;&emsp;(Note: we're using (float) typecasting because we need the precision floating point numbers provide. If a line has a slope of 3/4 we
@@ -82,11 +82,11 @@ void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color
     names):
 </p>
 <pre><code>
-    y = (m * x) + b
-    y - b = (m * x) // subtract b from both sides
-    -b = (m * x) - y // subtract y from both sides
-    -b = -y + (m * x) // flip right side around
-    b = y - (m * x) // negate both sides
+        y = (m * x) + b
+        y - b = (m * x) // subtract b from both sides
+        -b = (m * x) - y // subtract y from both sides
+        -b = -y + (m * x) // flip right side around
+        b = y - (m * x) // negate both sides
 </code></pre>
 <p>
     &emsp;&emsp;Now we can calculate any value within the equation! This means that we can draw our full line. All we have to do is start at our
@@ -94,20 +94,20 @@ void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color
     iterating through Y and calculating X, but this way seemed simpler to me.
 </p>
 <pre><code>
-    for (int x = x0; x <= x1; x++)
-    {
-        int y = (m * x) + b;
-        image.set(x, y, color);
-    }
+        for (int x = x0; x <= x1; x++)
+        {
+            int y = (m * x) + b;
+            image.set(x, y, color);
+        }
 </code></pre>
 <p>
     &emsp;&emsp;Finally, we can call our line function and we'll have our first line! This example goes from (13, 20) to (80, 40).
 </p>
 <pre><code>
-    line(13, 20, 80, 40, image, white);
+        line(13, 20, 80, 40, image, white);
 </code></pre>
 <p>
-    <img src="/static/firstline.png" width="250"  alt=""/>
+    <img src="@routes.Assets.at("images/firstline.png")" width="250"  alt=""/>
 </p>
 <p>
     &emsp;&emsp;Neat! But there are still some problems with this code. See if you can sort out a few of them yourself before reading on! Ready?
@@ -115,7 +115,7 @@ void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color
     <code>for (int x = x0; x <= x1; x += 10)</code> for example, changing the constant from 1 to 10, we get:
 </p>
 <p>
-    <img src="/static/sadline.png" width="250"  alt=""/>
+    <img src="@routes.Assets.at("images/sadline.png")" width="250"  alt=""/>
 </p>
 <p>
     &emsp;&emsp;That's a pretty sad line. The larger our constant is the less precise our line will be, which can lead to some efficiency problems
@@ -126,13 +126,13 @@ void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color
     actually a huge deal. We can still remedy this though by always getting the minimum x and looping to the maximum x.
 </p>
 <pre><code>
-    int minX = std::min(x0, x1);
-    int maxX = std::max(x0, x1);
-    for (int x = minX; x <= maxX; x++)
-    {
-        int y = (m * x) + b;
-        image.set(x, y, color);
-    }
+        int minX = std::min(x0, x1);
+        int maxX = std::max(x0, x1);
+        for (int x = minX; x <= maxX; x++)
+        {
+            int y = (m * x) + b;
+            image.set(x, y, color);
+        }
 </code></pre>
 <p>
     &emsp;&emsp;In the same vein, what about straight up and down lines where the x values for both points are equal? Right now those types of lines
@@ -143,35 +143,35 @@ void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color
     After fixing those few bugs, here we have our (relatively) bug-free (albeit very inefficient), rudimentary line-drawing algorithm:
 </p>
 <pre><code>
-void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
-{
-    int dx = x1 - x0;
-    int dy = y1 - y0;
-    float m = (float) dy / (float) dx;
-    float b = y1 - (m * x1);
-
-    int minX = std::min(x0, x1);
-    int maxX = std::max(x0, x1);
-
-    if (minX == maxX || std::abs(dx) < std::abs(dy))
-    {
-        int minY = std::min(y0, y1);
-        int maxY = std::max(y0, y1);
-        for (int y = minY; y <= maxY; y++)
+        void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
         {
-            int x = (y - b) / m;
-            image.set(x, y, color);
+            int dx = x1 - x0;
+            int dy = y1 - y0;
+            float m = (float) dy / (float) dx;
+            float b = y1 - (m * x1);
+
+            int minX = std::min(x0, x1);
+            int maxX = std::max(x0, x1);
+
+            if (minX == maxX || std::abs(dx) < std::abs(dy))
+            {
+                int minY = std::min(y0, y1);
+                int maxY = std::max(y0, y1);
+                for (int y = minY; y <= maxY; y++)
+                {
+                    int x = (y - b) / m;
+                    image.set(x, y, color);
+                }
+            }
+            else
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    int y = (m * x) + b;
+                    image.set(x, y, color);
+                }
+            }
         }
-    }
-    else
-    {
-        for (int x = minX; x <= maxX; x++)
-        {
-            int y = (m * x) + b;
-            image.set(x, y, color);
-        }
-    }
-}
 </code></pre>
 <h3>
     Using Lines to Draw Objects
@@ -191,56 +191,56 @@ void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color
     &emsp;&emsp;The bare minimum of this format is overall very simple. It consists of 3 main sets of information. It has geometric vertices, texture vertices, and vertex normals represented through these formats:
 </p>
 <pre><code>
-    typedef struct
-    {
-        char type = "v";
-        float x, y, z;
-    } GEOMETRIC_VERTEX;
+        typedef struct
+        {
+            char type = "v";
+            float x, y, z;
+        } GEOMETRIC_VERTEX;
 
-    typedef struct
-    {
-        char type = "vt";
-        float x, y, z;
-    } TEXTURE_VERTEX;
+        typedef struct
+        {
+            char type = "vt";
+            float x, y, z;
+        } TEXTURE_VERTEX;
 
-    typedef struct
-    {
-        char type = "vn";
-        float x, y, z;
-    } VERTEX_NORMAL;
+        typedef struct
+        {
+            char type = "vn";
+            float x, y, z;
+        } VERTEX_NORMAL;
 </code></pre>
 <p>
     &emsp;&emsp;This portion of the file itself looks like this:
 </p>
 <pre><code>
-v -0.000581696 -0.734665 -0.623267
-v 0.000283538 -1 0.286843
-v -0.117277 -0.973564 0.306907
-v -0.382144 -0.890788 0.221243
-v -0.247144 -0.942602 0.276051
-v -0.656078 -0.718512 -0.109025
-v -0.609847 -0.786562 0.0198068
-... etc ...
+        v -0.000581696 -0.734665 -0.623267
+        v 0.000283538 -1 0.286843
+        v -0.117277 -0.973564 0.306907
+        v -0.382144 -0.890788 0.221243
+        v -0.247144 -0.942602 0.276051
+        v -0.656078 -0.718512 -0.109025
+        v -0.609847 -0.786562 0.0198068
+        ... etc ...
 
-vt  0.532 0.923 0.000
-vt  0.535 0.917 0.000
-vt  0.542 0.923 0.000
-vt  0.541 0.929 0.000
-vt  0.521 0.984 0.000
-vt  0.521 0.996 0.000
-vt  0.505 0.998 0.000
-vt  0.500 0.985 0.000
-... etc ...
+        vt  0.532 0.923 0.000
+        vt  0.535 0.917 0.000
+        vt  0.542 0.923 0.000
+        vt  0.541 0.929 0.000
+        vt  0.521 0.984 0.000
+        vt  0.521 0.996 0.000
+        vt  0.505 0.998 0.000
+        vt  0.500 0.985 0.000
+        ... etc ...
 
-vn  0.001 0.482 -0.876
-vn  -0.001 0.661 0.751
-vn  0.136 0.595 0.792
-vn  -0.203 0.679 0.706
-vn  -0.092 0.474 0.876
-vn  -0.184 0.792 0.581
-vn  -0.098 0.863 0.495
-vn  -0.449 0.820 0.356
-... etc ...
+        vn  0.001 0.482 -0.876
+        vn  -0.001 0.661 0.751
+        vn  0.136 0.595 0.792
+        vn  -0.203 0.679 0.706
+        vn  -0.092 0.474 0.876
+        vn  -0.184 0.792 0.581
+        vn  -0.098 0.863 0.495
+        vn  -0.449 0.820 0.356
+        ... etc ...
 </code></pre>
 <p>
     &emsp;&emsp;Geometric vertices are exactly what they sound like. They represent a given point in 3D space. Texture vertices define where to place the texture over a set of vertices, and therefore correspond 1-to-1
@@ -251,34 +251,34 @@ vn  -0.449 0.820 0.356
     of our other 3 data structures. The definition for a face looks like this:
 </p>
 <pre><code>
-    typedef struct
-    {
         typedef struct
         {
-            GEOMETRIC_VERTEX geometricVertex;
-            TEXTURE_VERTEX textureVertex;
-            VERTEX_NORMAL vertexNormal;
-        } FACE_POINT;
+            typedef struct
+            {
+                GEOMETRIC_VERTEX geometricVertex;
+                TEXTURE_VERTEX textureVertex;
+                VERTEX_NORMAL vertexNormal;
+            } FACE_POINT;
 
-        char type = "f";
-        float* vertex1 = new FACE_POINT[3];
-        float* vertex2 = new FACE_POINT[3];
-        float* vertex3 = new FACE_POINT[3];
-    } FACE;
+            char type = "f";
+            float* vertex1 = new FACE_POINT[3];
+            float* vertex2 = new FACE_POINT[3];
+            float* vertex3 = new FACE_POINT[3];
+        } FACE;
 </code></pre>
 <p>
     &emsp;&emsp;And the file itself for the faces section looks like:
 </p>
 <pre><code>
-f 24/1/24 25/2/25 26/3/26
-f 24/1/24 26/3/26 23/4/23
-f 28/5/28 29/6/29 30/7/30
-f 28/5/28 30/7/30 27/8/27
-f 32/9/32 33/10/33 34/11/34
-f 32/9/32 34/11/34 31/12/31
-f 36/13/36 31/12/31 34/11/34
-f 36/13/36 34/11/34 35/14/35
-... etc ...
+        f 24/1/24 25/2/25 26/3/26
+        f 24/1/24 26/3/26 23/4/23
+        f 28/5/28 29/6/29 30/7/30
+        f 28/5/28 30/7/30 27/8/27
+        f 32/9/32 33/10/33 34/11/34
+        f 32/9/32 34/11/34 31/12/31
+        f 36/13/36 31/12/31 34/11/34
+        f 36/13/36 34/11/34 35/14/35
+        ... etc ...
 </code></pre>
 <h3>
     Creating a class for OBJ Interaction
@@ -287,25 +287,25 @@ f 36/13/36 34/11/34 35/14/35
     &emsp;&emsp;Just like in the last part we'll start by defining a header for our class.
 </p>
 <pre><code>
-    class Model
-    {
-      private:
-        std::vector&lt;Vec3f&gt; verts;
-        std::vector&lt;std::vector&lt;int&gt;&gt; faces;
+        class Model
+        {
+          private:
+            std::vector&lt;Vec3f&gt; verts;
+            std::vector&lt;std::vector&lt;int&gt;&gt; faces;
 
-      public:
-        Model(const char* filename);
+          public:
+            Model(const char* filename);
 
-        ~Model();
+            ~Model();
 
-        int nVerts();
+            int nVerts();
 
-        int nFaces();
+            int nFaces();
 
-        Vec3f vert(int i);
+            Vec3f vert(int i);
 
-        std::vector&lt;int&gt; face(int i);
-    };
+            std::vector&lt;int&gt; face(int i);
+        };
 </code></pre>
 <p>
     &emsp;&emsp;Okay so a few a things about this code. In the private section we've got two fields <code>verts</code> and <code>faces</code> to represent the list of vertices (including geometric, textured, and normalized) and the list
@@ -318,79 +318,79 @@ f 36/13/36 34/11/34 35/14/35
     class. Essentially it's a dynamic array that allows you to add or remove elements at will. <code>Vec3f</code> on the other hand is a data structure that I defined. Let's look at that definition:
 </p>
 <pre><code>
-template&lt;class t&gt;
-struct vec3
-{
-    union
-    {
-        struct
+        template&lt;class t&gt;
+        struct vec3
         {
-            t x, y, z;
+            union
+            {
+                struct
+                {
+                    t x, y, z;
+                };
+                struct
+                {
+                    t iVert, iuv, iNorm;
+                };
+                t raw[3];
+            };
+
+            vec3() : x(0), y(0), z(0)
+            {
+            }
+
+            vec3(t x, t y, t z) : x(x), y(y), z(z)
+            {
+            }
+
+            inline vec3&lt;t&gt; operator^(const vec3&lt;t&gt; &v) const
+            {
+                return vec3&lt;t&gt;(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+            }
+
+            inline vec3&lt;t&gt; operator+(const vec3&lt;t&gt; &v) const
+            {
+                return vec3&lt;t&gt;(x + v.x, y + v.y, z + v.z);
+            }
+
+            inline vec3&lt;t&gt; operator-(const vec3&lt;t&gt; &v) const
+            {
+                return vec3&lt;t&gt;(x - v.x, y - v.y, z - v.z);
+            }
+
+            inline vec3&lt;t&gt; operator*(float f) const
+            {
+                return vec3&lt;t&gt;(x * f, y * f, z * f);
+            }
+
+            inline t operator*(const vec3&lt;t&gt; &v) const
+            {
+                return x * v.x + y * v.y + z * v.z;
+            }
+
+            float norm() const
+            {
+                return std::sqrt(x * x + y * y + z * z);
+            }
+
+            vec3&lt;t&gt; &normalize(t l = 1)
+            {
+                *this = (*this) * (l / norm());
+                return *this;
+            }
+
+            template&lt;class&gt;
+            friend std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v);
         };
-        struct
+
+        typedef vec3&lt;float&gt; Vec3f;
+        typedef vec3&lt;int&gt; Vec3i;
+
+        template&lt;class t&gt;
+        std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v)
         {
-            t iVert, iuv, iNorm;
-        };
-        t raw[3];
-    };
-
-    vec3() : x(0), y(0), z(0)
-    {
-    }
-
-    vec3(t x, t y, t z) : x(x), y(y), z(z)
-    {
-    }
-
-    inline vec3&lt;t&gt; operator^(const vec3&lt;t&gt; &v) const
-    {
-        return vec3&lt;t&gt;(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
-    }
-
-    inline vec3&lt;t&gt; operator+(const vec3&lt;t&gt; &v) const
-    {
-        return vec3&lt;t&gt;(x + v.x, y + v.y, z + v.z);
-    }
-
-    inline vec3&lt;t&gt; operator-(const vec3&lt;t&gt; &v) const
-    {
-        return vec3&lt;t&gt;(x - v.x, y - v.y, z - v.z);
-    }
-
-    inline vec3&lt;t&gt; operator*(float f) const
-    {
-        return vec3&lt;t&gt;(x * f, y * f, z * f);
-    }
-
-    inline t operator*(const vec3&lt;t&gt; &v) const
-    {
-        return x * v.x + y * v.y + z * v.z;
-    }
-
-    float norm() const
-    {
-        return std::sqrt(x * x + y * y + z * z);
-    }
-
-    vec3&lt;t&gt; &normalize(t l = 1)
-    {
-        *this = (*this) * (l / norm());
-        return *this;
-    }
-
-    template&lt;class&gt;
-    friend std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v);
-};
-
-typedef vec3&lt;float&gt; Vec3f;
-typedef vec3&lt;int&gt; Vec3i;
-
-template&lt;class t&gt;
-std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v)
-{
-    s &lt;&lt; "(" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; ")\n";
-    return s;
-}
+            s &lt;&lt; "(" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; ")\n";
+            return s;
+        }
 </code></pre>
 <p>
     &emsp;&emsp;So that's a good little bit of code, and I'm not going to go over it in detail because it's tangential to the topic at hand. All I'll say is that "template&lt;class t&gt;" defines the structure as a
@@ -406,75 +406,75 @@ std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v)
     ordered lists of integers for our faces. Let's get to the implementation of this header before you die of boredom/confusion from my terrible teaching skills as they relate to mathematics.
 </p>
 <pre><code>
-int Model::nVerts()
-{
-    return (int) verts.size();
-}
+        int Model::nVerts()
+        {
+            return (int) verts.size();
+        }
 
-int Model::nFaces()
-{
-    return (int) faces.size();
-}
+        int Model::nFaces()
+        {
+            return (int) faces.size();
+        }
 
-std::vector&lt;int&gt; Model::face(int i)
-{
-    return faces[i];
-}
+        std::vector&lt;int&gt; Model::face(int i)
+        {
+            return faces[i];
+        }
 
-Vec3f Model::vert(int i)
-{
-    return verts[i];
-}
+        Vec3f Model::vert(int i)
+        {
+            return verts[i];
+        }
 </code></pre>
 <p>
     &emsp;&emsp;Look at how simple that implementation is! That's the power of using vectors! You'll notice I left out the constructor and destructor. That's because I wanted to show you those in isolation. Let's
     look at that now! Be sure to read the comments for an overview of what's happening.
 </p>
 <pre><code>
-Model::Model(const char* filename) : verts(), faces()
-{
-    // open the file and read the lines
-    std::ifstream in;
-    in.open(filename, std::ifstream::in);
-    if (in.fail())
-    {
-        return;
-    }
-    std::string line;
-    while (!in.eof())
-    {
-        std::getline(in, line);
-        std::istringstream iss(line);
-        char trash;
-        // check if it's a vertex (v, vt, or vn), or a face (f)
-        if (!line.compare(0, 2, "v "))
+        Model::Model(const char* filename) : verts(), faces()
         {
-            iss &gt;&gt; trash;
-            Vec3f v;
-            for (float &i : v.raw)
+            // open the file and read the lines
+            std::ifstream in;
+            in.open(filename, std::ifstream::in);
+            if (in.fail())
             {
-                iss &gt;&gt; i;
+                return;
             }
-            verts.push_back(v); // if it's a vertex then read in the raw geomtry data and add it to our vertex list
-        }
-        else if (!line.compare(0, 2, "f "))
-        {
-            std::vector&lt;int&gt; f;
-            int itrash, idx;
-            iss &gt;&gt; trash;
-            while (iss &gt;&gt; idx &gt;&gt; trash &gt;&gt; itrash &gt;&gt; trash &gt;&gt; itrash)
+            std::string line;
+            while (!in.eof())
             {
-                idx--; // in wavefront obj all indices start at 1, not zero
-                f.push_back(idx);
+                std::getline(in, line);
+                std::istringstream iss(line);
+                char trash;
+                // check if it's a vertex (v, vt, or vn), or a face (f)
+                if (!line.compare(0, 2, "v "))
+                {
+                    iss &gt;&gt; trash;
+                    Vec3f v;
+                    for (float &i : v.raw)
+                    {
+                        iss &gt;&gt; i;
+                    }
+                    verts.push_back(v); // if it's a vertex then read in the raw geomtry data and add it to our vertex list
+                }
+                else if (!line.compare(0, 2, "f "))
+                {
+                    std::vector&lt;int&gt; f;
+                    int itrash, idx;
+                    iss &gt;&gt; trash;
+                    while (iss &gt;&gt; idx &gt;&gt; trash &gt;&gt; itrash &gt;&gt; trash &gt;&gt; itrash)
+                    {
+                        idx--; // in wavefront obj all indices start at 1, not zero
+                        f.push_back(idx);
+                    }
+                    faces.push_back(f); // if it's a face then read in the raw face data, ignoring the slashes between values, and add it to our faces list
+                }
             }
-            faces.push_back(f); // if it's a face then read in the raw face data, ignoring the slashes between values, and add it to our faces list
+            std::cerr &lt;&lt; "# v# " &lt;&lt; verts.size() &lt;&lt; " f# " &lt;&lt; faces.size() &lt;&lt; std::endl;
         }
-    }
-    std::cerr &lt;&lt; "# v# " &lt;&lt; verts.size() &lt;&lt; " f# " &lt;&lt; faces.size() &lt;&lt; std::endl;
-}
 
-Model::~Model()
-= default;
+        Model::~Model()
+        = default;
 </code></pre>
 <p>
     &emsp;&emsp;Bada bing bada boom that's all we need to read in OBJ files! Now we can create a 3D object in memory within our program using something like <code>auto* model = new Model("head.obj");</code>.
@@ -482,42 +482,42 @@ Model::~Model()
     They're grouped in loops of length three because, as stated earlier, each face must be a triangle, meaning the three points of the face have to connect to one another.
 </p>
 <pre><code>
-int main(int argc, char** argv)
-{
-    auto* model = new Model("head.obj");
-    const int width = 800;
-    const int height = 800;
-
-    TgaImage image(width, height, TgaImage::RGB);
-    for (int i = 0; i < model->nFaces(); i++)
-    {
-        std::vector&lt;int&gt; face = model->face(i);
-        for (int j = 0; j < 3; j++)
+        int main(int argc, char** argv)
         {
-            Vec3f v0 = model->vert(face[j]);
-            // use the modulo to go back to 0 and connect the triangle when on the last two vertices of the face
-            Vec3f v1 = model->vert(face[(j + 1) % 3]);
-            // scale the model appropriately to the correct size
-            int x0 = (v0.x + 1) * width / 2;
-            int y0 = (v0.y + 1) * height / 2;
-            int x1 = (v1.x + 1) * width / 2;
-            int y1 = (v1.y + 1) * height / 2;
-            line(x0, y0, x1, y1, image, white); // draw a line for each pair of vertices in this triangle
-        }
-    }
+            auto* model = new Model("head.obj");
+            const int width = 800;
+            const int height = 800;
 
-    image.flipVertically(); // i want to have the origin at the left bottom corner of the image
-    image.writeTgaFile("output.tga");
-    delete model;
-    return 0;
-}
+            TgaImage image(width, height, TgaImage::RGB);
+            for (int i = 0; i < model->nFaces(); i++)
+            {
+                std::vector&lt;int&gt; face = model->face(i);
+                for (int j = 0; j < 3; j++)
+                {
+                    Vec3f v0 = model->vert(face[j]);
+                    // use the modulo to go back to 0 and connect the triangle when on the last two vertices of the face
+                    Vec3f v1 = model->vert(face[(j + 1) % 3]);
+                    // scale the model appropriately to the correct size
+                    int x0 = (v0.x + 1) * width / 2;
+                    int y0 = (v0.y + 1) * height / 2;
+                    int x1 = (v1.x + 1) * width / 2;
+                    int y1 = (v1.y + 1) * height / 2;
+                    line(x0, y0, x1, y1, image, white); // draw a line for each pair of vertices in this triangle
+                }
+            }
+
+            image.flipVertically(); // i want to have the origin at the left bottom corner of the image
+            image.writeTgaFile("output.tga");
+            delete model;
+            return 0;
+        }
 </code></pre>
 <p>
     &emsp;&emsp;If we do that with an actual OBJ file (the test one I'm using can be found <a href="https://github.com/blipson/simplerenderer/blob/drawing-lines/head.obj">here</a>,
     then the program should fairly accurately draw the wireframe for the triangles that make up the geometry of that 3D object! Here's the final output:
 </p>
 <p>
-    <img src="/images/head.png" width="500" alt="" />
+    <img src="@routes.Assets.at("images/head.png")" width="500" alt="" />
 </p>
 <p>
     &emsp;&emsp;Look at it! It's beautiful! I hope you learned something about lines and stuff throughout this post. Next time we'll be spicing up our line drawing function by looking at different algorithms
