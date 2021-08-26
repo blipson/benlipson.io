@@ -29,4 +29,8 @@ class BlogController @Inject()(cc: ControllerComponents) extends AbstractControl
   def functionalEnlightenment(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.functionalEnlightenment())
   }
+
+  def onGod(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.onGod())
+  }
 }

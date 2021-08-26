@@ -1206,5 +1206,623 @@ class BlogControllerTest extends PlaySpec {
           |</html>
           |""".stripMargin.replaceAll(" +", "")
     }
+
+    "should display the 'On God' blog post" in {
+      val controller = new BlogController(Helpers.stubControllerComponents())
+      val result: Future[Result] = controller.onGod().apply(FakeRequest())
+      val bodyText: String = contentAsString(result)
+      bodyText.replaceAll(" +", "") mustBe
+        """<!DOCTYPE html>
+          |
+          |<html lang="en">
+          |    <head>
+          |        <meta charset="utf-8">
+          |        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          |        <meta name="viewport" content="width=device-width, initial-scale=1">
+          |        <link rel="shortcut icon" href="#" />
+          |        <title>Lipson</title>
+          |    </head>
+          |    <body>
+          |        <h1>
+          |            On God
+          |        </h1>
+          |        <h3>
+          |            Introduction
+          |        </h3>
+          |        <p>&emsp;&emsp;Every belief, and every non-belief, needs an argument or rationale. Of this I’m sure. The fundamental
+          |            first step towards living a fulfilling life begins with thought, contemplation, and agonizing. This view itself then
+          |            requires some backing, according to its own rules. The obvious argument for making arguments states that to
+          |            relinquish reasoning is to submit yourself to an ideological abyss. In other words, if you don’t arbitrate your
+          |            decisions anything and everything is permissible, and subsequently nothing is because we’re beings who perceive time
+          |            as linear thus making an infinite number of possible actions effectively indistinguishable from no action at all. To
+          |            make the rational movement towards judgment and decisiveness requires thought. Even to get to the point where we
+          |            decide to be more decisive requires thought. Our consciousness intertwines itself with cognition intimately enough
+          |            such that thought is the necessary groundwork on which all human adjudication exists. There are biological arguments
+          |            to support this claim as well, but I’m not nearly comfortable enough in that arena to expose them. Suffice to say, a
+          |            belief without reasoning behind it isn’t a belief worth having. This idea necessitates revisiting your beliefs,
+          |            reevaluating your values, and rethinking your thoughts regularly. How can you say you still believe a belief that
+          |            you’ve reasoned about if you have, or your environment has, substantially changed since the last time you reasoned
+          |            about it? It could’ve been that you just thought your reasoning was sufficient because of the situation you were in,
+          |            and now that the situation has changed the arguments you’ve made in the past no longer hold up.
+          |        </p>
+          |        <p>&emsp;&emsp;Which brings me to the topic of this post. It’s been a hot minute since me and god, or gods(?) or
+          |            non-god(?), have had a little chat. So I decided to have a good old fashioned heart to heart with
+          |            her/him/they/it/nothing. It’s ended up being an extravagant ongoing conversation that’s so far taken a good number
+          |            of weeks, perhaps even months (dare I say years?). I want to share that journey and take this post through it in the
+          |            same chronological order that I’ve been going through it in. But before that, a disclaimer. Some of the conclusions
+          |            reached in this discussion may seem intuitive. So intuitive, in fact, that you may end up wondering to yourself why
+          |            the dialect was necessary at all when you could reach the conclusion purely from intuition. I want to stress again
+          |            the importance of agonizing. When it comes to belief the journey is so much more important than the destination. A
+          |            belief, even if it might make a point that’s easily defensible, is nothing without having actually made that
+          |            defense. It amounts to a simple stab in the dark, no better than sheer ignorance and unwillingness to think and
+          |            learn. So if you’ve found yourself coming to conclusions about god, or anything for that matter but specifically
+          |            about god, without fully thinking through them (especially since it’s never possible to fully think through
+          |            something, whatever that means), I strongly encourage you to give them another look, even if they’re the same
+          |            conclusions I come to. You need to forge your own path, don’t take anything on faith (unless that’s where your
+          |            deliberation leads you, which we’ll get to). I can only hope that this post inspires you to think. Anyway, with all
+          |            that being said, and without further ado, I’ll now bring you actual substantive writing.
+          |        </p>
+          |        <h3>
+          |            What is god?
+          |        </h3>
+          |        <p>&emsp;&emsp;Before we can make arguments for and against a thing we have to know what that thing is. Lots of
+          |            different people mean lots of different things when they say the word “god”. The term is so vast that I hardly know
+          |            where to begin. So I’ll do what I always do when I don’t know what to do which is to start with the easiest thing I
+          |            can find and work my way from there. In this instance, the simplest starting point for me is the judeo-christian
+          |            idea of god. Largely because that’s the culture in which I was raised. But even that has its different accounts. No
+          |            one can quite agree on the attributes of the judeo-christian god. Within the category, the simplest sub-category for
+          |            me is the well-defined concept of god that was thought up by St. Augustine and St. Aquinas in the 13th century.
+          |            According to them, god must be omniscient, that is all-knowing. God must be omnipotent, or all powerful. God must be
+          |            omnibenevolent, or possessing of perfect moral goodness. God must be omnitemporal and omnipresent, or existing at
+          |            all times in all places at once. This definition is ridiculous, laughable even. For starters, none of this was ever
+          |            in the bible at all, it basically amounts to medieval fan fiction. In fact in the bible god does a whole lot of
+          |            things that would seem to directly contradict these attributes. That aside, the definition has some horrendously
+          |            obvious logical inconsistencies in and of itself.
+          |        </p>
+          |        <p>&emsp;&emsp;I have a hard time grappling with omniscience, because it means that free will doesn’t exist. If god
+          |            knows everything then he (and I say “he” because the traditional judeo-christian god we’re currently talking about
+          |            is a man) knows all that will happen at all points in time (this relates to omnitemporality and omnipresence as
+          |            well). Knowledge and causation in this case are the same thing because he’s inherently infallible, so it’d be
+          |            impossible to prove him wrong. Some classical liberals might make an argument from the perspective of
+          |            omnibenevolence by saying that god gave us liberty, which is the highest moral thing he can imbue. But we’re not
+          |            talking about omnibenevolence yet (we’ll get there), we’re talking about omniscience. If we have free will, god
+          |            doesn’t know everything, and if god knows everything, we can’t have free will. Simple as that. I admit that it’s
+          |            possible that we don’t have free will (which goes against the idea of liberal benevolence), everything could be left
+          |            to fate. But what then of the modern idea of god or our relationship to him? It’s pretty difficult to have a
+          |            personal relationship with someone who knows everything that will ever happen to you. It makes attempts at
+          |            communication and prayer meaningless. Why ask for something when everything’s written in stone anyway? So the
+          |            natural conclusion with god being omniscient is that we shouldn’t go to church, or waste time worshipping god,
+          |            because there’s no way we’re going to get anything out of it from him. There’s an argument to be made about the
+          |            benefits of the traditions by themselves, regardless of god’s contact or even his existence. But I know this isn’t
+          |            what’s meant by going to church by a large majority of people, especially members of the clergy. It seems like
+          |            either god isn’t omniscient, or we have to fundamentally restructure all of the institutions of western religion. I
+          |            have a feeling that the authorities of the church would rather roll back on the claim that god is all-knowing.
+          |        </p>
+          |        <p>&emsp;&emsp;Similarly, omnipotence as a concept is absurd and easily the most logically inconsistent of the traditional
+          |            attributes. Imagine if you were to ask god to create something that he can’t influence in any way. His inability to
+          |            create such a thing would mean that there’s at least one thing he can’t do, but his ability to create such a thing
+          |            would also mean there’s at least one thing he can’t do, which is influence the thing. Either way, there’s no way god
+          |            can do everything. That’s really all it takes to debunk that one, it’s a simple paradox.
+          |        </p>
+          |        <p>&emsp;&emsp;The argument against omnibenevolence stems outward from the argument against omnipotence. An all-powerful god should
+          |            be able to do evil, to sin. But an all-good god wouldn’t be able to do such things. Yet humans can sin. Why can I do
+          |            something that god can’t? Even without omnipotence that seems weird, god should at least be more powerful than I am.
+          |            Not to mention the classic problem of evil as a result of god. We’ll dig a lot more into this later on, but god
+          |            seems to allow a lot of really shitty things to happen, so it’s very difficult to defend the position that he’s
+          |            omnibenevolent, even more so if you think he’s omnipotent as well.
+          |        </p>
+          |        <p>&emsp;&emsp;It’s obvious to me that the traditional definitions of the judeo-christian god simply don’t hold up. The only
+          |            logical thing for religious people to do would be to alter their idea of god, which many of them have. Reformative
+          |            sects of Islam, Christianity, and Judaism have become much more popular as a way of compromising god’s divine
+          |            attributes to maintain some semblance of logical consistency. People will admit that the god of the bible has a hard
+          |            time making things happen sometimes, or that he often makes mistakes, or that he seems to do things that are
+          |            considered evil according to his own laws, or that he misses out on certain things despite being omnipresent and
+          |            omnitemporal. At any given time and in any given situation they’ll step backwards on one or more of the attributes
+          |            to satisfy themselves and then stop thinking after that. While it’s admirable that they got far enough to begin
+          |            questioning their beliefs, I’d like to go even further.
+          |        </p>
+          |        <p>&emsp;&emsp;A number of people in my personal life have gladly given me everything I’ve said thus far but still believe in some
+          |            higher power or some god. This thing, whatever it is for them personally, must, as we’ve just discussed, look
+          |            nothing like the traditional judeo-christian god. But it still could be the case that something higher than us
+          |            exists. Something that isn’t omni-anything, but is just more powerful or knowledgeable or good than we are. This may
+          |            exist in the form of some physical force or dimension like time or gravity. It may be a single god or a number of
+          |            gods. It may just be a very powerful inanimate object floating around outside our universe. We’ll now continue our
+          |            discussion under the assumption that god is not omnipotent, omniscient, or omnibenevolent, and that god may or may
+          |            not be omnipresent and omnitemporal, and present arguments for and against the existence of that person/group of
+          |            people/thing.
+          |        </p>
+          |        <h3>
+          |            Arguments for God
+          |        </h3>
+          |        <p>&emsp;&emsp;I devote this section to discussing the arguments and subsequent series of dialectical counter arguments for the
+          |            existence of the altered version of god. The section contains all the arguments that I could think of to support
+          |            god. I found some of them through research, others through people I know arguing for their beliefs, and others from
+          |            my own contemplation. I present them in an order from the easiest to argue against to the most difficult to argue
+          |            against, at least from my perspective.
+          |        </p>
+          |        #1.<br>
+          |        <ul>
+          |            <li>
+          |                A. You were raised a religion.
+          |            </li>
+          |            <li>
+          |                (∴) B. That religion’s teachings must be true.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;A lot of people like to say that they go to church because that’s just how they were raised and they never really
+          |            thought past that. Needless to say I find this line of thinking (or rather non-thinking) insufficient. If how you
+          |            were raised affected religious truth in any way, then every religion that’s ever had someone raised in their
+          |            tradition would be true. Therefore none of them would be true because they all directly contradict each other. Jesus
+          |            and Muhammad can’t both be the massiah, and a massiah can’t both exist and not exist. Polytheism can’t be true at
+          |            the same time as monotheism. The list goes on and on. Since the conclusion of this argument presents many logical
+          |            inconsistencies we understand that the premise doesn’t necessarily lead to the conclusion, making this argument
+          |            invalid.
+          |        </p>
+          |        #2.<br>
+          |        <ul>
+          |            <li>
+          |                A. The sacred text (i.e. the bible, torah, or quran) of a religion says to believe in the teachings of that
+          |                religion.
+          |            </li>
+          |            <li>
+          |                (∴) B. That religion’s teachings must be true.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;The typical bible-thumping alt-right argument for belief. “It says so in the bible!” Ignoring the fact that most
+          |            religious texts, and specifically the bible, say a lot of really terrible things, this argument is a simple fallacy.
+          |            It’s begging the question. You can’t assume the truth of the conclusion of your argument in one of the premises of
+          |            your argument. You can’t use the contents of a book to prove the truth of the contents of that book.
+          |        </p>
+          |        #3.<br>
+          |        <ul>
+          |            <li>
+          |                A. God’s so far beyond our comprehension that we can’t possibly reason about her/him/they/it.
+          |            </li>
+          |            <li>
+          |                (∴) B. All counterarguments to god are thus unsound and god must exist.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;This one usually comes from religious people after they’ve had to confront a counter argument to one of their other
+          |            arguments in this list. After being backed into a corner they sort of pull this one out as a way of attempting to
+          |            save themselves. The counter argument is obvious. You can use this exact same logic to say that all arguments for
+          |            god are also unsound because we can’t comprehend her/him/they/it. The burden of proof lies with the person positting
+          |            the claim.
+          |        </p>
+          |        #4.<br>
+          |        <ul>
+          |            <li>
+          |                A. God is “that which no greater can be conceived” - Anselm of Canterbury.
+          |            </li>
+          |            <li>
+          |                B. There are only two ways in which something can exist, either entirely in our minds but not in reality, or in
+          |                our minds and also in reality.
+          |            </li>
+          |            <li>
+          |                C. Any good thing would be better if it existed in our reality as well as in our minds.
+          |            </li>
+          |            <li>
+          |                (∴) D. God must be real, because if she/he/they/it wasn’t, she/he/they/it wouldn’t be the greatest thing we can
+          |                conceive.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;The traditional ontological argument first brought to prominence by Anselm of Canterbury in the late 11th century.
+          |            This argument takes many forms. In modern times it’s often presented by saying something like “Don’t you believe
+          |            there has to be something bigger than all of this?”. Basically the wistful feeling that people get when they stare
+          |            at the stars at night and think to themselves about how small they are and about how something more powerful must
+          |            necessarily be out there pulling the strings. I’m all for aesthetic appreciation, don’t get me wrong. The only
+          |            problem is that using that as an argument for the existence of god is essentially a more complicated version of the
+          |            same problem we ran into with argument #2. This too begs the question. Existence can’t be a predicate for an
+          |            argument about existence. The first premise, premise A, assumes the truth of the conclusion of the argument, that
+          |            god exists, and thus is unsound as a predicate. If god were to exist she/he/they/it would necessarily be that which
+          |            no greater can be conceived perhaps, but there’s nothing stating she/he/they/it does exist. Guanilo of Marmoutiers
+          |            expressed this counter-argument particularly well when he wrote a letter to Anselm in response to his claim. The
+          |            letter stated that you can run this line of thinking to prove anything you want. In other words, imagine the best
+          |            island you can think of. Nay, the greatest island that could possibly be conceived. It has mountains, deserts,
+          |            forests, and all kinds of other really awesome stuff. This island must exist right? Because if it didn’t it wouldn’t
+          |            be the best island we can think of. You see the logical flaw here, the island doesn’t really exist.
+          |        </p>
+          |        #5.<br>
+          |        <ul>
+          |            <li>
+          |                A. Things are contingent upon other things.
+          |            </li>
+          |            <li>
+          |                B. Contingent things cause other contingent things creating a chain of causality.
+          |            </li>
+          |            <li>
+          |                C. An infinite regress of contingency is impossible.
+          |            </li>
+          |            <li>
+          |                D. (∴) There must be at least one necessary thing, and that thing is god.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;This argument also takes many modern forms. In my life I’ve most often heard it phrased as “we must’ve come from
+          |            something, we couldn’t have possibly come from nothing” or the less eloquent, but more scientifically appealing
+          |            perhaps, “something must’ve set off the big bang”. I want to first mention that this argument is the main reason
+          |            that I’ve been using “she/he/they/it” to refer to god during this section, because it tries to prove the existence
+          |            of god, but not any particular god. For all we know a giant rock could’ve set off the chain of consistency. Which
+          |            makes it ironic that this argument was first brought to light by St. Aquinas in the 13th century, the same St.
+          |            Aquinas who developed the traditional definition of god that we debunked earlier. It’s commonly referred to as one
+          |            of Aquinas’ cosmological arguments. He has two others that refer to a similar principle called the argument from
+          |            motion and the argument from causation. They state that god is the unmoved mover and the uncaused causer
+          |            respectively using the same logic. A final cosmological argument he made was the argument from degrees about the
+          |            benevolence of god, which states that god is a necessary perfect being because we must have something to measure
+          |            degrees of goodness off of. He was clearly grasping for anything resembling a logical argument since he was willing
+          |            to forfeit his own definition to try to create one. But let’s just take it as a given that he can sacrifice the
+          |            divine attributes, as we have in this entire section thus far. This argument still doesn’t hold up. The third
+          |            premise, premise C, is unsound. There’s nothing showing why an infinite regress is impossible. In fact, based on our
+          |            current understanding of time, relativity, and metaphysics, it would seem that an infinite regress isn’t just
+          |            possible, but it’s actually probable. This means that the universe definitely could have, and probably did, come
+          |            from nothing. But an even stronger counter argument than showing the falseness of premise C lies in the fact that
+          |            this argument is self-defeating. If premise A is true and things are contingent on other things, then what makes god
+          |            the one exempt thing? She/he/they/it is still a thing, just like any other thing. If we’re to accept that there are
+          |            exceptions to the rule that premise A posits, then who’s to say nothing else is exempt? And if anything and
+          |            everything can be exempt then we don’t need to establish god specifically anyway, since an infinite regress would
+          |            then not be necessary.
+          |        </p>
+          |        #6.<br>
+          |        <ul>
+          |            <li>
+          |                A. Reason won’t give us an answer to the god problem. You must choose between theism, a belief in god, or
+          |                atheism, a disbelief in god. Any form of disbelief in god, including modern agnosticism falls under the category
+          |                of atheism.
+          |            </li>
+          |            <li>
+          |                B. There are four possibilities, each with their own ending. Theism results in either nothing or eternity in
+          |                heaven. Atheism results in either nothing or eternity in hell.
+          |            </li>
+          |            <li>
+          |                (∴) C. We should be theists because it’s the lowest risk and highest reward option. If we do this in
+          |                self-interest for long enough it’ll grow into honest conviction.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;Colloquially referred to as “Pascal’s wager” because it was thought up by Blaise Pascal, the 17th century
+          |            mathematician and theologian. Despite his mathematical prowess, Pascal didn’t come up with a very convincing
+          |            argument. The reasoning for the conclusion isn’t correct, it leaves out a very important premise. The option of
+          |            believing in god is actually quite high risk as well, depending on how you believe. It costs you time, money, and
+          |            the opportunity to live your life the way you want to live it. Theists argue that they have better lives because
+          |            having belief has inherent benefits that have nothing to do with the actual existence of god, which is difficult to
+          |            argue against. Who am I to say that their traditions aren’t meaningful? I’ve certainly been moved by them in the
+          |            past. But I personally would rather be doing other things a lot of the time, and missing out on those things is a
+          |            pretty severe bummer. Granted, it’s not nearly as much of a bummer as eternity in hell would be, so it’s still
+          |            arguably less risk. But you need more than just “fake it until you make it” theology, and for those who can’t
+          |            believe even if they wanted to whether or not believing gives inherent benefits is irrelevant. Besides, is fear
+          |            really the correct way to guide religious decisions? There’s the apparent risk I already mentioned, but there’s a
+          |            much larger risk of losing one’s own character by not being bold enough to believe what one decides is closest to
+          |            the truth. Courage is important towards living a good life, and without it a good life may not even be possible.
+          |            I’ll take a potential shitty afterlife over a guaranteed shitty real life any day.
+          |        </p>
+          |        #7.<br>
+          |        <ul>
+          |            <li>
+          |                A. A human experience of objective morality is observed.
+          |            </li>
+          |            <li>
+          |                B. God is the best or only explanation for this experience.
+          |            </li>
+          |            <li>
+          |                (∴) C. God must exist.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;This one is known as “Kant’s argument from morality” or just “the moral argument”. It was first brought to
+          |            prominence by the 18th century German philosopher Immanuel Kant, hence the name. I’ve found this one to be pretty
+          |            popular in modern times as well, but it comes in the more condescending form of “if you don’t believe in religion,
+          |            then where do you get your morals from?”. Indeed without some source it’d seem that our moral decisions are fairly
+          |            arbitrary, but I’d argue that they’re arbitrary regardless. The first problem with this argument lies within that
+          |            idea. Premise A isn’t sound. It states that objective morality is a human experience, but the fact that it’s a human
+          |            experience means that by definition it can’t be objective, since the human experience is different for each person.
+          |            If something is observed by a subject then it must be subjective and not objective. Arguing that an objective thing
+          |            exists because it’s perceived by a subject doesn’t logically follow. Even if it did, there’s no proof to say that
+          |            the most likely cause of the supposed existence of objective morality is god, so premise B is also unsound. Even if
+          |            you were to try to make an abductive reasoning about it, there’s a sample size of only one, and thus it can’t have
+          |            associated probability. Suffice to say if both premises are unsound we can conclude that the argument is invalid and
+          |            move on.
+          |        </p>
+          |        #8.<br>
+          |        <ul>
+          |            <li>
+          |                A. Objects were designed to serve particular functions.
+          |            </li>
+          |            <li>
+          |                B. Humans (and all other things) serve particular functions and are objects.
+          |            </li>
+          |            <li>
+          |                (∴) C. Someone or something designed humans (and everything) to serve these functions, and that person or thing
+          |                is god.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;This argument was also originally brought up by St. Aquinas, but was later expanded upon and made famous by the 18th
+          |            century utilitarian philosopher William Paley. It’s colloquially known as “the teleological argument”, or
+          |            “intelligent design”. In his book Natural Theology or Evidences of the Existence and Attributes of the Deity,
+          |            William Paley presents an argument for god’s existence by analogy to show that a design implies a designer. Imagine
+          |            you’re walking around and you find a watch lying on the sidewalk. You pick it up. It’s still fully functional. You
+          |            notice that the back has been removed and you can see the mechanisms inside. Gears and springs working with each
+          |            other in perfect harmony to keep the time. You wouldn’t just assume that the watch came from nothing. You’d make the
+          |            logical assumption that someone must’ve intentionally made the watch. It makes so much sense and serves its function
+          |            so well. Likewise, humans, and indeed all life, are clearly very intricate machines. We do things that are so
+          |            extraordinary that we must’ve been designed. The counterargument negates this analogy and creates an argument by
+          |            disanalogy by showing that our situation is fundamentally different from the watch’s. We don’t understand the design
+          |            of ourselves like we do a watch. We can’t see all the springs and gears and mechanisms of life because we haven’t
+          |            progressed far enough to unlock those mysteries yet. This counterargument is fairly easily disputed by pointing out
+          |            the obvious fact that we don’t need to understand how something works in order to understand that it was designed.
+          |            To use another analogy, it’s like the motherboard inside a computer. I don’t know about you, but I have no idea how
+          |            all the transistors and stuff work on there. I have some high level knowledge, but I’ve never done any electrical
+          |            engineering. Yet I can still tell it was clearly designed by someone. However the more fundamental attribute that
+          |            makes the situation of a watch or a motherboard different from that of a living being is the idea of purpose. The
+          |            only thing that truly implies design is purpose. The watch is meant to keep time, and the motherboard is meant to
+          |            allow for all of the different pieces of hardware inside a computer to communicate with one another via electrical
+          |            signals. What are we as humans meant to do? No one knows, everyone has their own belief. The most easily defensible
+          |            position to me is that we simply don’t have a purpose. There is no universal meaning to our existence. Subsequently
+          |            we get to create our own purpose for our own lives. That autonomy means that in a way we design ourselves. So we
+          |            don’t need god under the definition of intelligent design because we are gods.
+          |        </p>
+          |        <p>&emsp;&emsp;But what about all our biological mechanisms? Forgetting the purpose of our consciousness, it seems like we have
+          |            parts of us that clearly have purpose. Our lungs are meant to take in oxygen and emit carbon dioxide, our heart is
+          |            meant to pump blood through our body, etc… But the original premises of the argument of intelligent design don’t
+          |            necessarily lead to the conclusion, thus making it an invalid argument. Why does the thing that designed us have to
+          |            be god? There are other conclusions that, given our current biological understanding of ourselves, make more sense.
+          |            These being natural selection and random mutation. The teleological argument was modified by Richard Swinburne in
+          |            the mid 20th century to include an abductive reasoning. In other words, of all the possible conclusions, we should
+          |            go with the one that’s most probable, which is god. But he presents no proof, unlike the theories surrounding
+          |            natural selection and random mutation. Another modification of the teleological argument is that god set up the
+          |            precise conditions for natural selection and random mutation to occur, rather than them coming about by accident.
+          |            The 18th century Scottish liberal philosopher David Hume objected to this by stating that should a creator exist,
+          |            she/he/they/it seems to make a lot of mistakes. Like cancer, or hurricanes. Lots of stuff just doesn’t make sense. A
+          |            flawed world implies a flawed creator. And is it worth it to worship a creator flawed enough to mess things up that
+          |            badly? I’d argue that it’s improbable she/he/they/it exists, but even if she/he/they/it did it wouldn’t be worth it
+          |            anyway.
+          |        </p>
+          |        #9.<br>
+          |        <ul>
+          |            <li>
+          |                A. Religious belief must come from faith alone, it can’t come about through logic.
+          |            </li>
+          |            <li>
+          |                B. Trying to impose logical arguments on god kills what’s great about religious belief, which is wonder,
+          |                absurdity, and mystery.
+          |            </li>
+          |            <li>
+          |                (∴) C. We should take it on faith that god exists to preserve those good things.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;To me this is the best argument that can be made in favor of god. If you’ve read the work of Soren Kierkegaard you
+          |            know just how poetic and magical the leap to faith can be and what it can reveal about the human condition. It
+          |            definitely pains me to think of removing that from my life. But at the end of the day, I’m trying to get at truth
+          |            (whatever that means). No matter how beautiful and expressive the idea of faith can be, I just can’t surrender
+          |            reason and take the leap to faith. At least not at this juncture. It’s just not who I am. Wanting something to be
+          |            true doesn’t make it the case, and I have to look at reality. Not to mention that believing in something because
+          |            it’s expedient has its risks. If we can leap to god we can leap to whatever we want, including views about god, like
+          |            that he wants us to discriminate against a certain group of people for example. In fact many people do just that.
+          |            Evidence and justification are all we have to adjudicate between beliefs, so if something has no evidence or
+          |            justification, then I can’t believe in it. I’m sorry, Kierkegaard.
+          |        </p>
+          |        <h3 class="centered">
+          |            Arguments Against God
+          |        </h3>
+          |        <p>&emsp;&emsp;I mentioned earlier that the onus of proof lies with the one making the claim. But at the very start of this post I
+          |            said that every non-belief needs its own justification as well. Language is a funny thing. A belief in not god is
+          |            different from not believing in god, but I (like Pascal) still call them the same thing, which is atheism. You might
+          |            call some of them agnostic, but to me agnosticism is a subcategory of atheism, and I don’t like the term agnostic
+          |            anyways. It’s too often used as a cop out so you don’t have to argue either side. I posit that claims against
+          |            something existing should be subject to the same rigor as claims for something existing. Arguments against god are
+          |            pretty few and far between to be honest. A lot of atheists assume that god doesn’t exist; they take it on faith.
+          |            That being said there are a few salient ones that I either found, heard, or came up with that I’d like to go
+          |            through. Just like the last section I’ll do it in order from easiest to argue against to hardest to argue against
+          |            from my perspective.
+          |        </p>
+          |        #1.<br>
+          |        <ul>
+          |            <li>
+          |                A. Religious belief must come from faith alone, it can’t come about through logic.
+          |            </li>
+          |            <li>
+          |                (∴) B. God must not exist.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;We’ve been through this. A belief needs reasoning, and your upbringing doesn’t constitute legitimate logical grounds
+          |            for belief.
+          |        </p>
+          |        #2.<br>
+          |        <ul>
+          |            <li>
+          |                A. Neil Degrasse Tyson, Rick from Rick & Morty and other scientists say there’s no god.
+          |            </li>
+          |            <li>
+          |                (∴) B. There’s no god.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;This is a fallacious appeal to authority. The premise doesn’t lead to the conclusion in any way, making it an
+          |            invalid argument.
+          |        </p>
+          |        #3.<br>
+          |        <ul>
+          |            <li>
+          |                A. The only legitimate claim for god’s existence is a fideistic one.
+          |            </li>
+          |            <li>
+          |                B. You can make a fideistic claim about anything.
+          |            </li>
+          |            <li>
+          |                (∴) C. There are an infinite number of possible gods, thus making the specific god you choose to believe in not
+          |                special and infinitely likely to not exist.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;This is the good old “flying spaghetti monster” defense. It’s seen a rise in popularity ever since pompous figures
+          |            like Bill Nye and Neil Degrasse Tyson came onto the scene, but it’s been around for a while. It effectively shows
+          |            the logical inconsistency in the argument for god made in argument #9, which I already pointed out. But that’s all
+          |            it does. It really only serves as a counter argument, not a foundational argument itself. It doesn’t disprove
+          |            anything, but it suffices as a dialectical response I suppose. Kinda makes you sound like a huge jerk towards
+          |            religious people with fideistic beliefs though.
+          |        </p>
+          |        #4.<br>
+          |        <ul>
+          |            <li>
+          |                A. The world is full of obviously evil stuff.
+          |            </li>
+          |            <li>
+          |                B. God is at least more powerful and more good than we are, if not omniscient, omnipotent, and omnibenevolent.
+          |            </li>
+          |            <li>
+          |                (∴) C. God wouldn’t have created evil, so she/he/they/it must not exist. Her/his/their/its existence presents a
+          |                contradiction.
+          |            </li>
+          |        </ul>
+          |        <p>&emsp;&emsp;I told you we’d get to the problem of evil. I could try to sum up this problem in words, but I wouldn’t do it
+          |            justice. I leave that to better writers, like Fyodor Dostoevsky. In his book The Brothers Karamazov the character of
+          |            Ivan Fyodorovich Karamazov, the middlest brother, has a brilliant logical mind. He’s an amazing student who demands
+          |            a rational explanation for all beliefs. He’s plagued with religious doubt and has many great monologues in the book.
+          |            Here’s a few excerpts from Rebellion, a chapter which is renowned as being one of the most well-formulated arguments
+          |            against the existence of god ever made. Warning, these passages are very graphic and deal with severe cases of
+          |            trauma and suffering.
+          |        </p>
+          |        <p>&emsp;&emsp;“Besides, there is suffering and suffering; degrading, humiliating suffering such as humbles me—hunger, for
+          |            instance—my benefactor will perhaps allow me; but when you come to higher suffering—for an idea, for instance— he
+          |            will very rarely admit that, perhaps because my face strikes him as not at all what he fancies a man should have who
+          |            suffers for an idea. And so he deprives me instantly of his favor, and not at all from badness of heart"...
+          |        </p>
+          |        <p>&emsp;&emsp;"The innocent must not suffer for another's sins, and especially such innocents! You may be surprised at me,
+          |            Alyosha, but I am awfully fond of children, too. And observe, cruel people, the violent, the rapacious, the
+          |            Karamazovs are sometimes very fond of children. Children while they are quite little—up to seven, for instance—are
+          |            so remote from grown-up people; they are different creatures, as it were, of a different species. I knew a criminal
+          |            in prison who had, in the course of his career as a burglar, murdered whole families, including several children.
+          |            But when he was in prison, he had a strange affection for them. He spent all his time at his window, watching the
+          |            children playing in the prison yard. He trained one little boy to come up to his window and made great friends with
+          |            him"...
+          |        </p>
+          |        <p>&emsp;&emsp;“By the way, a Bulgarian I met lately in Moscow,” Ivan went on...“told me about the crimes committed by Turks and
+          |            Circassians in all parts of Bulgaria through fear of a general rising of the Slavs. They burn villages, murder,
+          |            outrage women and children, they nail their prisoners by the ears to the fences, leave them so till morning, and in
+          |            the morning they hang them—all sorts of things you can't imagine. People talk sometimes of bestial cruelty, but
+          |            that's a great injustice and insult to the beasts; a beast can never be so cruel as a man, so artistically cruel.
+          |            The tiger only tears and gnaws, that's all he can do. He would never think of nailing people by the ears, even if he
+          |            were able to do it. These Turks took a pleasure in torturing children, too; cutting the unborn child from the
+          |            mother's womb, and tossing babies up in the air and catching them on the points of their bayonets before their
+          |            mothers' eyes. Doing it before the mothers' eyes was what gave zest to the amusement. Here is another scene that I
+          |            thought very interesting. Imagine a trembling mother with her baby in her arms, a circle of invading Turks around
+          |            her. They've planned a diversion: they pet the baby, laugh to make it laugh. They succeed, the baby laughs. At that
+          |            moment a Turk points a pistol four inches from the baby's face. The baby laughs with glee, holds out its little
+          |            hands to the pistol, and he pulls the trigger in the baby's face and blows out its brains. Artistic, wasn't it?"...
+          |        </p>
+          |        <p>&emsp;&emsp;“But I've still better things about children. I've collected a great, great deal about Russian children, Alyosha.
+          |            There was a little girl of five who was hated by her father and mother, ‘most worthy and respectable people, of good
+          |            education and breeding.’ You see, I must repeat again, it is a peculiar characteristic of many people, this love of
+          |            torturing children, and children only.”...
+          |        </p>
+          |        <p>&emsp;&emsp;“This poor child of five was subjected to every possible torture by those cultivated parents. They beat her,
+          |            thrashed her, kicked her for no reason till her body was one bruise. Then, they went to greater refinements of
+          |            cruelty—shut her up all night in the cold and frost in a privy, and because she didn't ask to be taken up at night
+          |            (as though a child of five sleeping its angelic, sound sleep could be trained to wake and ask), they smeared her
+          |            face and filled her mouth with excrement, and it was her mother, her mother did this. And that mother could sleep,
+          |            hearing the poor child's groans! Can you understand why a little creature, who can't even understand what's done to
+          |            her, should beat her little aching heart with her tiny fist in the dark and the cold, and weep her meek unresentful
+          |            tears to dear, kind God to protect her? Do you understand that, friend and brother, you pious and humble novice? Do
+          |            you understand why this infamy must be and is permitted? Without it, I am told, man could not have existed on earth,
+          |            for he could not have known good and evil. Why should he know that diabolical good and evil when it costs so much?
+          |            Why, the whole world of knowledge is not worth that child's prayer to ‘dear, kind God’! I say nothing of the
+          |            sufferings of grown-up people, they have eaten the apple, damn them, and the devil take them all! But these little
+          |            ones! I am making you suffer, Alyosha, you are not yourself. I'll leave off if you like.”...
+          |        </p>
+          |        <p>&emsp;&emsp;“But then there are the children, and what am I to do about them? That's a question I can't answer. For the
+          |            hundredth time I repeat, there are numbers of questions, but I've only taken the children, because in their case
+          |            what I mean is so unanswerably clear. Listen! If all must suffer to pay for the eternal harmony, what have children
+          |            to do with it, tell me, please? It's beyond all comprehension why they should suffer, and why they should pay for
+          |            the harmony”
+          |        </p>
+          |        <p>&emsp;&emsp;This is by far the most powerful and compelling argument against god to me. But it still has it’s counterarguments,
+          |            namely the theodicy that present free will as a defense of evil, which I mentioned earlier (told you we’d get to
+          |            it). It states that allowing for free will maximizes the goodness in the world, even though it allows for some
+          |            suffering. It’s so inherently good that it makes up for the evil. There’s a famous quote by the famous writer C.S.
+          |            Lewis that succinctly presents this counterargument:
+          |        </p>
+          |        <p>&emsp;&emsp;“God created things which had free will. That means creatures which can go wrong or right. Some people think they
+          |            can imagine a creature which was free but had no possibility of going wrong, but I can't. If a thing is free to be
+          |            good it's also free to be bad. And free will is what has made evil possible. Why, then, did God give them free will?
+          |            Because free will, though it makes evil possible, is also the only thing that makes possible any love or goodness or
+          |            joy worth having. A world of automata -of creatures that worked like machines- would hardly be worth creating. The
+          |            happiness which God designs for His higher creatures is the happiness of being freely, voluntarily united to Him and
+          |            to each other in an ecstasy of love and delight compared with which the most rapturous love between a man and a
+          |            woman on this earth is mere milk and water. And for that they've got to be free.”
+          |        </p>
+          |        <p>&emsp;&emsp;In response to this we again come back to David Hume, who you remember as the man that claimed that god made a lot
+          |            of mistakes and flaws in the world like cancer, or hurricanes. Those all apply here as well because the free will
+          |            defense only accounts for evil which is committed intentionally by humans. It gives no defense against natural evil,
+          |            or suffering that’s brought about seemingly directly by god, whether through disease or natural disasters or
+          |            whatever else. In the end of Rebellion Ivan proclaims that he actually does believe that god could exist, but that
+          |            worshipping him is indefensible and rejects (or rebels against) him. Here’s that excerpt:
+          |        </p>
+          |        <p>&emsp;&emsp;“I would rather remain with my unavenged suffering and unsatisfied indignation, even if I were wrong. Besides, too
+          |            high a price is asked for harmony; it's beyond our means to pay so much to enter on it. And so I hasten to give back
+          |            my entrance ticket [to heaven], and if I am an honest man I am bound to give it back as soon as possible. And that I
+          |            am doing. It's not God that I don't accept, Alyosha, only I most respectfully return Him the ticket.”
+          |        </p>
+          |        <p>&emsp;&emsp;A more pragmatic response here might be that you shouldn’t care if god is evil or not, and that it’s stupid to
+          |            remove yourself from heaven on moral principles. But that sort of misses the point of whether or not an evil god is
+          |            worth worshipping. To direct you back at the C.S. Lewis quote, the sentence “Because free will, though it makes evil
+          |            possible, is also the only thing that makes possible any love or goodness or joy worth having.” still stands as
+          |            legitimate grounds for defense of god’s goodness. Perhaps goodness can’t exist without evil? And goodness is so,
+          |            well, good that it’s worth the cost of evil? But this only explains why evil exists, and gives no credence to
+          |            quantity. Surely only a small amount of evil is needed to show us what good is, so why doesn’t god stick to that
+          |            bare minimum? All those children suffering that Ivan mentioned in Rebellion really feels like overkill. They don’t
+          |            add much valuable than some other less severe negative contrast. And even if they did, it’d be difficult to show
+          |            goodness that’s proportionate with some of the evils presented. The truth is I’ve never found a theodicy that’s
+          |            satisfying to me, and I don’t think one exists. In my mind, god simply can’t be omni-benevolent. But we already went
+          |            through why the omni- attributes are wrong, and we already conceded that we have to give them up. The big problem
+          |            with giving up omnibenevolence though, like Ivan proclaimed, is that it makes god not worthy of our worship.
+          |        </p>
+          |        <h3>
+          |            The Nature and Perception of God
+          |        </h3>
+          |        <p>&emsp;&emsp;Okay so we’ve debunked the classic definition of god, we’ve gone through arguments for a modified perception of god,
+          |            one that removes omni- attributes, and arguments against that slightly modified perception of god. In my view, the
+          |            arguments against the existence of god have won out. They may not be 100% provable, but they’re more convincing and
+          |            easily defensible than the arguments for the existence of god. So the question becomes “what now?”. Do we alter our
+          |            definition of god even further until we’re satisfied, or do we give up on the premise altogether? In the past this
+          |            is as far as I’ve always gotten. I’ve given up at this point and concluded that god probably doesn’t exist and
+          |            called that the end of it. But I’m curious. I want to see what happens when we try to make god fit into a defensible
+          |            position.
+          |        </p>
+          |        <p>&emsp;&emsp;Let’s begin by stating the obvious, many of the omni- attributes need to be completely forgotten about. God is not
+          |            omniscient, god is not omnipotent, and god is not omnibenevolent. Period. I’ve yet to see a true counterargument to
+          |            omnipresence and omnitemporality, so those attributes can stay in. What does our omnipresent and omnitemporal god
+          |            look like then?
+          |        </p>
+          |        <p>&emsp;&emsp;Enter Baruch (or Benedictus) Spinoza. In 1665, he finished writing his magnum opus, a philosophical treatise that
+          |            presented a proof of the existence of god in geometrical order simply called Ethics. Before writing, Spinoza seems
+          |            to have followed a similar train of thought that I have, because it’s already assumed that we must give up
+          |            omniscience, omnipotence, and omnibenevolence at that start. In fact, Spinoza goes even farther and gives up god’s
+          |            consciousness entirely. To sum it up succinctly, his mathematics-style proof claims that A) God is infinite,
+          |            necessary, and without cause, B) God is the only necessary substance, so all others result from God, C) God has
+          |            infinite modes, which induce the laws of physics and the natural world, including active and passive modes, D)
+          |            Nature is an indivisible whole, outside of it there is nothing, and E) God is not anthropomorphic.
+          |            John Toland, an Irish philosopher that shared many religious beliefs with Spinoza, was the first to coin the term
+          |            “pantheist”. He also used the term “Spinozist” interchangeably with “pantheist”. Throughout history there have been
+          |            many notable pantheists, all of whom were directly influenced by Spinoza’s works. They include Hegel, Beethoven,
+          |            Henry David Thoreau, Walt Whitman, Leo Tolstoy, Nikola Tesla, Claude Debussy, Carl Jung, and Albert Einstein.
+          |        </p>
+          |        <p>&emsp;&emsp;After reading through Spinoza’s Ethics multiple times, and spending an inordinate amount of time thinking about it,
+          |            I’ve come to the conclusion that, while there are problems with Spinoza’s “proof”, it’s the most likely solution to
+          |            the problem of what exactly natural world is. It’s simultaneously consistent with modern empiricist science, most
+          |            reasonable western religions, and even more eastern religions. I plan on reading the Tao Te Ching in the near future
+          |            to get an eastern perspective on pantheism. It’s something that’s compatible with theism, spirituality, and
+          |            religion, but it’s also compatible with atheism and non-belief. Truly it encompasses everything (hence pan-) and
+          |            presents the only logical choice in my mind. So for now I’ll move forward as a pantheist with the Ethics as my
+          |            bible, and a deeper understanding of and connection to nature as a means of finally achieving peace with my own
+          |            spirituality. I now leave you with this quote.
+          |        </p>
+          |        <p>&emsp;&emsp;“A human being is a part of the whole called by us universe, a part limited in time and space. He experiences
+          |            himself, his thoughts and feelings as something separated from the rest, a kind of optical delusion of his
+          |            consciousness. This delusion is a kind of prison for us, restricting us to our personal desires and to affection for
+          |            a few persons nearest to us. Our task must be to free ourselves from this prison by widening our circle of
+          |            compassion to embrace all living creatures and the whole of nature in its beauty.” - Albert Einstein
+          |        </p>
+          |        <h3>
+          |            Sources
+          |        </h3>
+          |        <p>&emsp;&emsp;Coming soon I swear, it's 2:30 A.M. cut me some slack.
+          |        </p>
+          |    </body>
+          |</html>
+          |""".stripMargin.replaceAll(" +", "")
+    }
   }
 }
