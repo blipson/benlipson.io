@@ -41,4 +41,8 @@ class BlogController @Inject()(cc: ControllerComponents) extends AbstractControl
   def rendererTgaImages(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.rendererTgaImages())
   }
+
+  def rendererDrawingLines(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.rendererDrawingLines())
+  }
 }

@@ -9,13 +9,13 @@
         <title>Lipson</title>
     </head>
 <body>
-<h1 class="centered">
+<h1>
     Building a 3D Renderer From Scratch
 </h1>
-<h2 class="centered">
+<h2>
     Part 1: TGA Images
 </h2>
-<h3 class="centered">
+<h3>
     Intro
 </h3>
 <p>
@@ -50,7 +50,7 @@
     because of its simplistic structure, so I'll be focusing on that format throughout this blog. Also because Sokolov's tutorial tells me to. I don't know who he is but I already
     trust this fantastic eastern European man with my life.
 </p>
-<h3 class="centered">
+<h3>
     The Specification of the TGA Format
 </h3>
 <p>
@@ -97,7 +97,7 @@
 <p>
     &emsp;&emsp;Basically it's just an array of pixels, each of which has a red value, a green value, a blue value, and an alpha value. That's all there is to it! Now let's dive into some coding!
 </p>
-<h3 class="centered">Creating a Simple Class for TGA Interaction</h3>
+<h3>Creating a Simple Class for TGA Interaction</h3>
 <p>
     &emsp;&emsp;All the code for this project will be C++, by the way. Anyway let's start by defining a header for a class to deal with TGA images.
 </p>
@@ -581,7 +581,7 @@ int main(int argc, char** argv) {
     return 0;
 }
 </code></pre>
-<img src="/static/firstrenderedimage.png" height="600" width="800" alt="Placeholder image">
+<img src="/images/firstrenderedimage.png" height="600" width="800" alt="Placeholder image">
 <p>&emsp;&emsp;Tada! We did it! We made a rendered image! Look at that red rectangle. Isn't it glorious? Next time we'll be discussing defining geometry and drawing lines.</p>
 <p>&emsp;&emsp;Code for this blog post can be found <a href="https://github.com/blipson/simplerenderer/tree/tga-files">here</a>.</p>
 <p>&emsp;&emsp;Click <a href="/blog/renderer/drawinglines">here</a> to go to part 2.</p>

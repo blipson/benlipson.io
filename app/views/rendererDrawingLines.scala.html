@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="#" />
+        <title>Lipson</title>
+    </head>
+<body>
+<h1>
+    Building a 3D Renderer From Scratch
+</h1>
+<h2>
+    Part 2: Drawing Lines
+</h2>
+<h3>
+    Intro
+</h3>
+<p>
+    &emsp;&emsp;After completing <a href="/blog/renderer/tgaimages">part 1</a> of this series of blog posts, you should be able to
+    define the color for each pixel within a TGA image and then output that image from your program. So what's next? Well, as per my
+    <a href="/blog/graphicsnotes">graphics programming notes</a> that I like to keep online, all that renderers really do is draw points,
+    draw lines, and fill in triangles between those lines. We can do the first part, each pixel is a point that we can "draw" by changing
+    the color of that point. So it follows that next we'd want to be able to string those points together as lines.
+</p>
+<p>
+    &emsp;&emsp;Last time I stated that it's useful to think about programs like renderers in terms of inputs and outputs. We focused on
+    the output, TGA images, but what about the input? A renderer must take in some specification of geometry before deciding how to color
+    the pixels on the screen. This usually comes in the form of a subset of "assets" (static files used as input to a program). Specifically
+    for our purposes, as 3D object files. They can come in the form of STL, OBJ, FBX, COLLADA, 3DS, etc... files. After we go through drawing
+    lines we'll discuss how we can interact with these geometry defintion file formats in our C++ program, specifically we'll be using OBJ files
+    because they use one of the simplest and most ubiquitous formats.
+</p>
+<h3>
+    The Linear Equation
+</h3>
+<p>
+    &emsp;&emsp;If you had the distinct privilege of going to middle school and attending math class you may remember learning how to graph
+    linear equations. If not, you can find a nice overview <a href="https://www.mathsisfun.com/algebra/linear-equations.html">here</a>. Basically
+    the most common way to write an equation of a line looks like this:
+</p>
+<p>
+    <img src="/static/linearequation.svg"  alt=""/>
+</p>
+<p>
+    &emsp;&emsp;Where x and y represent any given point along the line, m represents the slope of the line (or how steep the line is), and y<sub>0</sub>
+    represents the value of y when x = 0 (otherwise referred to as the y-intercept because that's the point at which the line intercepts the
+    y axis on a graph). Here are a few good examples of lines with their equations that I lifted from Wikipedia:
+</p>
+<p>
+    <img src="/static/linearfunctiongraph.png" width="250"  alt=""/>
+</p>
+<p>
+    &emsp;&emsp;So how do we represent this as C++ code? Well you notice that lines are a lot like how walking my dog feels in Winter in that they go on
+    forever. The two in the picture from Wikipedia go off the screen and onwards to infinity in both directions. Obviously our computer won't be
+    able to accurately represent that, so we need a starting and an ending point. Graphing calculators and other such devices typically just use
+    the boundaries of the screen as start and end points, but since we've already written a program to define points in space we can just have
+    those be user inputs. So the specification for our function would look like this:
+</p>
+<pre><code>
+void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
+</code></pre>
+<p>
+    &emsp;&emsp;Once we have the start point and the end point specified, we can then determine how far the line has risen or fallen (or change in
+    overall Y position (dy)), and how far the line has run (or change in overall X position (dx)). Once we know dy and dx, it's a simple ratio of
+    dy/dx to determine the slope. We could use a ratio of run/rise (or dx/dy) if we wanted, but algebra is typically structured around rise/run (dy/dx)
+    because it represents the number more nicely to our human brains. With rise/run, when the curve gets steeper, the number gets bigger instead of
+    smaller, which seems to make more intuitive sense to most people. Anyway let's represent our slope calculation in code.
+</p>
+<pre><code>
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    float m = (float) dy / (float) dx;
+</code></pre>
+<p>
+    &emsp;&emsp;(Note: we're using (float) typecasting because we need the precision floating point numbers provide. If a line has a slope of 3/4 we
+    need that to be equal to 0.75, not 1). Now we only need to calculate one more value, the value of the y-intercept, before we've fully solved the
+    line equation between our two user-inputted points. Since we have all the other values, we can rearrange the y = mx + y<sub>0</sub> to calculate
+    the y<sub>0</sub> like this (our code will use the variable "b" to represent y<sub>0</sub> because C++ doesn't allow for subscript in variable
+    names):
+</p>
+<pre><code>
+    y = (m * x) + b
+    y - b = (m * x) // subtract b from both sides
+    -b = (m * x) - y // subtract y from both sides
+    -b = -y + (m * x) // flip right side around
+    b = y - (m * x) // negate both sides
+</code></pre>
+<p>
+    &emsp;&emsp;Now we can calculate any value within the equation! This means that we can draw our full line. All we have to do is start at our
+    starting point and iterate through the X coordinate until we've reached our ending point, calculating Y as we go. We could do it the other way,
+    iterating through Y and calculating X, but this way seemed simpler to me.
+</p>
+<pre><code>
+    for (int x = x0; x <= x1; x++)
+    {
+        int y = (m * x) + b;
+        image.set(x, y, color);
+    }
+</code></pre>
+<p>
+    &emsp;&emsp;Finally, we can call our line function and we'll have our first line! This example goes from (13, 20) to (80, 40).
+</p>
+<pre><code>
+    line(13, 20, 80, 40, image, white);
+</code></pre>
+<p>
+    <img src="/static/firstline.png" width="250"  alt=""/>
+</p>
+<p>
+    &emsp;&emsp;Neat! But there are still some problems with this code. See if you can sort out a few of them yourself before reading on! Ready?
+    Cool, me too. Firstly, the choice of constant for our iterator matters greatly. If we change <code>for (int x = x0; x <= x1; x++)</code> to be
+    <code>for (int x = x0; x <= x1; x += 10)</code> for example, changing the constant from 1 to 10, we get:
+</p>
+<p>
+    <img src="/static/sadline.png" width="250"  alt=""/>
+</p>
+<p>
+    &emsp;&emsp;That's a pretty sad line. The larger our constant is the less precise our line will be, which can lead to some efficiency problems
+    down the line (pun intended) that we'll discuss later. Another problem is that this code only allows for lines from bottom left to top right. Imagine if we'd
+    called it with the arguments in reverse order like <code>line(80, 40, 13, 20, image, white);</code>. Our for loop would never trigger and we'd
+    just end up with a blank image. A lot of graphics frameworks actually require that you define your lines from bottom left to top right, and
+    don't work with input defined the other way around. As such almost all 3D object assets come with lines defined this way, so this bug isn't
+    actually a huge deal. We can still remedy this though by always getting the minimum x and looping to the maximum x.
+</p>
+<pre><code>
+    int minX = std::min(x0, x1);
+    int maxX = std::max(x0, x1);
+    for (int x = minX; x <= maxX; x++)
+    {
+        int y = (m * x) + b;
+        image.set(x, y, color);
+    }
+</code></pre>
+<p>
+    &emsp;&emsp;In the same vein, what about straight up and down lines where the x values for both points are equal? Right now those types of lines
+    wouldn't trigger our for loop either, so we have to handle that case. What we can do is switch which axis we're iterating over to the Y axis,
+    since the X axis necessarily has nothing to iterate over if both X coordinates are equal. As far as calculating the X coordinate for each point,
+    we can rearrange our y = mx + y<sub>0</sub> formula from earlier to be x = (y - y<sub>0</sub>) / m. You also might notice after drawing a few different lines that steep lines tend
+    to look a lot worse than non-steep ones. When the height of the line is greater than its width, we'll also want to iterate over the Y axis to make sure we're filling in every point.
+    After fixing those few bugs, here we have our (relatively) bug-free (albeit very inefficient), rudimentary line-drawing algorithm:
+</p>
+<pre><code>
+void line(int x0, int y0, int x1, int y1, TgaImage &image, const TgaColor &color)
+{
+    int dx = x1 - x0;
+    int dy = y1 - y0;
+    float m = (float) dy / (float) dx;
+    float b = y1 - (m * x1);
+
+    int minX = std::min(x0, x1);
+    int maxX = std::max(x0, x1);
+
+    if (minX == maxX || std::abs(dx) < std::abs(dy))
+    {
+        int minY = std::min(y0, y1);
+        int maxY = std::max(y0, y1);
+        for (int y = minY; y <= maxY; y++)
+        {
+            int x = (y - b) / m;
+            image.set(x, y, color);
+        }
+    }
+    else
+    {
+        for (int x = minX; x <= maxX; x++)
+        {
+            int y = (m * x) + b;
+            image.set(x, y, color);
+        }
+    }
+}
+</code></pre>
+<h3>
+    Using Lines to Draw Objects
+</h3>
+<h3>
+    The Specification of the OBJ format
+</h3>
+<p>
+    &emsp;&emsp;Once we've got lines, we can string those lines together to make shapes. It's all coming together now! I mentioned in the intro that we'd
+    discuss the specification of geometry used as input to our program. The time has come! OBJ (object) files are created by Wavefront's Advanced Visualizer
+    (more info <a href="https://en.wikipedia.org/wiki/The_Advanced_Visualizer">here</a>) and are the uncompressed, raw version of the geometry specification.
+    They're highly extensible, very powerful, and can encompass definitions for a lot of advanced graphics stuff. For our purposes we're going to focus on a
+    narrow subset of simple specifications to just get the bare necessities of our program off the ground. If you're interested in doing a deep dive into everything
+    OBJ files support you can explore my internet best friend Paul Bourke's <a href="http://paulbourke.net/dataformats/obj/">website</a>.
+</p>
+<p>
+    &emsp;&emsp;The bare minimum of this format is overall very simple. It consists of 3 main sets of information. It has geometric vertices, texture vertices, and vertex normals represented through these formats:
+</p>
+<pre><code>
+    typedef struct
+    {
+        char type = "v";
+        float x, y, z;
+    } GEOMETRIC_VERTEX;
+
+    typedef struct
+    {
+        char type = "vt";
+        float x, y, z;
+    } TEXTURE_VERTEX;
+
+    typedef struct
+    {
+        char type = "vn";
+        float x, y, z;
+    } VERTEX_NORMAL;
+</code></pre>
+<p>
+    &emsp;&emsp;This portion of the file itself looks like this:
+</p>
+<pre><code>
+v -0.000581696 -0.734665 -0.623267
+v 0.000283538 -1 0.286843
+v -0.117277 -0.973564 0.306907
+v -0.382144 -0.890788 0.221243
+v -0.247144 -0.942602 0.276051
+v -0.656078 -0.718512 -0.109025
+v -0.609847 -0.786562 0.0198068
+... etc ...
+
+vt  0.532 0.923 0.000
+vt  0.535 0.917 0.000
+vt  0.542 0.923 0.000
+vt  0.541 0.929 0.000
+vt  0.521 0.984 0.000
+vt  0.521 0.996 0.000
+vt  0.505 0.998 0.000
+vt  0.500 0.985 0.000
+... etc ...
+
+vn  0.001 0.482 -0.876
+vn  -0.001 0.661 0.751
+vn  0.136 0.595 0.792
+vn  -0.203 0.679 0.706
+vn  -0.092 0.474 0.876
+vn  -0.184 0.792 0.581
+vn  -0.098 0.863 0.495
+vn  -0.449 0.820 0.356
+... etc ...
+</code></pre>
+<p>
+    &emsp;&emsp;Geometric vertices are exactly what they sound like. They represent a given point in 3D space. Texture vertices define where to place the texture over a set of vertices, and therefore correspond 1-to-1
+    with geometric vertices. These are a little bit tricky to grasp at first, but we don't need to worry about them since we aren't using textures at all in this part of the tutorial (stay tuned for that!). Vertex
+    normals represent a euclidean directional vector associated with a vertex. If you don't know what a vector is, you can simply think of it as a line with a direction. The line can only travel in that direction, and
+    isn't allowed to go the other way. We'll talk more about them later.  This helps us know in which order to draw the lines given to us (and allows for the side-stepping of that bottom-left to top-right bug we fixed earlier). Finally, there's a
+    fourth section within the OBJ file format that groups the first three all together into a single data structure called a "face". Faces must be triangles and as such must group 3 and only 3 points from each
+    of our other 3 data structures. The definition for a face looks like this:
+</p>
+<pre><code>
+    typedef struct
+    {
+        typedef struct
+        {
+            GEOMETRIC_VERTEX geometricVertex;
+            TEXTURE_VERTEX textureVertex;
+            VERTEX_NORMAL vertexNormal;
+        } FACE_POINT;
+
+        char type = "f";
+        float* vertex1 = new FACE_POINT[3];
+        float* vertex2 = new FACE_POINT[3];
+        float* vertex3 = new FACE_POINT[3];
+    } FACE;
+</code></pre>
+<p>
+    &emsp;&emsp;And the file itself for the faces section looks like:
+</p>
+<pre><code>
+f 24/1/24 25/2/25 26/3/26
+f 24/1/24 26/3/26 23/4/23
+f 28/5/28 29/6/29 30/7/30
+f 28/5/28 30/7/30 27/8/27
+f 32/9/32 33/10/33 34/11/34
+f 32/9/32 34/11/34 31/12/31
+f 36/13/36 31/12/31 34/11/34
+f 36/13/36 34/11/34 35/14/35
+... etc ...
+</code></pre>
+<h3>
+    Creating a class for OBJ Interaction
+</h3>
+<p>
+    &emsp;&emsp;Just like in the last part we'll start by defining a header for our class.
+</p>
+<pre><code>
+    class Model
+    {
+      private:
+        std::vector&lt;Vec3f&gt; verts;
+        std::vector&lt;std::vector&lt;int&gt;&gt; faces;
+
+      public:
+        Model(const char* filename);
+
+        ~Model();
+
+        int nVerts();
+
+        int nFaces();
+
+        Vec3f vert(int i);
+
+        std::vector&lt;int&gt; face(int i);
+    };
+</code></pre>
+<p>
+    &emsp;&emsp;Okay so a few a things about this code. In the private section we've got two fields <code>verts</code> and <code>faces</code> to represent the list of vertices (including geometric, textured, and normalized) and the list
+    of faces respectively. In the public section we have our constructor which will take in a file name as input and create our Model from that, a destructor which will deallocate memory appropriately, and
+    some getters. <code>nVerts()</code> gives the total number of all vertices, <code>nFaces()</code> gives the total number of all faces, <code>vert(int i)</code> will give you a vertex at a particular position, and
+    <code>face(int i)</code> will give you a face at a particular position. Now you may have noticed two completely new data classes that we haven't discussed before: <code>std::vector</code> and <code>Vec3f</code>.
+    <code>std::vector</code> is from the standard library of C++. If you remember our definition of a euclidean vector from earlier then you'll know that it's a line with a direction. Well a vector can also be
+    represented as a list of points. In fact, you can do the same thing with just a list of ordered numbers and it's still referred to as a vector. In set theory terms it's defined as a member of the set S<sup>n</sup>
+    which is an ordered sequence of values in a specific set. Even though they're often two or three dimensional, in pure mathematics a vector is just any list of ordered numbers. That's what's meant by C++'s vector
+    class. Essentially it's a dynamic array that allows you to add or remove elements at will. <code>Vec3f</code> on the other hand is a data structure that I defined. Let's look at that definition:
+</p>
+<pre><code>
+template&lt;class t&gt;
+struct vec3
+{
+    union
+    {
+        struct
+        {
+            t x, y, z;
+        };
+        struct
+        {
+            t iVert, iuv, iNorm;
+        };
+        t raw[3];
+    };
+
+    vec3() : x(0), y(0), z(0)
+    {
+    }
+
+    vec3(t x, t y, t z) : x(x), y(y), z(z)
+    {
+    }
+
+    inline vec3&lt;t&gt; operator^(const vec3&lt;t&gt; &v) const
+    {
+        return vec3&lt;t&gt;(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+    }
+
+    inline vec3&lt;t&gt; operator+(const vec3&lt;t&gt; &v) const
+    {
+        return vec3&lt;t&gt;(x + v.x, y + v.y, z + v.z);
+    }
+
+    inline vec3&lt;t&gt; operator-(const vec3&lt;t&gt; &v) const
+    {
+        return vec3&lt;t&gt;(x - v.x, y - v.y, z - v.z);
+    }
+
+    inline vec3&lt;t&gt; operator*(float f) const
+    {
+        return vec3&lt;t&gt;(x * f, y * f, z * f);
+    }
+
+    inline t operator*(const vec3&lt;t&gt; &v) const
+    {
+        return x * v.x + y * v.y + z * v.z;
+    }
+
+    float norm() const
+    {
+        return std::sqrt(x * x + y * y + z * z);
+    }
+
+    vec3&lt;t&gt; &normalize(t l = 1)
+    {
+        *this = (*this) * (l / norm());
+        return *this;
+    }
+
+    template&lt;class&gt;
+    friend std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v);
+};
+
+typedef vec3&lt;float&gt; Vec3f;
+typedef vec3&lt;int&gt; Vec3i;
+
+template&lt;class t&gt;
+std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v)
+{
+    s &lt;&lt; "(" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; ")\n";
+    return s;
+}
+</code></pre>
+<p>
+    &emsp;&emsp;So that's a good little bit of code, and I'm not going to go over it in detail because it's tangential to the topic at hand. All I'll say is that "template&lt;class t&gt;" defines the structure as a
+    generic template class that can take its own type as an input, that way we can use the same code for vectors with integers or with floating point numbers (as referenced in the type aliases near the bottom), and
+    that this struct is basically just defining a bunch of <a href="https://mathinsight.org/vector_introduction">vector math</a>. Vector math is really easy once you get the hang of it, so I suggest you do a bit of
+    research on your own if you aren't comfortable with it already. After going through this code you might be thinking, "But I thought vectors had to have a direction associated with them? Doesn't that mean you
+    need multiple points? This vec3 struct only stores the x y and z coordinates of one point." Right you are, imaginary reader! When a vector is defined as one point it can be assumed that the direction is moving
+    away from the origin (0, 0). It's a simple shortcut mathematicians do in order to define points in euclidean space, but still have access to all the nice vector operations that're important for more complex
+    algebraic operations. For now you can just think of them as "points in space" if you want (though that's not 100% accurate).
+</p>
+<p>
+    &emsp;&emsp;Hopfeully now the header file for our Model class makes sense to you. We've just got an "ordered list" (vector) of "points in space" (vec3f) as our set of vertices, and an ordered list of
+    ordered lists of integers for our faces. Let's get to the implementation of this header before you die of boredom/confusion from my terrible teaching skills as they relate to mathematics.
+</p>
+<pre><code>
+int Model::nVerts()
+{
+    return (int) verts.size();
+}
+
+int Model::nFaces()
+{
+    return (int) faces.size();
+}
+
+std::vector&lt;int&gt; Model::face(int i)
+{
+    return faces[i];
+}
+
+Vec3f Model::vert(int i)
+{
+    return verts[i];
+}
+</code></pre>
+<p>
+    &emsp;&emsp;Look at how simple that implementation is! That's the power of using vectors! You'll notice I left out the constructor and destructor. That's because I wanted to show you those in isolation. Let's
+    look at that now! Be sure to read the comments for an overview of what's happening.
+</p>
+<pre><code>
+Model::Model(const char* filename) : verts(), faces()
+{
+    // open the file and read the lines
+    std::ifstream in;
+    in.open(filename, std::ifstream::in);
+    if (in.fail())
+    {
+        return;
+    }
+    std::string line;
+    while (!in.eof())
+    {
+        std::getline(in, line);
+        std::istringstream iss(line);
+        char trash;
+        // check if it's a vertex (v, vt, or vn), or a face (f)
+        if (!line.compare(0, 2, "v "))
+        {
+            iss &gt;&gt; trash;
+            Vec3f v;
+            for (float &i : v.raw)
+            {
+                iss &gt;&gt; i;
+            }
+            verts.push_back(v); // if it's a vertex then read in the raw geomtry data and add it to our vertex list
+        }
+        else if (!line.compare(0, 2, "f "))
+        {
+            std::vector&lt;int&gt; f;
+            int itrash, idx;
+            iss &gt;&gt; trash;
+            while (iss &gt;&gt; idx &gt;&gt; trash &gt;&gt; itrash &gt;&gt; trash &gt;&gt; itrash)
+            {
+                idx--; // in wavefront obj all indices start at 1, not zero
+                f.push_back(idx);
+            }
+            faces.push_back(f); // if it's a face then read in the raw face data, ignoring the slashes between values, and add it to our faces list
+        }
+    }
+    std::cerr &lt;&lt; "# v# " &lt;&lt; verts.size() &lt;&lt; " f# " &lt;&lt; faces.size() &lt;&lt; std::endl;
+}
+
+Model::~Model()
+= default;
+</code></pre>
+<p>
+    &emsp;&emsp;Bada bing bada boom that's all we need to read in OBJ files! Now we can create a 3D object in memory within our program using something like <code>auto* model = new Model("head.obj");</code>.
+    All that's left then is to loop through all the faces in our object, then loop through all the vertices contained within that face, and draw them one-by-one by hooking into the line function we made earlier.
+    They're grouped in loops of length three because, as stated earlier, each face must be a triangle, meaning the three points of the face have to connect to one another.
+</p>
+<pre><code>
+int main(int argc, char** argv)
+{
+    auto* model = new Model("head.obj");
+    const int width = 800;
+    const int height = 800;
+
+    TgaImage image(width, height, TgaImage::RGB);
+    for (int i = 0; i < model->nFaces(); i++)
+    {
+        std::vector&lt;int&gt; face = model->face(i);
+        for (int j = 0; j < 3; j++)
+        {
+            Vec3f v0 = model->vert(face[j]);
+            // use the modulo to go back to 0 and connect the triangle when on the last two vertices of the face
+            Vec3f v1 = model->vert(face[(j + 1) % 3]);
+            // scale the model appropriately to the correct size
+            int x0 = (v0.x + 1) * width / 2;
+            int y0 = (v0.y + 1) * height / 2;
+            int x1 = (v1.x + 1) * width / 2;
+            int y1 = (v1.y + 1) * height / 2;
+            line(x0, y0, x1, y1, image, white); // draw a line for each pair of vertices in this triangle
+        }
+    }
+
+    image.flipVertically(); // i want to have the origin at the left bottom corner of the image
+    image.writeTgaFile("output.tga");
+    delete model;
+    return 0;
+}
+</code></pre>
+<p>
+    &emsp;&emsp;If we do that with an actual OBJ file (the test one I'm using can be found <a href="https://github.com/blipson/simplerenderer/blob/drawing-lines/head.obj">here</a>,
+    then the program should fairly accurately draw the wireframe for the triangles that make up the geometry of that 3D object! Here's the final output:
+</p>
+<p>
+    <img src="/images/head.png" width="500" alt="" />
+</p>
+<p>
+    &emsp;&emsp;Look at it! It's beautiful! I hope you learned something about lines and stuff throughout this post. Next time we'll be spicing up our line drawing function by looking at different algorithms
+    developed by people way smarter than me! Stay tuned
+</p>
+<p>
+    &emsp;&emsp;As always, code for this post is available on <a href="https://github.com/blipson/simplerenderer/tree/drawing-lines">my Github account</a>.
+</p>
+</body>
+</html>

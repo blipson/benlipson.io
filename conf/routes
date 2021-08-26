@@ -15,6 +15,7 @@ GET     /blog/functionalenlightenment   controllers.BlogController.functionalEnl
 GET     /blog/ongod                     controllers.BlogController.onGod()
 GET     /blog/graphicsnotes             controllers.BlogController.graphicsNotes()
 GET     /blog/renderer/tgaimages        controllers.BlogController.rendererTgaImages()
+GET     /blog/renderer/drawingLines        controllers.BlogController.rendererTgaImages()
 
 
 # Projects page
