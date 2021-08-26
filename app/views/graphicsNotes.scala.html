@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="#" />
+        <title>Lipson</title>
+    </head>
+    <body>
+        <h1>
+            Graphics Notes
+        </h1>
+        <ul>
+            <li>Graphics APIs like OpenGL and webGL are designed to draw points, lines and triangles. That’s it.</li>
+            <li>Graphics APIs like OpenGL and webGL use a series of shaders to do this, mainly a vertex shader and a fragment shader.</li>
+            <li>One series of shaders is called a “program”.</li>
+            <li>Shaders are written in a language called GLSL.</li>
+            <li>Vertex shaders compute vertex positions, fragment shaders compute colors for each pixel.</li>
+            <li>Buffers are arrays of binary data uploaded to the GPU through a shader.</li>
+            <li>Attributes are used to specify how to pull data out of your buffers and provide them to the shader.</li>
+            <li>Vertex array objects (VAOs) are used to hold the state of attributes.</li>
+            <li>Uniforms are global variables you set before executing your shader program.</li>
+            <li>Textures are arrays of data you can randomly access in your shader program.</li>
+            <li>Varyings are a way for a vertex shader to pass data onwards to a fragment shader.</li>
+            <li>Fragment shader output is defined with “out”.</li>
+            <li>To pass data into the vertex shader you must find the attribute location for a variable in GLSL, then create a buffer, then bind the buffer, then do the same for a vertex array.</li>
+            <li>Different primitives are used for drawing, but the most common is gl.TRIANGLES.</li>
+            <li>“Clip space” is what GLSL understands coordinates to be. It’s always on a plane of -1 to 1 for both x and y axis regardless of height and width. To pass in “normal” vertices you have to convert them to clip space.</li>
+            <li>Translation, rotation, and scale are types of “transformations”. Order matters for them.</li>
+            <li>Translation is for moving things. Simply add it to the position: a_position + u_translation</li>
+            <li>Rotation is for rotating things alone a given axis.
+                <ul>
+                    <li>Create a new rotated position: rotatedPosition = vec2(a_position.x * u_rotation.y + a_position.y * u_rotation.x, a_position.y * u_rotation.y - a_position.x * u_rotation.x)</li>
+                    <li>Basically you multiply the X coordinate by the Y position on the unit circle, and the Y coordinate by the X position on the unit circle and add them together for the final X.</li>
+                    <li>Multiply the Y by Y on the circle and subtract x times the x on the circle for the final Y.</li>
+                    <li>The points on the unit circle can be looked up using sine and cosine of an angle.</li>
+                </ul>
+        <li>Scale is for making things bigger or smaller. Simply multiply it to the position: a_position * u_scale. Negative values flip the geometry.</li>
+            <li>You can run any transformation with matrix math.
+                <ul>
+                    <li>
+                Left column transforms X, next transforms Y, next transforms Z. (Sometimes it goes top to bottom depending on the API).
+                    </li>
+                    <li>Identity matrix is the equivalent of “1” it multiplies all rows by 1 in a matrix
+                        <ul>
+                            <li>
+                        [<br>
+                                1, 0, 0, 0<br>
+                                0, 1, 0, 0<br>
+                                0, 0, 1, 0<br>
+                                0, 0, 0, 1
+                                <br>]
+                    </li>
+                        </ul>
+                    </li>
+                    <li>Scaling matrix multiples each row by the scale you want.
+                        <ul>
+                            <li>
+                        [<br>
+                                s1, 0, 0, 0<br>
+                                0, s2, 0, 0<br>
+                                0, 0, s3, 0<br>
+                                0, 0, 0, 1
+                                <br>]
+                    </li>
+                        </ul>
+                    </li>
+                    <li>Translation matrix puts values in the last unused column, it’s also used to move the origin of what you’re rotating.
+                        <ul>
+                            <li>
+                        [<br>
+                                1, 0, 0, 0<br>
+                                0, 1, 0, 0<br>
+                                0, 0, 1, 0<br>
+                                t1, t2, t3, 1
+                                <br>]
+                    </li>
+                        </ul>
+                    </li>
+                    <li>Rotation has different matrices for the three different axes.
+                        <ul>
+                            <li>
+                        X, rotate the other two Y and Z axes (c = cos(angle), s = sin(angle)):
+                            </li>
+                            <li>
+                        [<br>
+                                1, 0, 0, 0<br>
+                                0, c, s, 0<br>
+                                0, -s, c, 0<br>
+                                0, 0, 0, 1
+                                <br>]
+                    </li>
+                            <li>
+                        Y, rotate X and Z:
+                            </li>
+                            <li>
+                        [<br>
+                                c, 0, -s, 0<br>
+                                0, 1, 0, 0<br>
+                                s, 0, c, 0<br>
+                                0, 0, 0, 1
+                                <br>]
+                    </li>
+                            <li>
+                        Z, rotate X and Y:
+                            </li>
+                            <li>
+                        [<br>
+                                c, -s, 0, 0<br>
+                                -s, c, 0, 0<br>
+                                0, 0, 1, 0<br>
+                                0, 0, 0, 1
+                                <br>]
+                    </li>
+                        </ul>
+                    </li>
+                </ul>
+            </li>
+            <li>Matrices can be multiplied together, allowing us to do all transformations at once in whatever order we want.</li>
+            <li>Typical order is translation -> rotation -> scale.</li>
+            <li>A “projection” matrix can be made to go from clip space to pixels and back. Involves 3 scale matrices and a translation matrix.</li></ul>
+    </body>
+</html>

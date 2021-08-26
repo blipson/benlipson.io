@@ -33,4 +33,8 @@ class BlogController @Inject()(cc: ControllerComponents) extends AbstractControl
   def onGod(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.onGod())
   }
+
+  def graphicsNotes(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.graphicsNotes())
+  }
 }

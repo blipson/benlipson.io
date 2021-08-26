@@ -13,6 +13,7 @@ GET     /blog/graphicshistory           controllers.BlogController.graphicsHisto
 GET     /blog/onsports                  controllers.BlogController.onSports()
 GET     /blog/functionalenlightenment   controllers.BlogController.functionalEnlightenment()
 GET     /blog/ongod                     controllers.BlogController.onGod()
+GET     /blog/graphicsnotes             controllers.BlogController.graphicsNotes()
 
 
 # Projects page
