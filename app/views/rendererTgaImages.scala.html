@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="shortcut icon" href="#" />
+        <title>Lipson</title>
+    </head>
+<body>
+<h1 class="centered">
+    Building a 3D Renderer From Scratch
+</h1>
+<h2 class="centered">
+    Part 1: TGA Images
+</h2>
+<h3 class="centered">
+    Intro
+</h3>
+<p>
+    &emsp;&emsp;The renderer is the foundation upon which graphics programming is built. It follows then that in order to understand graphics programming on a fundamental level one must have at least a cursory understanding
+    of rendering and the rendering pipeline. The greater your understanding of the central concepts of rendering, the easier time you'll have with graphics programming in general. The rendering pipeline (which I
+    talk about at a high level in detail in my graphics programming history blog post <a href="/blog/graphicshistory">here</a>), refers to the steps or instructions that must be executed by a graphics program in
+    order to convert a scene defined in 3D euclidean space to a 2D screen made of pixels. Every single graphics program, from those run in video games and movies to those used in computer aided design, performs
+    rendering in order to display the scene to the user.
+</p>
+<p>
+    &emsp;&emsp;So where do we begin? How do we start to understand rendering? By building something ourselves of course! Normally the rendering phase of a graphics program is done for you by whatever framework you happen
+    to be using, be it OpenGL, WebGL, Vulkan, or some other abstraction. For my purposes however, I'm going to forego those niceties in favor of building my own rudimentary graphics framework that can handle rendering.
+    Luckily for me, there are lots of other people who've had this same idea before, and upon whose shoulders I can stand. One such person is Dmitry V. Sokolov (or simply ssloy as he's known on github). He wrote a
+    series of tutorials which I'll be following along with. They can be found <a href="https://github.com/ssloy/tinyrenderer/wiki/Lesson-0-getting-started">here</a>.
+</p>
+<p>
+    &emsp;&emsp;You might be asking yourself at this point, "what's the point of me reading this blog if there's already a different, more qualified person who wrote a blog about this subject? It even includes a
+    tutorial!". I don't know. But I do know why I'm <i>writing</i> this blog. I'm writing this blog so that I can A) write notes and dump the contents of my brain as I go so that I'm less likely to forget things,
+    B) write the source code for my own renderer without cheating and looking ahead at his source code too much so that you can see my process, and most importantly C) pressure myself socially into actually getting
+    through an entire project. Maybe you'll find this content useful or entertaining. Maybe seeing my process will help you develop your own, or will inspire you to do some project you've been meaning to get around
+    to. Or maybe watching me struggle through something will provide you with some kind of catharsis. Or maybe you already closed this tab and won't ever read this sentence. That's okay, it wasn't a particularly nice
+    sentence anyway. I mean, who starts with a conjunction twice in a row? Yuck. At least I'm not one of those conjuction-starters that need to put a comma after it every time as if what I'm saying is so important that
+    it needs the emphasis. Or, maybe I am? Regardless I'm going to keep going with this blog post so that I can reap the benefits of creation and consumption at the same time.
+</p>
+<p>
+    &emsp;&emsp;Anyway onto the actual substance of this post. My starting point with rendering is the starting point I find myself gravitating towards for most programming: inputs and outputs. What goes into a renderer,
+    and what comes out? Per the definition earlier, the input to a renderer is a definition of a scene in 3D. This means some kind of specification of the geometry involved with points and vertices and lines and triangles.
+    That's all well and good, but I actually would rather start with the output of a renderer, which is a 2D image. Typically a graphics program will output what's called a "rendered image file format". These formats
+    include OpenEXR, SVG, PNG, JPG, JPEG, and TGA files. The framework will then string these images together as they render into individual frames, creating an animation effect where
+    you can define changes in geometry over time. I'm just going to start with static images though and not worry about building full executables. TGA (often referred to as "Targa")
+    was the native format for TARGA and VISTA boards, which were the first graphics cards for IBM-compatible PCs. The format is perfect for learning how rendered image formats work
+    because of its simplistic structure, so I'll be focusing on that format throughout this blog. Also because Sokolov's tutorial tells me to. I don't know who he is but I already
+    trust this fantastic eastern European man with my life.
+</p>
+<h3 class="centered">
+    The Specification of the TGA Format
+</h3>
+<p>
+    &emsp;&emsp;TGA files contain two main pieces: a header and a body. The header defines some stuff that the operating system can use to quickly determine the size of the file, like the bitmap size and amount of
+    color information. The body contains the actual color information on a per-pixel basis. My fellow programmer and new internet best friend (don't tell Mr. Sokolov) Paul Bourke has a set of <i>really</i>
+    good definitions for a lot of file formats, including TGA, that you can find <a href="http://paulbourke.net/dataformats/">here</a>. The main gist of it though, for those who don't want to click the link, is
+    that the header of a TGA file contains the following fields:
+</p>
+    <pre><code>
+        typedef struct
+        {
+            char  idLength;
+            char  colorMapType;
+            char  datatypeCode;
+            short int colorMapOrigin;
+            short int colorMapLength;
+            char  colorMapDepth;
+            short int xOrigin;
+            short int yOrigin;
+            short width;
+            short height;
+            char  bitsPerPixel;
+            char  imageDescriptor;
+        } HEADER;
+    </code></pre>
+<p>
+    &emsp;&emsp;Going through these one-by-one we have the ID Length field, which defines the length of the colormap string in the body of the file. The color map type, which defines whether or not it's a colormapped
+    image. For our purposes we won't ever use a colormapped image so you can pretty much ignore this field but if you want to know more click <a href="https://en.wikipedia.org/wiki/Color_mapping">here</a>. The image
+    datatype code which defines what kind of image it is, which for our purposes will always be RGB (others include black and white, colormapped, etc...). The color map specification which includes origin, length and
+    depth. The image specification which includes the x and y origins, the width and height of the image, how many bits per pixel, and an optional image descriptor which we can ignore. The body of the file will simply
+    follow this format:
+</p>
+    <pre><code>
+        typedef struct
+        {
+            char r, g, b, a;
+        } PIXEL;
+
+        typedef struct
+        {
+            PIXEL body[idLength];
+        } BODY;
+    </code></pre>
+<p>
+    &emsp;&emsp;Basically it's just an array of pixels, each of which has a red value, a green value, a blue value, and an alpha value. That's all there is to it! Now let's dive into some coding!
+</p>
+<h3 class="centered">Creating a Simple Class for TGA Interaction</h3>
+<p>
+    &emsp;&emsp;All the code for this project will be C++, by the way. Anyway let's start by defining a header for a class to deal with TGA images.
+</p>
+<pre><code>
+class TgaImage
+{
+  protected:
+    unsigned char* data;
+    int width;
+    int height;
+    int bytesPerPixel;
+
+  public:
+    enum Format
+    {
+        GRAYSCALE = 1,
+        RGB = 3,
+        RGBA = 4
+    };
+
+    TgaImage();
+    TgaImage(int w, int h, int bpp);
+    TgaImage(const TgaImage &img);
+    ~TgaImage();
+
+    TgaImage &operator =(const TgaImage &img);
+}
+</code></pre>
+<p>
+    &emsp;&emsp;The basic fields for the header are width, height, and bytesPerPixel. Our data field represents the body of the TGA image. There's
+    a format enum so that we can optionally extend this class for other uses later, a few constructors, and a destructor. Finally we'll overload the
+    assignment operator so that we don't have to use <code>new</code> every time we want to create a new one from an existing one. Let's go ahead and
+    implement this header.
+</p>
+<pre><code>
+TgaImage::TgaImage() : data(nullptr), width(0), height(0), bytesPerPixel(0)
+{}
+
+TgaImage::TgaImage(int w, int h, int bpp) : data(nullptr), width(w), height(h), bytesPerPixel(bpp)
+{
+    unsigned long numberOfBytes = width * height * bytesPerPixel;
+    data = new unsigned char[numberOfBytes];
+    memset(data, 0, numberOfBytes);
+}
+
+TgaImage::TgaImage(const TgaImage &img)
+{
+    width = img.width;
+    height = img.height;
+    bytesPerPixel = img.bytesPerPixel;
+    unsigned long numberOfBytes = width * height * bytesPerPixel;
+    data = new unsigned char[numberOfBytes];
+    memcpy(data, img.data, numberOfBytes);
+}
+
+TgaImage::~TgaImage()
+{
+    delete[] data;
+}
+
+TgaImage &TgaImage::operator=(const TgaImage &img)
+{
+    if (this != &img)
+    {
+        delete[] data;
+        width = img.width;
+        height = img.height;
+        bytesPerPixel = img.bytesPerPixel;
+        unsigned long numberOfBytes = width * height * bytesPerPixel;
+        data = new unsigned char[numberOfBytes];
+        memcpy(data, img.data, numberOfBytes);
+    }
+    return *this;
+}
+</code></pre>
+<p>
+    &emsp;&emsp;Overall it's pretty self-explanatory. Just allocating and deallocating memory appropriately. Next we'll define and implement a few
+    getters and setters.
+</p>
+<pre><code>
+int getWidth();
+int getHeight();
+int getBytesPerPixel();
+unsigned char* buffer();
+void clear();
+
+int TgaImage::getWidth()
+{
+    return width;
+}
+
+int TgaImage::getHeight()
+{
+    return height;
+}
+
+int TgaImage::getBytesPerPixel()
+{
+    return bytesPerPixel;
+}
+
+unsigned char* TgaImage::buffer()
+{
+    return data;
+}
+
+void TgaImage::clear()
+{
+    memset((void*) data, 0, width * height * bytesPerPixel);
+}
+</code></pre>
+<p>
+    &emsp;&emsp;Again pretty obvious, the only slightly tricky one being <code>clear()</code>, which just clears and reallocates the data array. Now
+    we can get into the meat of this class by defining the methods that'll do the actual interaction with the TGA files.
+</p>
+<pre><code>
+bool flipHorizontally();
+bool flipVertically();
+bool readTgaFile(const char* filename);
+bool writeTgaFile(const char* filename);
+</code></pre>
+<p>
+    &emsp;&emsp;Let's go through these implementations one-by-one, starting with <code>flipHorizontally</code> and <code>flipVertically</code>.
+</p>
+<pre><code>
+bool TgaImage::flipHorizontally()
+{
+    if (!data)
+    {
+        return false;
+    }
+    int half = width >> 1u; // bit shift by 1 to divide by 2 without having to handle rounding manually.
+    for (int i = 0; i < half; i++)
+    {
+        for (int j = 0; j < height; j++)
+        {
+            // Loop through each row, and flip the bits on the Y axis
+            // going inwards from the outside.
+            // [p1, p2, p3, p4,
+            // p5, p6, p7, p8]
+            // with width 4 and height 2 becomes
+            // [p4, p3, p2, p1,
+            //  p8, p7, p6, p5]
+            TgaColor c1 = get(i, j);
+            TgaColor c2 = get(width - 1 - i, j);
+            set(i, j, c2);
+            set(width - 1 -i, j, c1);
+        }
+    }
+    return true;
+}
+
+bool TgaImage::flipVertically()
+{
+    if (!data)
+    {
+        return false;
+    }
+    unsigned long bytesPerLine = width * bytesPerPixel;
+    auto* line = new unsigned char[bytesPerLine];
+    int half = height >> 1u; // bit shift by 1 to divide by 2 without having to handle rounding manually.
+    for (int j = 0; j < half; j++)
+    {
+        // Flip on a per-row basis, going from outside in.
+        // [p1, p2, p3, p4,
+        // p5, p6, p7, p8]
+        // with width 4 and height 2 becomes
+        // [p5, p6, p7, p8,
+        //  p1, p2, p3, p4]
+        // Use line as a temporary storage so we can swap the lines.
+        unsigned long l1 = j * bytesPerLine;
+        unsigned long l2 = (height - 1 - j) * bytesPerLine;
+        memmove((void*) line, (void*) (data + l1), bytesPerLine);
+        memmove((void*) (data + l1), (void*) (data + l2), bytesPerLine);
+        memmove((void*) (data + l2), (void*) line, bytesPerLine);
+    }
+    delete [] line;
+    return true;
+}
+</code></pre>
+<p>
+    &emsp;&emsp;You may have noticed that the <code>flipHorizontally</code> function calls two methods that haven't been defined, <code>get</code>
+    and <code>set</code>. These two methods will need to get the color values for a pixel at a given X, Y location and set the color values for a pixel
+    at a given X, Y location respectively. Let's define and implement those methods.
+</p>
+<pre><code>
+TgaColor get(int x, int y);
+bool set(int x, int y, TgaColor c);
+
+TgaColor TgaImage::get(int x, int y)
+{
+    if (!data || x < 0 || y < 0 || x >= width || y >= height)
+    {
+        return TgaColor();
+    }
+    return TgaColor(data + (x + y * width) * bytesPerPixel, bytesPerPixel);
+}
+
+bool TgaImage::set(int x, int y, TgaColor c)
+{
+    if (!data || x < 0 || y < 0 || x >= width || y >= height)
+    {
+        return false;
+    }
+    memcpy(data + (x + y * width) * bytesPerPixel, c.raw, bytesPerPixel);
+    return true;
+}
+</code></pre>
+<p>
+    &emsp;&emsp;Both methods just run some sanity checking making sure the coordinates exist in our plane, then either return or set the color values
+    at a given location. We used a new data structure <code>TgaColor</code> to represent the RGBA values. Here's the definition of that.
+</p>
+<pre><code>
+struct TgaColor
+{
+    union
+    {
+        struct
+        {
+            unsigned char r, g, b, a;
+        };
+        unsigned char raw[4];
+        unsigned int val;
+    };
+
+    int bytesPerPixel;
+}
+</code></pre>
+<p>
+    &emsp;&emsp;Note the union field. That's to make it so you can either input 4 defined chars, 4 raw chars, or simply define a single int value all in the same field without allocating more memory than necessary. Now just like
+    with most classes we'll want a default constructor;
+</p>
+<pre><code>
+TgaColor() : val(0), bytesPerPixel(1) {}
+</code></pre>
+<p>
+    &emsp;&emsp;And now let's make constructors for our 3 different types in the union:
+</p>
+<pre><code>
+TgaColor(unsigned char R, unsigned char G, unsigned char B, unsigned char A) : r(R), g(G), b(B), a(A), bytesPerPixel(4) {}
+
+TgaColor(int v, int bpp) : val(v), bytesPerPixel(bpp) {}
+
+TgaColor(const unsigned char* p, int bpp) : val(0), bytesPerPixel(bpp)
+{
+    for (int i = 0; i < bpp; i++)
+    {
+        raw[i] = p[i];
+    }
+}
+</code></pre>
+<p>
+    &emsp;&emsp;In the first constructor it assumes we use the strictly defined RGBA, which means we need 4 bytes per pixel to handle the 4 channels. The second one takes the arbitrary integer value and allows the user to define
+    the bits per pixel (which is mostly used to make a null image), and the last one will loop through an arbitrary array of characters with a user-defined bits per pixel which allows for just RGB if someone feels
+    like omitting the A. Finally let's overload the assignment operator so that the user doesn't have to <code>new</code> up their instance of this class if they don't want and can instead set it equal to an
+    already-created instance.
+</p>
+<pre><code>
+TgaColor & operator =(const TgaColor &c)
+{
+    if (this != &c)
+    {
+        bytesPerPixel = c.bytesPerPixel;
+        val = c.val;
+    }
+    return *this;
+}
+</code></pre>
+<p>&emsp;&emsp;Now that we've got all that sorted for <code>flipHorizontally</code> and <code>flipVertically</code> we can move on to <code>readTgaFile</code>.</p>
+<pre><code>
+bool TgaImage::readTgaFile(const char *filename)
+{
+    // Make sure data is empty before we start.
+    delete[] data;
+    data = nullptr;
+
+    // First, we open the file.
+    std::ifstream in;
+    in.open(filename, std::ios::binary);
+    if (!in.is_open())
+    {
+        std::cerr << "can't open file " << filename << "\n";
+        in.close();
+        return false;
+    }
+
+    // Handle the header and set the appropriate fields on our class as we read them in.
+    TgaHeader header;
+    in.read((char *) &header, sizeof(header));
+    if (!in.good())
+    {
+        in.close();
+        std::cerr << "an error occured while reading the header\n";
+        return false;
+    }
+    width = header.width;
+    height = header.height;
+    bytesPerPixel = header.bitsPerPixel >> 3;
+    if (width <= 0 || height <= 0 || (bytesPerPixel != GRAYSCALE && bytesPerPixel != RGB && bytesPerPixel != RGBA))
+    {
+        in.close();
+        std::cerr << "bad bpp (or width/height) value\n";
+        return false;
+    }
+
+    // Handle the body as we read data in and allocate memory accordingly.
+    unsigned long numberOfBytes = bytesPerPixel * width * height;
+    data = new unsigned char[numberOfBytes];
+
+    // 2 and 3 are normal RGB images and 10 and 11 use run length encoding.
+    if (header.datatypeCode == 2 || header.datatypeCode == 3)
+    {
+        in.read((char *) data, numberOfBytes);
+        if (!in.good())
+        {
+            in.close();
+            std::cerr << "an error occured while reading the data\n";
+            return false;
+        }
+    }
+    else if (10 == header.datatypeCode || 11 == header.datatypeCode)
+    {
+        if (!loadRleData(in))
+        {
+            in.close();
+            std::cerr << "an error occured while reading the data\n";
+            return false;
+        }
+    }
+    else
+    {
+        in.close();
+        std::cerr << "unknown file format " << (int) header.datatypeCode << "\n";
+        return false;
+    }
+    if (!(header.imageDescriptor & 0x20))
+    {
+        flipVertically();
+    }
+    if (header.imageDescriptor & 0x10)
+    {
+        flipHorizontally();
+    }
+    std::cerr << width << "x" << height << "/" << bytesPerPixel * 8 << "\n";
+    in.close();
+    return true;
+}
+</code></pre>
+<p>
+    &emsp;&emsp;This again uses a new data structure. It's called TgaHeader and it just represents the header fields we talked about earlier. Here's a
+    quick definition for that structure.
+</p>
+<pre><code>
+struct TgaHeader
+{
+    char idLength;
+    char colorMapType;
+    char datatypeCode;
+    short colorMapOrigin;
+    short colorMapLength;
+    char colorMapDepth;
+    short xOrigin;
+    short yOrigin;
+    short width;
+    short height;
+    char bitsPerPixel;
+    char imageDescriptor;
+};
+</code></pre>
+<p>
+    &emsp;&emsp;Now we can read TGA files into memory! But what about writing them to disk? Here's the implementation for that.
+</p>
+<pre><code>
+bool TgaImage::writeTgaFile(const char *filename, bool rle)
+{
+    unsigned char developer_area_ref[4] = {0, 0, 0, 0};
+    unsigned char extension_area_ref[4] = {0, 0, 0, 0};
+    unsigned char footer[18] = {'T', 'R', 'U', 'E', 'V', 'I', 'S', 'I', 'O', 'N', '-', 'X', 'F', 'I', 'L', 'E', '.',
+                                '\0'};
+    std::ofstream out;
+    out.open(filename, std::ios::binary);
+    if (!out.is_open())
+    {
+        std::cerr << "can't open file " << filename << "\n";
+        out.close();
+        return false;
+    }
+    TgaHeader header;
+    memset((void *) &header, 0, sizeof(header));
+    header.bitsPerPixel = bytesPerPixel << 3;
+    header.width = width;
+    header.height = height;
+    header.datatypeCode = (bytesPerPixel == GRAYSCALE ? (rle ? 11 : 3) : (rle ? 10 : 2));
+    header.imageDescriptor = 0x20; // top-left origin
+    out.write((char *) &header, sizeof(header));
+    if (!out.good())
+    {
+        out.close();
+        std::cerr << "can't dump the tga file\n";
+        return false;
+    }
+
+    // Handle run length encoding. I don't want to go into depth about this
+    // for this post because it's supposed to be about rendering not encoding.
+    if (!rle)
+    {
+        out.write((char *) data, width * height * bytesPerPixel);
+        if (!out.good())
+        {
+            std::cerr << "can't unload raw data\n";
+            out.close();
+            return false;
+        }
+    } else
+    {
+        if (!unloadRleData(out))
+        {
+            out.close();
+            std::cerr << "can't unload rle data\n";
+            return false;
+        }
+    }
+    out.write((char *) developer_area_ref, sizeof(developer_area_ref));
+    if (!out.good())
+    {
+        std::cerr << "can't dump the tga file\n";
+        out.close();
+        return false;
+    }
+    out.write((char *) extension_area_ref, sizeof(extension_area_ref));
+    if (!out.good())
+    {
+        std::cerr << "can't dump the tga file\n";
+        out.close();
+        return false;
+    }
+    out.write((char *) footer, sizeof(footer));
+    if (!out.good())
+    {
+        std::cerr << "can't dump the tga file\n";
+        out.close();
+        return false;
+    }
+    out.close();
+    return true;
+}
+</code></pre>
+<p>
+    &emsp;&emsp;Huzzah! We're now able to handle TGA image interaction for both inputting and outputting files. Now it's time to create a main program
+    that will test all our functionality and create our very first rendered image!
+</p>
+<pre><code>
+#include "TgaImage.h"
+
+const TgaColor white = TgaColor(255, 255, 255, 255);
+const TgaColor red   = TgaColor(255, 0, 0, 255);
+
+int main(int argc, char** argv) {
+    TgaImage image(100, 100, TgaImage::RGB);
+    // Define a small, red rectangle near the center of the screen.
+    image.set(52, 41, red);
+    image.set(53, 41, red);
+    image.set(54, 41, red);
+    image.set(55, 41, red);
+    image.set(56, 41, red);
+    image.set(57, 41, red);
+    image.set(52, 42, red);
+    image.set(53, 42, red);
+    image.set(54, 42, red);
+    image.set(55, 42, red);
+    image.set(56, 42, red);
+    image.set(57, 42, red);
+    image.set(52, 43, red);
+    image.set(53, 43, red);
+    image.set(54, 43, red);
+    image.set(55, 43, red);
+    image.set(56, 43, red);
+    image.set(57, 43, red);
+    image.flipVertically(); // I want to have the origin at the left bottom corner of the image.
+    image.writeTgaFile("output.tga");
+    return 0;
+}
+</code></pre>
+<img src="/static/firstrenderedimage.png" height="600" width="800" alt="Placeholder image">
+<p>&emsp;&emsp;Tada! We did it! We made a rendered image! Look at that red rectangle. Isn't it glorious? Next time we'll be discussing defining geometry and drawing lines.</p>
+<p>&emsp;&emsp;Code for this blog post can be found <a href="https://github.com/blipson/simplerenderer/tree/tga-files">here</a>.</p>
+<p>&emsp;&emsp;Click <a href="/blog/renderer/drawinglines">here</a> to go to part 2.</p>
+</body>
+</html>
