@@ -439,7 +439,7 @@ class ProjectsControllerTest extends PlaySpec {
           |    </body>
           |    <script type="text/javascript">
           |        $("#hamming-input").on('keyup', function (e) {
-          |            if (e.keyCode == 13) {
+          |            if (e.keyCode === 13) {
           |                const xmlHttp = new XMLHttpRequest();
           |                xmlHttp.onreadystatechange = function () {
           |                    $("#hamming-header").text("CALCULATiNG...");
@@ -447,12 +447,12 @@ class ProjectsControllerTest extends PlaySpec {
           |                    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
           |                        $("#hamming-header").text("HERE iS YoUR HAMMiNG CoDE BEEP BooP");
           |                        $("#hamming-result").text(JSON.parse(xmlHttp.responseText).hamming_code);
-          |                    } else if (xmlHttp.readyState === 4 && xmlHttp.status === 500) {
+          |                    } else if (xmlHttp.readyState === 4 && xmlHttp.status !== 200) {
           |                        $("#hamming-header").text("*BZZT* ERRoR! CAN. NoT. CoMPUTE. *SAD BooP*");
           |                        $("#hamming-result").text(JSON.parse(xmlHttp.responseText).error.toUpperCase());
           |                    }
           |                }
-          |                xmlHttp.open("GET", window.location.href.replace("/projects", "") + "?code=" + $("#hamming-input").val(), true);
+          |                xmlHttp.open("GET", window.location.href.replace("/projects", "") + "?input=" + $("#hamming-input").val(), true);
           |                xmlHttp.send(null);
           |            }
           |        });
