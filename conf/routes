@@ -20,6 +20,10 @@ GET     /blog/renderer/drawinglines     controllers.BlogController.rendererDrawi
 
 # Projects page
 GET     /projects                       controllers.ProjectsController.projects()
+GET     /projects/hammingcodes          controllers.ProjectsController.hammingCodes()
+
+# Hamming project
+GET     /hammingcodes                        controllers.HammingController.calculateHammingCode(input = "")
 
 
 # Map static resources from the /public folder to the /assets URL path

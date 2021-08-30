@@ -42,7 +42,7 @@
     the most common way to write an equation of a line looks like this:
 </p>
 <p>
-    <img src="@routes.Assets.at("images/linearequation.svg")"  alt=""/>
+    <img src="@controllers.routes.Assets.at("images/linearequation.svg")"  alt=""/>
 </p>
 <p>
     &emsp;&emsp;Where x and y represent any given point along the line, m represents the slope of the line (or how steep the line is), and y<sub>0</sub>
@@ -50,7 +50,7 @@
     y axis on a graph). Here are a few good examples of lines with their equations that I lifted from Wikipedia:
 </p>
 <p>
-    <img src="@routes.Assets.at("images/linearfunctiongraph.png")"  width="250"  alt=""/>
+    <img src="@controllers.routes.Assets.at("images/linearfunctiongraph.png")"  width="250"  alt=""/>
 </p>
 <p>
     &emsp;&emsp;So how do we represent this as C++ code? Well you notice that lines are a lot like how walking my dog feels in Winter in that they go on
@@ -107,7 +107,7 @@
         line(13, 20, 80, 40, image, white);
 </code></pre>
 <p>
-    <img src="@routes.Assets.at("images/firstline.png")" width="250"  alt=""/>
+    <img src="@controllers.routes.Assets.at("images/firstline.png")" width="250"  alt=""/>
 </p>
 <p>
     &emsp;&emsp;Neat! But there are still some problems with this code. See if you can sort out a few of them yourself before reading on! Ready?
@@ -115,7 +115,7 @@
     <code>for (int x = x0; x <= x1; x += 10)</code> for example, changing the constant from 1 to 10, we get:
 </p>
 <p>
-    <img src="@routes.Assets.at("images/sadline.png")" width="250"  alt=""/>
+    <img src="@controllers.routes.Assets.at("images/sadline.png")" width="250"  alt=""/>
 </p>
 <p>
     &emsp;&emsp;That's a pretty sad line. The larger our constant is the less precise our line will be, which can lead to some efficiency problems
@@ -517,7 +517,7 @@
     then the program should fairly accurately draw the wireframe for the triangles that make up the geometry of that 3D object! Here's the final output:
 </p>
 <p>
-    <img src="@routes.Assets.at("images/head.png")" width="500" alt="" />
+    <img src="@controllers.routes.Assets.at("images/head.png")" width="500" alt="" />
 </p>
 <p>
     &emsp;&emsp;Look at it! It's beautiful! I hope you learned something about lines and stuff throughout this post. Next time we'll be spicing up our line drawing function by looking at different algorithms

@@ -9,4 +9,8 @@ class ProjectsController @Inject()(cc: ControllerComponents) extends AbstractCon
   def projects(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.projects())
   }
+
+  def hammingCodes(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.hammingCodes())
+  }
 }
