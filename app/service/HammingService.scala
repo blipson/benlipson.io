@@ -3,6 +3,7 @@ package service
 import javax.inject.Singleton
 import scala.annotation.tailrec
 import scala.util.{Failure, Try}
+import util.Utils
 
 @Singleton
 class HammingService {
@@ -40,13 +41,11 @@ class HammingService {
     }
   }
 
-  def isPowerOfTwo(x: Int): Boolean = (x & (x - 1)) == 0
-
   @tailrec
   final def insertParityBits(binaryInput: String, hammingLength: Int, inputPosition: Int = 0, hammingCode: List[String] = List()): List[String] = {
     if (hammingCode.length == hammingLength) {
       hammingCode
-    } else if (isPowerOfTwo(hammingCode.length + 1)) {
+    } else if (Utils.isPowerOfTwo(hammingCode.length + 1)) {
       insertParityBits(binaryInput, hammingLength, inputPosition, hammingCode :+ "2")
     } else {
       insertParityBits(binaryInput, hammingLength, inputPosition + 1, hammingCode :+ binaryInput(inputPosition).toString)

@@ -76,32 +76,6 @@ class HammingServiceTest extends PlaySpec {
       hammingService.calculateParityBitValue(input, 16) mustBe 1
     }
 
-    "should determine if a number is a power of 2" in  {
-      hammingService.isPowerOfTwo(0) mustBe true
-      hammingService.isPowerOfTwo(1) mustBe true
-      hammingService.isPowerOfTwo(2) mustBe true
-      hammingService.isPowerOfTwo(3) mustBe false
-      hammingService.isPowerOfTwo(4) mustBe true
-      hammingService.isPowerOfTwo(5) mustBe false
-      hammingService.isPowerOfTwo(6) mustBe false
-      hammingService.isPowerOfTwo(7) mustBe false
-      hammingService.isPowerOfTwo(8) mustBe true
-      hammingService.isPowerOfTwo(9) mustBe false
-      hammingService.isPowerOfTwo(10) mustBe false
-      hammingService.isPowerOfTwo(11) mustBe false
-      hammingService.isPowerOfTwo(12) mustBe false
-      hammingService.isPowerOfTwo(13) mustBe false
-      hammingService.isPowerOfTwo(14) mustBe false
-      hammingService.isPowerOfTwo(15) mustBe false
-      hammingService.isPowerOfTwo(16) mustBe true
-      hammingService.isPowerOfTwo(239) mustBe false
-      hammingService.isPowerOfTwo(256) mustBe true
-      hammingService.isPowerOfTwo(500) mustBe false
-      hammingService.isPowerOfTwo(512) mustBe true
-      hammingService.isPowerOfTwo(1000) mustBe false
-      hammingService.isPowerOfTwo(1024) mustBe true
-    }
-
     "should error out when anything other than a 1 or a 0 is entered" in {
       Set("1210101", "3", "5019", "sda", "-+{=", "\\\\_|", "219fsa-+{_\\*_=[[").map(input => {
         hammingService.calculateHammingCode(input) match {
