@@ -1,4 +1,5 @@
-import controllers.HomeController
+package controllers
+
 import org.scalatestplus.play.PlaySpec
 import play.api.mvc.Result
 import play.api.test.Helpers.{contentAsString, defaultAwaitTimeout}
