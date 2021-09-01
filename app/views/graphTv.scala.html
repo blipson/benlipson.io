@@ -12,9 +12,10 @@
             Enter the name of a TV show to get metrics about it. It'll graph IMDB ratings over time, with different seasons in different colors. You can hover over the data points for additional info about each episode.
         </h4>
         <input id="graphtv-input" class="input" type="text" placeholder="TV Show" autofocus>
+        <span id="loading" style="display: none">Loading...</span>
         <h2 id="graphtv-header">
         </h2>
-        <div id="charterino" style="height: 50%" class="ct-chart ct-perfect-fourth"></div>
+        <div id="charterino" style="height: 50vh" class="ct-chart ct-perfect-fourth"></div>
         <div id="tooltip" style="display: none; position: fixed; bottom: 550px; left: 50px;"></div>
         <span>Written in JavaScript
             <a href="https://github.com/blipson/benlipson.io/blob/master/app/views/graphTv.scala.html" target="_blank">Wanna see the code?</a>
@@ -206,12 +207,15 @@
         }
 
         $('#graphtv-input').on('keyup', function (e) {
-            if (e.keyCode == 13) {
+            if (e.keyCode === 13) {
                 let xmlHttp = new XMLHttpRequest();
 
                 xmlHttp.onreadystatechange = function () {
+                    $('#loading').css('display', '');
+
 
                     if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+                        $('#loading').css('display', 'none');
                         const res = JSON.parse(xmlHttp.response);
 
                         if (res.totalSeasons) {
