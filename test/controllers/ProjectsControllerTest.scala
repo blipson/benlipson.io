@@ -505,7 +505,6 @@ class ProjectsControllerTest extends PlaySpec {
           |    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
           |    <script src="https://cdn.jsdelivr.net/chartist.js/0.9.5/chartist.min.js"></script>
           |    <link href="https://cdn.jsdelivr.net/chartist.js/0.9.5/chartist.min.css" rel="stylesheet" />
-          |    <link rel="stylesheet" href="/static/graphTv.css">
           |    <body>
           |        <h1>
           |            Graph TV
@@ -518,7 +517,7 @@ class ProjectsControllerTest extends PlaySpec {
           |        </h2>
           |        <div id="charterino" class="ct-chart ct-perfect-fourth"></div>
           |        <span>Written in JavaScript
-          |            <a href="/graphtvcode">Wanna see the code?</a>
+          |            <a href="https://github.com/blipson/benlipson.io/blob/master/app/views/graphTv.scala.html" target="_blank">Wanna see the code?</a>
           |        </span>
           |    </body>
           |    <script type="text/javascript">
