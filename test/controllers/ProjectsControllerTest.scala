@@ -111,7 +111,7 @@ class ProjectsControllerTest extends PlaySpec {
           |            Hamm1ng C0des
           |        </h1>
           |        <h4>
-          |            Enter a binary string as input and hit enter.
+          |            Enter a binary string as input.
           |            Click
           |                <a target="_blank" href="https://www.mathsisfun.com/binary-number-system.html">here</a>
           |                if you don't know what binary is or how it works.
