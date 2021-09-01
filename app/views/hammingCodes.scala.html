@@ -380,7 +380,7 @@ final def getNumberOfParityBits(binaryInput: String, acc: Int = 0): Int = {
                         $("#hamming-result").text(JSON.parse(xmlHttp.responseText).hamming_code);
                     } else if (xmlHttp.readyState === 4 && xmlHttp.status !== 200) {
                         $("#hamming-header").text("*BZZT* ERRoR! CAN. NoT. CoMPUTE. *SAD BooP*");
-                        $("#hamming-result").text(JSON.parse(xmlHttp.responseText).error.toUpperCase());
+                        $("#hamming-result").text(xmlHttp.responseText.split(":")[1]);
                     }
                 }
                 xmlHttp.open("GET", window.location.href.replace("/projects", "") + "?input=" + $("#hamming-input").val(), true);
