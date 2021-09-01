@@ -512,10 +512,11 @@ class ProjectsControllerTest extends PlaySpec {
           |        <h4>
           |            Enter the name of a TV show to get metrics about it. It'll graph IMDB ratings over time, with different seasons in different colors. You can hover over the data points for additional info about each episode.
           |        </h4>
-          |        <input id="graphTv-input" type="text" placeholder="TV Show" autofocus>
-          |        <h2 id="graphTv-header">
+          |        <input id="graphtv-input" class="input" type="text" placeholder="TV Show" autofocus>
+          |        <h2 id="graphtv-header">
           |        </h2>
-          |        <div id="charterino" class="ct-chart ct-perfect-fourth"></div>
+          |        <div id="charterino" style="height: 50%" class="ct-chart ct-perfect-fourth"></div>
+          |        <div id="tooltip" style="display: none; position: fixed; bottom: 550px; left: 50px;"></div>
           |        <span>Written in JavaScript
           |            <a href="https://github.com/blipson/benlipson.io/blob/master/app/views/graphTv.scala.html" target="_blank">Wanna see the code?</a>
           |        </span>
@@ -526,8 +527,13 @@ class ProjectsControllerTest extends PlaySpec {
           |                return a.Season - b.Season;
           |            });
           |
-          |            s[s.length - 1].Episodes = s[s.length - 1].Episodes.filter(function (e) {
-          |                return e.imdbRating !== 'N/A';
+          |            console.log(s);
+          |
+          |            s = s.map((season) => {
+          |                season.Episodes = season.Episodes.filter((episode) => {
+          |                    return episode.imdbRating !== 'N/A';
+          |                });
+          |                return season;
           |            });
           |
           |            s = s.filter(function (e) {
@@ -557,7 +563,7 @@ class ProjectsControllerTest extends PlaySpec {
           |
           |                    season.push({
           |                        value: s[i].Episodes[j].imdbRating,
-          |                        number: 'Season ' + (i + 1).toString() + ', Episode ' + (j + 1).toString(),
+          |                        number: 'Season ' + (i + 1).toString() + ', Episode ' + s[i].Episodes[j].Episode,
           |                        title: s[i].Episodes[j].Title,
           |                        released: s[i].Episodes[j].Released,
           |                        rating: s[i].Episodes[j].imdbRating
@@ -687,7 +693,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                    const mouseX = e.pageX - 60;
           |                    const mouseY = e.pageY + 25;
           |
-          |                    $('#tooltip').css({ 'top': mouseY, 'left': mouseX, 'display': '', 'background': 'grey' })
+          |                    $('#tooltip').css({ 'top': mouseY, 'left': mouseX, 'display': '' })
           |                            .html($(this).attr('title') + '<br/>'
           |                                    + $(this).attr('number') + '<br/>'
           |                                    + $(this).attr('released') + '<br/>'
@@ -700,19 +706,16 @@ class ProjectsControllerTest extends PlaySpec {
           |            });
           |        }
           |
-          |        $('#graphTv-input').on('keyup', function (e) {
+          |        $('#graphtv-input').on('keyup', function (e) {
           |            if (e.keyCode == 13) {
           |                let xmlHttp = new XMLHttpRequest();
           |
           |                xmlHttp.onreadystatechange = function () {
-          |                    $('#graphTv-header').text('Searching...');
           |
           |                    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-          |                        $('#graphTv-header').text('');
           |                        const res = JSON.parse(xmlHttp.response);
           |
           |                        if (res.totalSeasons) {
-          |                            $('#charterino').css('display', '');
           |                            const totalSeasons = res.totalSeasons;
           |                            let series = [];
           |                            let seasons = [];
@@ -721,7 +724,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                            for (let i = 1; i <= totalSeasons; i++) {
           |                                (function (i) {
           |                                    nextXhr[i] = new XMLHttpRequest();
-          |                                    url = 'https://www.omdbapi.com/?t=' + $('#graphTv-input').val() + '&Season=' + i + '&apikey=4f09f372'
+          |                                    url = 'https://www.omdbapi.com/?t=' + $('#graphtv-input').val() + '&Season=' + i + '&apikey=4f09f372'
           |                                    nextXhr[i].open('GET', url, true);
           |
           |                                    nextXhr[i].onreadystatechange = function () {
@@ -731,15 +734,17 @@ class ProjectsControllerTest extends PlaySpec {
           |
           |                                            if (seasons.length >= totalSeasons) {
           |                                                if (seasons[0].Response !== 'False') {
-          |                                                    $('#graphTv-header').text(seasons[0].Title);
+          |                                                    $('#graphtv-header').text(seasons[0].Title);
           |
           |                                                    if (seasons[seasons.length - 1].Episodes[0].Released === 'N/A') {
           |                                                        seasons.splice(-1, 1);
           |                                                    }
           |
           |                                                    makeGraph(seasons);
+          |                                                    $('#charterino').css('display', '');
           |                                                } else {
-          |                                                    $('#graphTv-header').text('TV show not found.');
+          |                                                    $('#graphtv-header').text('TV show not found.');
+          |                                                    $('#charterino').css('display', 'none');
           |                                                }
           |                                            }
           |                                        }
@@ -749,13 +754,13 @@ class ProjectsControllerTest extends PlaySpec {
           |                                })(i);
           |                            }
           |                        } else {
-          |                            $('#graphTv-header').text('TV show not found. You may have searched for a movie by mistake.');
+          |                            $('#graphtv-header').text('TV show not found. You may have searched for a movie by mistake.');
           |                            $('#charterino').css('display', 'none');
           |                        }
           |                    }
           |                }
           |
-          |                xmlHttp.open('GET', 'https://www.omdbapi.com/?t=' + $('#graphTv-input').val() + '&apikey=4f09f372', true);
+          |                xmlHttp.open('GET', 'https://www.omdbapi.com/?t=' + $('#graphtv-input').val() + '&apikey=4f09f372', true);
           |                xmlHttp.send(null);
           |            }
           |        });
