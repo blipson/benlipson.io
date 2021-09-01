@@ -107,7 +107,6 @@ class ProjectsControllerTest extends PlaySpec {
           |        <title>Lipson</title>
           |    </head>
           |    <body>
-          |        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
           |        <h1>
           |            Hamm1ng C0des
           |        </h1>
@@ -118,7 +117,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                if you don't know what binary is or how it works.
           |        </h4>
           |        <label for="hamming-input">Enter binary string: </label><input id="hamming-input" type="text"
-          |    placeholder="Text input" autofocus>
+          |    placeholder="Binary string" autofocus>
           |        <h2 id="hamming-header">
           |        </h2>
           |        <h3 id="hamming-result">
@@ -346,7 +345,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                <p>
           |                    The bits that alter a parity bit are determined by the position of the parity bit. You'll have to know how
           |                    to do
-          |                    <a target="_blank" href="http://web.math.princeton.edu/math_alive/i/Labi/BinAdd.html">Binary addition</a>
+          |                    <a target="_blank" href="https://teachwithict.weebly.com/binary-addition.html">Binary addition</a>
           |                    To understand this part. If it's in the 1st position, then it will start with the first bit and add 1 bit,
           |                    skip 1 bit, etc...
           |                    if it's in position 2, then it will start with the second bit and add 2 bits, skip 2
@@ -467,24 +466,29 @@ class ProjectsControllerTest extends PlaySpec {
           |        </div>
           |    </body>
           |    <script type="text/javascript">
-          |        $("#hamming-input").on('keyup', function (e) {
-          |            if (e.keyCode === 13) {
-          |                const xmlHttp = new XMLHttpRequest();
-          |                xmlHttp.onreadystatechange = function () {
-          |                    $("#hamming-header").text("CALCULATiNG...");
-          |                    $("#hamming-result").text("");
-          |                    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-          |                        $("#hamming-header").text("HERE iS YoUR HAMMiNG CoDE BEEP BooP");
-          |                        $("#hamming-result").text(JSON.parse(xmlHttp.responseText).hamming_code);
-          |                    } else if (xmlHttp.readyState === 4 && xmlHttp.status !== 200) {
-          |                        $("#hamming-header").text("*BZZT* ERRoR! CAN. NoT. CoMPUTE. *SAD BooP*");
-          |                        $("#hamming-result").text(xmlHttp.responseText.split(":")[1]);
-          |                    }
+          |        document.getElementById("hamming-input").onkeyup = (e) => {
+          |            const xmlHttp = new XMLHttpRequest();
+          |            const hammingInput = document.getElementById("hamming-input")
+          |            const hammingHeader = document.getElementById("hamming-header")
+          |            const hammingResult = document.getElementById("hamming-result")
+          |            xmlHttp.onreadystatechange = () => {
+          |                if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+          |                    hammingHeader.innerHTML = "HERE iS YoUR HAMMiNG CoDE BEEP BooP";
+          |                    hammingResult.innerHTML = JSON.parse(xmlHttp.responseText).hamming_code;
+          |                } else if (xmlHttp.readyState === 4 && xmlHttp.status !== 200) {
+          |                    hammingHeader.innerHTML = "*BZZT* ERRoR! CAN. NoT. CoMPUTE. *SAD BooP*";
+          |                    hammingResult.innerHTML = xmlHttp.responseText.split(":")[1];
           |                }
-          |                xmlHttp.open("GET", window.location.href.replace("/projects", "") + "?input=" + $("#hamming-input").val(), true);
-          |                xmlHttp.send(null);
           |            }
-          |        });
+          |            if (hammingInput.value) {
+          |                xmlHttp.open("GET", window.location.href.replace("/projects", "") + "?input=" + hammingInput.value, true);
+          |                xmlHttp.send(null);
+          |            } else {
+          |                hammingHeader.innerHTML = "";
+          |                hammingResult.innerHTML = "";
+          |
+          |            }
+          |        }
           |    </script>
           |</html>
           |""".stripMargin.replaceAll(" +", "")
