@@ -502,9 +502,61 @@ class ProjectsControllerTest extends PlaySpec {
         """<!DOCTYPE html>
           |
           |<html lang="en">
-          |    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
           |    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
           |    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
+          |    <head>
+          |        <style>
+          |            .ct-series.ct-series-p {
+          |                stroke: #2f8c73
+          |            }
+          |
+          |            .ct-series.ct-series-q {
+          |                stroke: #ff6b72
+          |            }
+          |
+          |            .ct-series.ct-series-r {
+          |                stroke: #ffae00
+          |            }
+          |
+          |            .ct-series.ct-series-s {
+          |                stroke: #3a5f97
+          |            }
+          |
+          |            .ct-series.ct-series-t {
+          |                stroke: #a35f9a
+          |            }
+          |
+          |            .ct-series.ct-series-t {
+          |                stroke: #b0af67
+          |            }
+          |
+          |            .ct-series.ct-series-u {
+          |                stroke: #8134ad
+          |            }
+          |
+          |            .ct-series.ct-series-v {
+          |                stroke: #5a9471
+          |            }
+          |
+          |            .ct-series.ct-series-w {
+          |                stroke: #7d7d7d
+          |            }
+          |
+          |            .ct-series.ct-series-x {
+          |                stroke: #202020
+          |            }
+          |
+          |            .ct-series.ct-series-y {
+          |                stroke: #00c4ff
+          |            }
+          |
+          |            .ct-series.ct-series-z {
+          |                stroke: #914d67
+          |            }
+          |        </style>
+          |        <title>Lipson</title>
+          |        <link rel="shortcut icon" href="#" />
+          |    </head>
           |    <body>
           |        <h1>
           |            Graph TV
@@ -512,6 +564,7 @@ class ProjectsControllerTest extends PlaySpec {
           |        <h4>
           |            Enter the name of a TV show to get metrics about it. It'll graph IMDB ratings over time, with different seasons in different colors. You can hover over the data points for additional info about each episode.
           |        </h4>
+          |        <label for="graphtv-input"></label>
           |        <input id="graphtv-input" class="input" type="text" placeholder="TV Show" autofocus>
           |        <span id="loading" style="display: none">Loading...</span>
           |        <span id="not-found" style="display: none">TV show not found.</span>
@@ -527,6 +580,32 @@ class ProjectsControllerTest extends PlaySpec {
           |        function makeGraph(seasons) {
           |            seasons.sort((a, b) => a.episodes[0].season - b.episodes[0].season);
           |            const seasonNumbersInYears = parseInt(seasons[0].episodes[0].seasonNumber) >= 1953; // the year the television was invented
+          |            console.log(seasons.map((season, index) => {
+          |                return [...seasons.reduce((acc, season) => {
+          |                    const accLen = Object.keys(acc).length;
+          |                    const seasonNumber = seasonNumbersInYears ?
+          |                            (accLen >= 2 ? accLen : accLen + 1) :
+          |                            parseInt(season.episodes[0].seasonNumber);
+          |                    if (seasonNumber === 1) {
+          |                        acc[seasonNumber] = [];
+          |                        acc[seasonNumber + 1] = [...Array(season.episodes.filter(episode => episode.imDbRating !== "").length).keys()].map(() => null);
+          |                    } else if (seasonNumber < seasonNumbersInYears ? seasons.length : seasons
+          |                            .map(season => parseInt(season.episodes[0].seasonNumber))
+          |                            .reduce((previousMax, curr) => Math.max(previousMax, curr), 0)) {
+          |                        acc[seasonNumber + 1] = [...Array(season.episodes.filter(episode => episode.imDbRating !== "").length + acc[seasonNumber].length).keys()].map(() => null);
+          |                    }
+          |                    return acc;
+          |                }, {})[seasonNumbersInYears ? index + 1 : season.episodes[0].seasonNumber], ...season.episodes
+          |                        .filter(episode => episode.imDbRating !== "")
+          |                        .map(episode => {
+          |                            return {
+          |                                number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
+          |                                rating: episode.imDbRating,
+          |                                released: episode.released,
+          |                                title: episode.title,
+          |                                value: episode.imDbRating
+          |                            }
+          |                        })]}));
           |            let chart = new Chartist.Line('.ct-chart', {
           |                series: seasons.map((season, index) => {
           |                    return [...seasons.reduce((acc, season) => {
@@ -536,21 +615,23 @@ class ProjectsControllerTest extends PlaySpec {
           |                                parseInt(season.episodes[0].seasonNumber);
           |                        if (seasonNumber === 1) {
           |                            acc[seasonNumber] = [];
-          |                            acc[seasonNumber + 1] = [...Array(season.episodes.length).keys()].map(() => null);
+          |                            acc[seasonNumber + 1] = [...Array(season.episodes.filter(episode => episode.imDbRating !== "").length).keys()].map(() => null);
           |                        } else if (seasonNumber < seasonNumbersInYears ? seasons.length : seasons
           |                                .map(season => parseInt(season.episodes[0].seasonNumber))
           |                                .reduce((previousMax, curr) => Math.max(previousMax, curr), 0)) {
-          |                            acc[seasonNumber + 1] = [...Array(season.episodes.length + acc[seasonNumber].length).keys()].map(() => null);
+          |                            acc[seasonNumber + 1] = [...Array(season.episodes.filter(episode => episode.imDbRating !== "").length + acc[seasonNumber].length).keys()].map(() => null);
           |                        }
           |                        return acc;
-          |                    }, {})[seasonNumbersInYears ? index + 1 : season.episodes[0].seasonNumber], ...season.episodes.map(episode => {
-          |                        return {
-          |                            number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
-          |                            rating: episode.imDbRating,
-          |                            released: episode.released,
-          |                            title: episode.title,
-          |                            value: episode.imDbRating
-          |                        }
+          |                    }, {})[seasonNumbersInYears ? index + 1 : season.episodes[0].seasonNumber], ...season.episodes
+          |                            .filter(episode => episode.imDbRating !== "")
+          |                            .map(episode => {
+          |                                return {
+          |                                    number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
+          |                                    rating: episode.imDbRating,
+          |                                    released: episode.released,
+          |                                    title: episode.title,
+          |                                    value: episode.imDbRating
+          |                                }
           |                    })];
           |                }),
           |            }, {
@@ -572,21 +653,25 @@ class ProjectsControllerTest extends PlaySpec {
           |            });
           |
           |            chart.on('created', () => {
-          |                $('#loading').css('display', 'none');
-          |                $('#graphtv-input').prop('disabled', false)
-          |                $('#graphtv-header').text(seasons[0].title);
-          |                const ctPoint = $('.ct-point');
-          |                ctPoint.on('mouseover', function (e) {
-          |                    $('#tooltip').css({ 'top': e.pageY + 25, 'left': e.pageX - 60, 'display': '' })
-          |                            .html($(this).attr('title') + '<br/>'
-          |                                    + $(this).attr('number') + '<br/>'
-          |                                    + $(this).attr('released') + '<br/>'
-          |                                    + 'IMDB Rating: ' + $(this).attr('rating'));
-          |                });
-          |
-          |                ctPoint.on('mouseout', function (e) {
-          |                    $('#tooltip').css('display', 'none');
-          |                });
+          |                document.getElementById("loading").style.display = "none";
+          |                document.getElementById("graphtv-input").disabled = false;
+          |                document.getElementById("graphtv-header").innerHTML = seasons[0].title;
+          |                const ctPoints = document.getElementsByClassName("ct-point");
+          |                Array.from(ctPoints).map(ctPoint => {
+          |                    const tooltip = document.getElementById("tooltip");
+          |                    ctPoint.onmouseover = (e) => {
+          |                        tooltip.style.top = `${e.pageY + 25}px`;
+          |                        tooltip.style.left = `${e.pageX - 60}px`;
+          |                        tooltip.style.display = "";
+          |                        tooltip.innerHTML = `${ctPoint.getAttribute("title")}<br/>` +
+          |                                `${ctPoint.getAttribute("number")}<br/>` +
+          |                                `${ctPoint.getAttribute("released")}<br/>` +
+          |                                `IMDB Rating: ${ctPoint.getAttribute("rating")}`;
+          |                    }
+          |                    ctPoint.onmouseout = (e) => {
+          |                        tooltip.style.display = "none";
+          |                    }
+          |                })
           |            });
           |        }
           |
@@ -607,27 +692,27 @@ class ProjectsControllerTest extends PlaySpec {
           |                        .then(response => response.json())
           |            }));
           |        }
-          |        const graphTvInput = $('#graphtv-input');
+          |        const graphTvInput = document.getElementById("graphtv-input");
           |
-          |        graphTvInput.on('keyup', async (e) => {
-          |            if (e.keyCode === 13) {
-          |                const loading = $('#loading');
-          |                const notFound = $('#not-found');
-          |                loading.css('display', '');
-          |                notFound.css('display', 'none');
-          |                graphTvInput.prop('disabled', true)
-          |                const show = await searchShows($('#graphtv-input').val());
-          |                if (!jQuery.isEmptyObject(show)) {
+          |        graphTvInput.onkeyup = async (e) => {
+          |            if (e.code === "Enter") {
+          |                const loading = document.getElementById("loading");
+          |                const notFound = document.getElementById("not-found");
+          |                loading.style.display = '';
+          |                notFound.style.display = 'none';
+          |                graphTvInput.disabled = true;
+          |                const show = await searchShows(graphTvInput.value);
+          |                if (show && Object.keys(show).length !== 0 && show.constructor === Object) {
           |                    getShowSeasonDetails(show.id, await getShowSeasonNumbers(show.id)).then(seasons => {
           |                        makeGraph(seasons);
           |                    });
           |                } else {
-          |                    loading.css('display', 'none');
-          |                    notFound.css('display', '');
-          |                    graphTvInput.prop('disabled', false)
+          |                    loading.style.display = 'none';
+          |                    notFound.style.display = '';
+          |                    graphTvInput.disabled = false;
           |                }
           |            }
-          |        });
+          |        };
           |    </script>
           |</html>
           |""".stripMargin.replaceAll(" +", "")
