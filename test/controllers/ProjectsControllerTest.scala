@@ -503,8 +503,8 @@ class ProjectsControllerTest extends PlaySpec {
           |
           |<html lang="en">
           |    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
-          |    <script src="https://cdn.jsdelivr.net/chartist.js/0.9.5/chartist.min.js"></script>
-          |    <link href="https://cdn.jsdelivr.net/chartist.js/0.9.5/chartist.min.css" rel="stylesheet" />
+          |    <link rel="stylesheet" href="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.css">
+          |    <script src="//cdn.jsdelivr.net/chartist.js/latest/chartist.min.js"></script>
           |    <body>
           |        <h1>
           |            Graph TV
@@ -514,6 +514,7 @@ class ProjectsControllerTest extends PlaySpec {
           |        </h4>
           |        <input id="graphtv-input" class="input" type="text" placeholder="TV Show" autofocus>
           |        <span id="loading" style="display: none">Loading...</span>
+          |        <span id="not-found" style="display: none">TV show not found.</span>
           |        <h2 id="graphtv-header">
           |        </h2>
           |        <div id="charterino" style="height: 50vh" class="ct-chart ct-perfect-fourth"></div>
@@ -523,109 +524,45 @@ class ProjectsControllerTest extends PlaySpec {
           |        </span>
           |    </body>
           |    <script type="text/javascript">
-          |        function makeGraph(s) {
-          |            s.sort(function (a, b) {
-          |                return a.Season - b.Season;
-          |            });
-          |
-          |            console.log(s);
-          |
-          |            s = s.map((season) => {
-          |                season.Episodes = season.Episodes.filter((episode) => {
-          |                    return episode.imdbRating !== 'N/A';
-          |                });
-          |                return season;
-          |            });
-          |
-          |            s = s.filter(function (e) {
-          |                return e.Episodes.length;
-          |            });
-          |
-          |            let finalSeries = [];
-          |            let season = [];
-          |            let prepend = 0;
-          |            let finalLabels = [];
-          |            let episodeNumber = 0;
-          |            let lowest = 10;
-          |
-          |            for (let i = 0; i < s.length; i++) {
-          |                if (i !== 0) {
-          |                    prepend += s[i - 1].Episodes.length;
+          |        function makeGraph(seasons) {
+          |            seasons.sort((a, b) => a.episodes[0].season - b.episodes[0].season);
+          |            const maxSeason = seasons
+          |                    .map(season => parseInt(season.episodes[0].seasonNumber))
+          |                    .reduce((previousMax, curr) => Math.max(previousMax, curr), 0);
+          |            const prependNulls = seasons.reduce((acc, season) => {
+          |                const seasonNumber = parseInt(season.episodes[0].seasonNumber);
+          |                if (seasonNumber === 1) {
+          |                    acc[seasonNumber] = [];
+          |                    acc[seasonNumber + 1] = [...Array(season.episodes.length).keys()].map(() => null);
+          |                } else if (seasonNumber < maxSeason) {
+          |                    acc[seasonNumber + 1] = [...Array(season.episodes.length + acc[seasonNumber].length).keys()].map(() => null);
           |                }
+          |                return acc;
+          |            }, {});
           |
-          |                for (let k = 0; k < prepend; k++) {
-          |                    season.push(null);
-          |                }
-          |
-          |                for (let j = 0; j < s[i].Episodes.length; j++) {
-          |                    if (s[i].Episodes[j].imdbRating < lowest) {
-          |                        lowest = Math.floor(s[i].Episodes[j].imdbRating);
+          |            const output = seasons.map((season) => {
+          |                return [...prependNulls[season.episodes[0].seasonNumber], ...season.episodes.map(episode => {
+          |                    return {
+          |                        number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
+          |                        rating: episode.imDbRating,
+          |                        released: episode.released,
+          |                        title: episode.title,
+          |                        value: episode.imDbRating
           |                    }
-          |
-          |                    season.push({
-          |                        value: s[i].Episodes[j].imdbRating,
-          |                        number: 'Season ' + (i + 1).toString() + ', Episode ' + s[i].Episodes[j].Episode,
-          |                        title: s[i].Episodes[j].Title,
-          |                        released: s[i].Episodes[j].Released,
-          |                        rating: s[i].Episodes[j].imdbRating
-          |                    });
-          |
-          |                    episodeNumber++;
-          |                    finalLabels.push(null);
-          |                }
-          |
-          |                finalSeries.push(season);
-          |                season = [];
-          |            }
+          |                })];
+          |            });
+          |            const lowest = seasons.map(season =>
+          |                season.episodes.reduce((previousMinThisSeason, curr) => Math.min(previousMinThisSeason.imDbRating, curr.imDbRating), 0)
+          |            ).reduce((previousMin, curr) => Math.min(previousMin, curr), 0);
           |
           |            let chart = new Chartist.Line('.ct-chart', {
-          |                labels: finalLabels,
-          |                series: finalSeries,
+          |                series: output,
           |            }, {
           |                low: lowest
           |            });
           |
-          |            let seq = 0,
-          |                    delays = 10,
-          |                    durations = 100;
-          |
-          |            chart.on('created', function () {
-          |                seq = 0;
-          |            });
-          |
-          |            chart.on('draw', function (data) {
-          |                seq++;
-          |
-          |                if (data.type === 'line') {
-          |                    data.element.animate({
-          |                        opacity: {
-          |                            begin: seq * delays + 1000,
-          |                            dur: durations,
-          |                            from: 0,
-          |                            to: 1
-          |                        }
-          |                    });
-          |                } else if (data.type === 'label' && data.axis === 'x') {
-          |                    data.element.animate({
-          |                        y: {
-          |                            begin: seq * delays,
-          |                            dur: durations,
-          |                            from: data.y + 100,
-          |                            to: data.y,
-          |                            easing: 'easeOutQuart'
-          |                        }
-          |                    });
-          |                } else if (data.type === 'label' && data.axis === 'y') {
-          |                    data.element.animate({
-          |                        x: {
-          |                            begin: seq * delays,
-          |                            dur: durations,
-          |                            from: data.x - 100,
-          |                            to: data.x,
-          |                            easing: 'easeOutQuart'
-          |                        }
-          |                    });
-          |                } else if (data.type === 'point') {
+          |            chart.on('draw', (data) => {
+          |                if (data.type === 'point') {
           |                    data.element.attr({
           |                        title: data.series[data.index].title,
           |                        value: data.series[data.index].value,
@@ -633,64 +570,15 @@ class ProjectsControllerTest extends PlaySpec {
           |                        released: data.series[data.index].released,
           |                        rating: data.series[data.index].rating
           |                    });
-          |
-          |                    data.element.animate({
-          |                        x1: {
-          |                            begin: seq * delays,
-          |                            dur: durations,
-          |                            from: data.x - 10,
-          |                            to: data.x,
-          |                            easing: 'easeOutQuart'
-          |                        },
-          |                        x2: {
-          |                            begin: seq * delays,
-          |                            dur: durations,
-          |                            from: data.x - 10,
-          |                            to: data.x,
-          |                            easing: 'easeOutQuart'
-          |                        },
-          |                        opacity: {
-          |                            begin: seq * delays,
-          |                            dur: durations,
-          |                            from: 0,
-          |                            to: 1,
-          |                            easing: 'easeOutQuart'
-          |                        }
-          |                    });
-          |                } else if (data.type === 'grid') {
-          |                    let pos1Animation = {
-          |                        begin: seq * delays,
-          |                        dur: durations,
-          |                        from: data[data.axis.units.pos + '1'] - 30,
-          |                        to: data[data.axis.units.pos + '1'],
-          |                        easing: 'easeOutQuart'
-          |                    };
-          |
-          |                    let pos2Animation = {
-          |                        begin: seq * delays,
-          |                        dur: durations,
-          |                        from: data[data.axis.units.pos + '2'] - 100,
-          |                        to: data[data.axis.units.pos + '2'],
-          |                        easing: 'easeOutQuart'
-          |                    };
-          |
-          |                    let animations = {};
-          |                    animations[data.axis.units.pos + '1'] = pos1Animation;
-          |                    animations[data.axis.units.pos + '2'] = pos2Animation;
-          |                    animations['opacity'] = {
-          |                        begin: seq * delays,
-          |                        dur: durations,
-          |                        from: 0,
-          |                        to: 1,
-          |                        easing: 'easeOutQuart'
-          |                    };
-          |
-          |                    data.element.animate(animations);
           |                }
           |            });
           |
-          |            chart.on('created', function () {
-          |                $('.ct-point').on('mouseover', function (e) {
+          |            chart.on('created', () => {
+          |                $('#loading').css('display', 'none');
+          |                $('#graphtv-input').prop('disabled', false)
+          |                $('#graphtv-header').text(seasons[0].title);
+          |                const ctPoint = $('.ct-point');
+          |                ctPoint.on('mouseover', function (e) {
           |                    const mouseX = e.pageX - 60;
           |                    const mouseY = e.pageY + 25;
           |
@@ -701,71 +589,49 @@ class ProjectsControllerTest extends PlaySpec {
           |                                    + 'IMDB Rating: ' + $(this).attr('rating'));
           |                });
           |
-          |                $('.ct-point').on('mouseout', function (e) {
+          |                ctPoint.on('mouseout', function (e) {
           |                    $('#tooltip').css('display', 'none');
           |                });
           |            });
           |        }
           |
-          |        $('#graphtv-input').on('keyup', function (e) {
+          |        const searchShows = async (searchTerm) => {
+          |            const searchResults = await fetch(`https://imdb-api.com/en/API/searchSeries/k_9fbi3vm5/${searchTerm}`).then(response => response.json());
+          |            const matchingShow = searchResults.results.filter(show => show.title.toLowerCase() === searchTerm.toLowerCase());
+          |            return matchingShow.length ? matchingShow[0] : {};
+          |        }
+          |
+          |        const getShowSeasonNumbers = async (id) => {
+          |            const showDetailResults = await fetch(`https://imdb-api.com/en/API/Title/k_9fbi3vm5/${id}`).then(response => response.json());
+          |            return showDetailResults.tvSeriesInfo.seasons;
+          |        }
+          |
+          |        const getShowSeasonDetails = async (id, seasonNumbers) => {
+          |            return Promise.all(seasonNumbers.map(seasonNumber => {
+          |                return fetch(`https://imdb-api.com/en/API/SeasonEpisodes/k_9fbi3vm5/${id}/${seasonNumber}`)
+          |                        .then(response => response.json())
+          |            }));
+          |        }
+          |        const graphTvInput = $('#graphtv-input');
+          |
+          |        graphTvInput.on('keyup', async (e) => {
           |            if (e.keyCode === 13) {
-          |                let xmlHttp = new XMLHttpRequest();
-          |
-          |                xmlHttp.onreadystatechange = function () {
-          |                    $('#loading').css('display', '');
-          |
-          |
-          |                    if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-          |                        $('#loading').css('display', 'none');
-          |                        const res = JSON.parse(xmlHttp.response);
-          |
-          |                        if (res.totalSeasons) {
-          |                            const totalSeasons = res.totalSeasons;
-          |                            let series = [];
-          |                            let seasons = [];
-          |                            let nextXhr = [];
-          |
-          |                            for (let i = 1; i <= totalSeasons; i++) {
-          |                                (function (i) {
-          |                                    nextXhr[i] = new XMLHttpRequest();
-          |                                    url = 'https://www.omdbapi.com/?t=' + $('#graphtv-input').val() + '&Season=' + i + '&apikey=4f09f372'
-          |                                    nextXhr[i].open('GET', url, true);
-          |
-          |                                    nextXhr[i].onreadystatechange = function () {
-          |                                        if (nextXhr[i].readyState === 4 && nextXhr[i].status === 200) {
-          |                                            const nextRes = JSON.parse(nextXhr[i].response);
-          |                                            seasons.push(nextRes);
-          |
-          |                                            if (seasons.length >= totalSeasons) {
-          |                                                if (seasons[0].Response !== 'False') {
-          |                                                    $('#graphtv-header').text(seasons[0].Title);
-          |
-          |                                                    if (seasons[seasons.length - 1].Episodes[0].Released === 'N/A') {
-          |                                                        seasons.splice(-1, 1);
-          |                                                    }
-          |
-          |                                                    makeGraph(seasons);
-          |                                                    $('#charterino').css('display', '');
-          |                                                } else {
-          |                                                    $('#graphtv-header').text('TV show not found.');
-          |                                                    $('#charterino').css('display', 'none');
-          |                                                }
-          |                                            }
-          |                                        }
-          |                                    };
-          |
-          |                                    nextXhr[i].send();
-          |                                })(i);
-          |                            }
-          |                        } else {
-          |                            $('#graphtv-header').text('TV show not found. You may have searched for a movie by mistake.');
-          |                            $('#charterino').css('display', 'none');
-          |                        }
-          |                    }
+          |                const loading = $('#loading');
+          |                const notFound = $('#not-found');
+          |                loading.css('display', '');
+          |                notFound.css('display', 'none');
+          |                graphTvInput.prop('disabled', true)
+          |                const show = await searchShows($('#graphtv-input').val());
+          |                if (!jQuery.isEmptyObject(show)) {
+          |                    const seasonNumbers = await getShowSeasonNumbers(show.id);
+          |                    getShowSeasonDetails(show.id, seasonNumbers).then(seasons => {
+          |                        makeGraph(seasons);
+          |                    });
+          |                } else {
+          |                    loading.css('display', 'none');
+          |                    notFound.css('display', '');
+          |                    graphTvInput.prop('disabled', false)
           |                }
-          |
-          |                xmlHttp.open('GET', 'https://www.omdbapi.com/?t=' + $('#graphtv-input').val() + '&apikey=4f09f372', true);
-          |                xmlHttp.send(null);
           |            }
           |        });
           |    </script>
