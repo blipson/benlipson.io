@@ -25,39 +25,37 @@
     <script type="text/javascript">
         function makeGraph(seasons) {
             seasons.sort((a, b) => a.episodes[0].season - b.episodes[0].season);
-            const maxSeason = seasons
-                    .map(season => parseInt(season.episodes[0].seasonNumber))
-                    .reduce((previousMax, curr) => Math.max(previousMax, curr), 0);
-            const prependNulls = seasons.reduce((acc, season) => {
-                const seasonNumber = parseInt(season.episodes[0].seasonNumber);
-                if (seasonNumber === 1) {
-                    acc[seasonNumber] = [];
-                    acc[seasonNumber + 1] = [...Array(season.episodes.length).keys()].map(() => null);
-                } else if (seasonNumber < maxSeason) {
-                    acc[seasonNumber + 1] = [...Array(season.episodes.length + acc[seasonNumber].length).keys()].map(() => null);
-                }
-                return acc;
-            }, {});
-
-            const output = seasons.map((season) => {
-                return [...prependNulls[season.episodes[0].seasonNumber], ...season.episodes.map(episode => {
-                    return {
-                        number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
-                        rating: episode.imDbRating,
-                        released: episode.released,
-                        title: episode.title,
-                        value: episode.imDbRating
-                    }
-                })];
-            });
-            const lowest = seasons.map(season =>
-                season.episodes.reduce((previousMinThisSeason, curr) => Math.min(previousMinThisSeason.imDbRating, curr.imDbRating), 0)
-            ).reduce((previousMin, curr) => Math.min(previousMin, curr), 0);
-
+            const seasonNumbersInYears = parseInt(seasons[0].episodes[0].seasonNumber) >= 1953; // the year the television was invented
             let chart = new Chartist.Line('.ct-chart', {
-                series: output,
+                series: seasons.map((season, index) => {
+                    return [...seasons.reduce((acc, season) => {
+                        const accLen = Object.keys(acc).length;
+                        const seasonNumber = seasonNumbersInYears ?
+                                (accLen >= 2 ? accLen : accLen + 1) :
+                                parseInt(season.episodes[0].seasonNumber);
+                        if (seasonNumber === 1) {
+                            acc[seasonNumber] = [];
+                            acc[seasonNumber + 1] = [...Array(season.episodes.length).keys()].map(() => null);
+                        } else if (seasonNumber < seasonNumbersInYears ? seasons.length : seasons
+                                .map(season => parseInt(season.episodes[0].seasonNumber))
+                                .reduce((previousMax, curr) => Math.max(previousMax, curr), 0)) {
+                            acc[seasonNumber + 1] = [...Array(season.episodes.length + acc[seasonNumber].length).keys()].map(() => null);
+                        }
+                        return acc;
+                    }, {})[seasonNumbersInYears ? index + 1 : season.episodes[0].seasonNumber], ...season.episodes.map(episode => {
+                        return {
+                            number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
+                            rating: episode.imDbRating,
+                            released: episode.released,
+                            title: episode.title,
+                            value: episode.imDbRating
+                        }
+                    })];
+                }),
             }, {
-                low: lowest
+                low: seasons.map(season =>
+                        season.episodes.reduce((previousMinThisSeason, curr) => Math.min(previousMinThisSeason.imDbRating, curr.imDbRating), 0)
+                ).reduce((previousMin, curr) => Math.min(previousMin, curr), 0)
             });
 
             chart.on('draw', (data) => {
@@ -78,10 +76,7 @@
                 $('#graphtv-header').text(seasons[0].title);
                 const ctPoint = $('.ct-point');
                 ctPoint.on('mouseover', function (e) {
-                    const mouseX = e.pageX - 60;
-                    const mouseY = e.pageY + 25;
-
-                    $('#tooltip').css({ 'top': mouseY, 'left': mouseX, 'display': '' })
+                    $('#tooltip').css({ 'top': e.pageY + 25, 'left': e.pageX - 60, 'display': '' })
                             .html($(this).attr('title') + '<br/>'
                                     + $(this).attr('number') + '<br/>'
                                     + $(this).attr('released') + '<br/>'
@@ -122,8 +117,7 @@
                 graphTvInput.prop('disabled', true)
                 const show = await searchShows($('#graphtv-input').val());
                 if (!jQuery.isEmptyObject(show)) {
-                    const seasonNumbers = await getShowSeasonNumbers(show.id);
-                    getShowSeasonDetails(show.id, seasonNumbers).then(seasons => {
+                    getShowSeasonDetails(show.id, await getShowSeasonNumbers(show.id)).then(seasons => {
                         makeGraph(seasons);
                     });
                 } else {
