@@ -25,10 +25,6 @@
                 stroke: #a35f9a
             }
 
-            .ct-series.ct-series-t {
-                stroke: #b0af67
-            }
-
             .ct-series.ct-series-u {
                 stroke: #8134ad
             }
@@ -41,8 +37,8 @@
                 stroke: #7d7d7d
             }
 
-            .ct-series.ct-series-mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers {
-                stroke: #202020
+            .ct-series.ct-series-x {
+                stroke: #b0af67
             }
 
             .ct-series.ct-series-y {
@@ -208,24 +204,39 @@
             });
         }
 
-        const searchShows = async (searchTerm) => {
-            try {
-                const matchingShow = await fetch(`https://imdb-api.com/en/API/searchSeries/k_9fbi3vm5/${searchTerm}`)
-                        .then(response => response.json())
-                        .results
-                        .filter(show => show.title.toLowerCase() === searchTerm.toLowerCase());
-                return {
-                    matchingShow: matchingShow.length ? matchingShow[0] : {},
-                    api: "imdb-api"
-                }
-            } catch (exception) {
-                const matchingShow = await fetch(`https://www.omdbapi.com/?t=${searchTerm}&type=series&apikey=4f09f372`)
-                    .then(response => response.json());
-                return {
-                    matchingShow: matchingShow.Error ? {}: matchingShow,
-                    api: "omdb"
-                }
-            }
+        const determineApiAndSearchShows = async (searchTerm) => {
+            return await fetch(`https://imdb-api.com/en/API/searchSeries/k_9fbi3vm5/${searchTerm}`)
+                .then(async response => {
+                    const matchingShowResults = await response.json();
+                    const matchingShow = matchingShowResults.results
+                            .filter(show => show.title.toLowerCase() === searchTerm.toLowerCase());
+                    return {
+                        matchingShow: matchingShow.length ? matchingShow[0] : {},
+                        api: "imdb-api"
+                    }
+                })
+                .catch(async () => {
+                    return await fetch(`https://www.ratingraph.com/search-items/${searchTerm}`)
+                        .then(async response => {
+                            const matchingShowResults = await response.json();
+                            const matchingShow = matchingShowResults.items
+                                    .filter(item => item.results.map(result => result.name.toLowerCase() === searchTerm.toLowerCase()))
+                                    .map(item => item.results[0]);
+                            return {
+                                matchingShow: matchingShow.length ? matchingShow[0] : {},
+                                api: "rating-graph"
+                            }
+                        })
+                        .catch(async () => {
+                            const matchingShow = await fetch(`https://www.omdbapi.com/?t=${searchTerm}&type=series&apikey=4f09f372`)
+                                .then(response => response.json());
+                            return {
+                                matchingShow: matchingShow.Error ? {}: matchingShow,
+                                api: "omdb"
+                            }
+                        });
+
+                });
         }
 
         const getShowSeasonNumbersFromImdbApi = async (id) => {
@@ -274,16 +285,62 @@
             return Array.from({ length: totalSeasonNumber }, (_, index) => index + 1);
         }
 
+        const getRatingGraphShowId = (show) => {
+            const splitBasedOnBackslash = show.path.split("/");
+            const splitBasedOnDash = splitBasedOnBackslash[splitBasedOnBackslash.length - 2].split("-");
+            return splitBasedOnDash[splitBasedOnDash.length - 1];
+        }
+
+        const getShowEpisodesFromRatingGraph = async (showId, results = {}, aggregatedResults = [], start = 0) => {
+            const newResults = await fetch(`https://www.ratingraph.com/show-episodes-list/${showId}/?draw=1&order[1][dir]=asc&start=${start}&length=250`)
+                    .then(response => response.json());
+            if (newResults.data.length <= 0) {
+                return aggregatedResults;
+            } else {
+                return getShowEpisodesFromRatingGraph(showId, newResults, aggregatedResults.concat(newResults.data), start + 250)
+            }
+        }
+        const mapRatingGraphEpisodesToImdbApiSeasonFormat = (episodes, title, startYear) => {
+            const seasons = episodes
+                    .reduce((acc, curr) => {
+                        acc[curr.season] = [...acc[curr.season] || [], curr];
+                        return acc;
+                    }, {});
+
+            return Object.keys(seasons).map(season => {
+                return {
+                    title: title,
+                    fullTitle: title,
+                    "type": "TVSeries",
+                    year: startYear,
+                    "episodes": seasons[season].map(episode => {
+                        return {
+                            seasonNumber: season,
+                            episodeNumber: episode.episode,
+                            title: episode.name,
+                            year: episode.start,
+                            released: episode.start,
+                            imDbRating: episode.average_rating,
+                            imDbRatingCount: episode.total_votes
+                        }
+                    })
+                }
+            });
+        }
+
         const handleEnterKeyPressed = async () => {
             showElement(loading);
             hideElement(notFound);
             disableElement(graphTvInput);
-            const show = await searchShows(graphTvInput.value);
+            const show = await determineApiAndSearchShows(graphTvInput.value);
             if (foundMatchingShow(show)) {
                 if (show.api === "imdb-api") {
                     getShowSeasonDetailsFromImdbApi(show.matchingShow.id, await getShowSeasonNumbersFromImdbApi(show.matchingShow.id)).then(seasons => {
                         makeGraph(seasons);
                     });
+                } else if (show.api === "rating-graph") {
+                    const episodes = await getShowEpisodesFromRatingGraph(getRatingGraphShowId(show.matchingShow));
+                    makeGraph(mapRatingGraphEpisodesToImdbApiSeasonFormat(episodes, show.matchingShow.name, show.matchingShow.start));
                 } else {
                     getShowSeasonDetailsFromOmdb(
                         graphTvInput.value,
