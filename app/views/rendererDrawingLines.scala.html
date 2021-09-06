@@ -45,8 +45,8 @@
     <img src="@controllers.routes.Assets.at("images/linearequation.svg")"  alt=""/>
 </p>
 <p>
-    &emsp;&emsp;Where x and y represent any given point along the line, m represents the slope of the line (or how steep the line is), and y<sub>0</sub>
-    represents the value of y when x = 0 (otherwise referred to as the y-intercept because that's the point at which the line intercepts the
+    &emsp;&emsp;Where mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers and y represent any given point along the line, m represents the slope of the line (or how steep the line is), and y<sub>0</sub>
+    represents the value of y when mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = 0 (otherwise referred to as the y-intercept because that's the point at which the line intercepts the
     y axis on a graph). Here are a few good examples of lines with their equations that I lifted from Wikipedia:
 </p>
 <p>
@@ -82,11 +82,11 @@
     names):
 </p>
 <pre><code>
-        y = (m * x) + b
-        y - b = (m * x) // subtract b from both sides
-        -b = (m * x) - y // subtract y from both sides
-        -b = -y + (m * x) // flip right side around
-        b = y - (m * x) // negate both sides
+        y = (m * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers) + b
+        y - b = (m * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers) // subtract b from both sides
+        -b = (m * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers) - y // subtract y from both sides
+        -b = -y + (m * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers) // flip right side around
+        b = y - (m * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers) // negate both sides
 </code></pre>
 <p>
     &emsp;&emsp;Now we can calculate any value within the equation! This means that we can draw our full line. All we have to do is start at our
@@ -94,10 +94,10 @@
     iterating through Y and calculating X, but this way seemed simpler to me.
 </p>
 <pre><code>
-        for (int x = x0; x <= x1; x++)
+        for (int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = x0; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers <= x1; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers++)
         {
-            int y = (m * x) + b;
-            image.set(x, y, color);
+            int y = (m * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers) + b;
+            image.set(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y, color);
         }
 </code></pre>
 <p>
@@ -111,8 +111,8 @@
 </p>
 <p>
     &emsp;&emsp;Neat! But there are still some problems with this code. See if you can sort out a few of them yourself before reading on! Ready?
-    Cool, me too. Firstly, the choice of constant for our iterator matters greatly. If we change <code>for (int x = x0; x <= x1; x++)</code> to be
-    <code>for (int x = x0; x <= x1; x += 10)</code> for example, changing the constant from 1 to 10, we get:
+    Cool, me too. Firstly, the choice of constant for our iterator matters greatly. If we change <code>for (int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = x0; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers <= x1; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers++)</code> to be
+    <code>for (int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = x0; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers <= x1; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers += 10)</code> for example, changing the constant from 1 to 10, we get:
 </p>
 <p>
     <img src="@controllers.routes.Assets.at("images/sadline.png")" width="250"  alt=""/>
@@ -123,22 +123,22 @@
     called it with the arguments in reverse order like <code>line(80, 40, 13, 20, image, white);</code>. Our for loop would never trigger and we'd
     just end up with a blank image. A lot of graphics frameworks actually require that you define your lines from bottom left to top right, and
     don't work with input defined the other way around. As such almost all 3D object assets come with lines defined this way, so this bug isn't
-    actually a huge deal. We can still remedy this though by always getting the minimum x and looping to the maximum x.
+    actually a huge deal. We can still remedy this though by always getting the minimum mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers and looping to the maximum mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers.
 </p>
 <pre><code>
         int minX = std::min(x0, x1);
         int maxX = std::max(x0, x1);
-        for (int x = minX; x <= maxX; x++)
+        for (int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = minX; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers <= maxX; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers++)
         {
-            int y = (m * x) + b;
-            image.set(x, y, color);
+            int y = (m * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers) + b;
+            image.set(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y, color);
         }
 </code></pre>
 <p>
-    &emsp;&emsp;In the same vein, what about straight up and down lines where the x values for both points are equal? Right now those types of lines
+    &emsp;&emsp;In the same vein, what about straight up and down lines where the mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers values for both points are equal? Right now those types of lines
     wouldn't trigger our for loop either, so we have to handle that case. What we can do is switch which axis we're iterating over to the Y axis,
     since the X axis necessarily has nothing to iterate over if both X coordinates are equal. As far as calculating the X coordinate for each point,
-    we can rearrange our y = mx + y<sub>0</sub> formula from earlier to be x = (y - y<sub>0</sub>) / m. You also might notice after drawing a few different lines that steep lines tend
+    we can rearrange our y = mx + y<sub>0</sub> formula from earlier to be mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = (y - y<sub>0</sub>) / m. You also might notice after drawing a few different lines that steep lines tend
     to look a lot worse than non-steep ones. When the height of the line is greater than its width, we'll also want to iterate over the Y axis to make sure we're filling in every point.
     After fixing those few bugs, here we have our (relatively) bug-free (albeit very inefficient), rudimentary line-drawing algorithm:
 </p>
@@ -159,16 +159,16 @@
                 int maxY = std::max(y0, y1);
                 for (int y = minY; y <= maxY; y++)
                 {
-                    int x = (y - b) / m;
-                    image.set(x, y, color);
+                    int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = (y - b) / m;
+                    image.set(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y, color);
                 }
             }
             else
             {
-                for (int x = minX; x <= maxX; x++)
+                for (int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = minX; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers <= maxX; mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers++)
                 {
-                    int y = (m * x) + b;
-                    image.set(x, y, color);
+                    int y = (m * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers) + b;
+                    image.set(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y, color);
                 }
             }
         }
@@ -194,19 +194,19 @@
         typedef struct
         {
             char type = "v";
-            float x, y, z;
+            float mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y, z;
         } GEOMETRIC_VERTEX;
 
         typedef struct
         {
             char type = "vt";
-            float x, y, z;
+            float mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y, z;
         } TEXTURE_VERTEX;
 
         typedef struct
         {
             char type = "vn";
-            float x, y, z;
+            float mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y, z;
         } VERTEX_NORMAL;
 </code></pre>
 <p>
@@ -325,7 +325,7 @@
             {
                 struct
                 {
-                    t x, y, z;
+                    t mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y, z;
                 };
                 struct
                 {
@@ -334,42 +334,42 @@
                 t raw[3];
             };
 
-            vec3() : x(0), y(0), z(0)
+            vec3() : mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers(0), y(0), z(0)
             {
             }
 
-            vec3(t x, t y, t z) : x(x), y(y), z(z)
+            vec3(t mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, t y, t z) : mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers), y(y), z(z)
             {
             }
 
             inline vec3&lt;t&gt; operator^(const vec3&lt;t&gt; &v) const
             {
-                return vec3&lt;t&gt;(y * v.z - z * v.y, z * v.x - x * v.z, x * v.y - y * v.x);
+                return vec3&lt;t&gt;(y * v.z - z * v.y, z * v.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers - mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers * v.z, mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers * v.y - y * v.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers);
             }
 
             inline vec3&lt;t&gt; operator+(const vec3&lt;t&gt; &v) const
             {
-                return vec3&lt;t&gt;(x + v.x, y + v.y, z + v.z);
+                return vec3&lt;t&gt;(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers + v.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y + v.y, z + v.z);
             }
 
             inline vec3&lt;t&gt; operator-(const vec3&lt;t&gt; &v) const
             {
-                return vec3&lt;t&gt;(x - v.x, y - v.y, z - v.z);
+                return vec3&lt;t&gt;(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers - v.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, y - v.y, z - v.z);
             }
 
             inline vec3&lt;t&gt; operator*(float f) const
             {
-                return vec3&lt;t&gt;(x * f, y * f, z * f);
+                return vec3&lt;t&gt;(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers * f, y * f, z * f);
             }
 
             inline t operator*(const vec3&lt;t&gt; &v) const
             {
-                return x * v.x + y * v.y + z * v.z;
+                return mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers * v.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers + y * v.y + z * v.z;
             }
 
             float norm() const
             {
-                return std::sqrt(x * x + y * y + z * z);
+                return std::sqrt(mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers * mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers + y * y + z * z);
             }
 
             vec3&lt;t&gt; &normalize(t l = 1)
@@ -388,7 +388,7 @@
         template&lt;class t&gt;
         std::ostream &operator&lt;&lt;(std::ostream &s, vec3&lt;t&gt; &v)
         {
-            s &lt;&lt; "(" &lt;&lt; v.x &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; ")\n";
+            s &lt;&lt; "(" &lt;&lt; v.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers &lt;&lt; ", " &lt;&lt; v.y &lt;&lt; ", " &lt;&lt; v.z &lt;&lt; ")\n";
             return s;
         }
 </code></pre>
@@ -397,7 +397,7 @@
     generic template class that can take its own type as an input, that way we can use the same code for vectors with integers or with floating point numbers (as referenced in the type aliases near the bottom), and
     that this struct is basically just defining a bunch of <a href="https://mathinsight.org/vector_introduction">vector math</a>. Vector math is really easy once you get the hang of it, so I suggest you do a bit of
     research on your own if you aren't comfortable with it already. After going through this code you might be thinking, "But I thought vectors had to have a direction associated with them? Doesn't that mean you
-    need multiple points? This vec3 struct only stores the x y and z coordinates of one point." Right you are, imaginary reader! When a vector is defined as one point it can be assumed that the direction is moving
+    need multiple points? This vec3 struct only stores the mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers y and z coordinates of one point." Right you are, imaginary reader! When a vector is defined as one point it can be assumed that the direction is moving
     away from the origin (0, 0). It's a simple shortcut mathematicians do in order to define points in euclidean space, but still have access to all the nice vector operations that're important for more complex
     algebraic operations. For now you can just think of them as "points in space" if you want (though that's not 100% accurate).
 </p>
@@ -498,9 +498,9 @@
                     // use the modulo to go back to 0 and connect the triangle when on the last two vertices of the face
                     Vec3f v1 = model->vert(face[(j + 1) % 3]);
                     // scale the model appropriately to the correct size
-                    int x0 = (v0.x + 1) * width / 2;
+                    int x0 = (v0.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers + 1) * width / 2;
                     int y0 = (v0.y + 1) * height / 2;
-                    int x1 = (v1.x + 1) * width / 2;
+                    int x1 = (v1.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers + 1) * width / 2;
                     int y1 = (v1.y + 1) * height / 2;
                     line(x0, y0, x1, y1, image, white); // draw a line for each pair of vertices in this triangle
                 }

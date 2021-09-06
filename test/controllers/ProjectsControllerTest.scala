@@ -350,7 +350,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                    skip 1 bit, etc...
           |                    if it's in position 2, then it will start with the second bit and add 2 bits, skip 2
           |                    Bits, etc... Position 4 starts with the fourth bit and adds 4, skips 4, etc... And so
-          |                    On and so forth. The x's will count as 0's. This is why we used that particular formula in step 1. Counting
+          |                    On and so forth. The mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers's will count as 0's. This is why we used that particular formula in step 1. Counting
           |                    by powers of 2 in a base 2 number system (binary) allows us to encode data as either even and correct (0) or
           |                    odd and incorrect (1). It all starts with the left hand side of that function that states 2<sup>p</sup>.
           |                </p>
@@ -383,18 +383,18 @@ class ProjectsControllerTest extends PlaySpec {
           |                    </thead>
           |                    <tbody>
           |                        <td>
-          |                            <mark>x</mark>
+          |                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
           |                            x1x101x0011
           |                        </td>
           |                        <td>
-          |                            <mark>x</mark>
-          |                            x
+          |                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
+          |                            mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers
           |                            <mark>1</mark>
-          |                            x
+          |                            mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers
           |                            <mark>1</mark>
           |                            0
           |                            <mark>1</mark>
-          |                            x
+          |                            mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers
           |                            <mark>0</mark>
           |                            0
           |                            <mark>1</mark>
@@ -408,7 +408,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                    </tbody>
           |                    <tbody>
           |                        <td>0
-          |                            <mark>x</mark>
+          |                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
           |                            1x101x0011
           |                        </td>
           |                        <td>0
@@ -427,7 +427,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                    </tbody>
           |                    <tbody>
           |                        <td>011
-          |                            <mark>x</mark>
+          |                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
           |                            101x0011
           |                        </td>
           |                        <td>011
@@ -443,7 +443,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                    </tbody>
           |                    <tbody>
           |                        <td>0111101
-          |                            <mark>x</mark>
+          |                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
           |                            0011
           |                        </td>
           |                        <td>0111101
@@ -542,7 +542,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                stroke: #7d7d7d
           |            }
           |
-          |            .ct-series.ct-series-x {
+          |            .ct-series.ct-series-mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers {
           |                stroke: #202020
           |            }
           |
@@ -577,140 +577,232 @@ class ProjectsControllerTest extends PlaySpec {
           |        </span>
           |    </body>
           |    <script type="text/javascript">
-          |        function makeGraph(seasons) {
-          |            seasons.sort((a, b) => a.episodes[0].season - b.episodes[0].season);
-          |            const seasonNumbersInYears = parseInt(seasons[0].episodes[0].seasonNumber) >= 1953; // the year the television was invented
-          |            console.log(seasons.map((season, index) => {
-          |                return [...seasons.reduce((acc, season) => {
-          |                    const accLen = Object.keys(acc).length;
-          |                    const seasonNumber = seasonNumbersInYears ?
-          |                            (accLen >= 2 ? accLen : accLen + 1) :
-          |                            parseInt(season.episodes[0].seasonNumber);
-          |                    if (seasonNumber === 1) {
-          |                        acc[seasonNumber] = [];
-          |                        acc[seasonNumber + 1] = [...Array(season.episodes.filter(episode => episode.imDbRating !== "").length).keys()].map(() => null);
-          |                    } else if (seasonNumber < seasonNumbersInYears ? seasons.length : seasons
-          |                            .map(season => parseInt(season.episodes[0].seasonNumber))
-          |                            .reduce((previousMax, curr) => Math.max(previousMax, curr), 0)) {
-          |                        acc[seasonNumber + 1] = [...Array(season.episodes.filter(episode => episode.imDbRating !== "").length + acc[seasonNumber].length).keys()].map(() => null);
+          |        const prependNullsForSeason = (numberOfEpisodesInPreviousSeason) => [...Array(numberOfEpisodesInPreviousSeason).keys()].map(() => null);
+          |
+          |        const getMaxSeasonNumber = (seasons) => seasons
+          |                .map(season => parseInt(season.episodes[0].seasonNumber))
+          |                .reduce((previousMax, curr) => Math.max(previousMax, curr), 0);
+          |
+          |        const getSeasonNumber = (accLen, season, seasonNumbersInYears) => seasonNumbersInYears ?
+          |                (accLen >= 2 ? accLen : accLen + 1) :
+          |                parseInt(season.episodes[0].seasonNumber);
+          |
+          |        const prependNullsForSeasons = (seasons, seasonNumbersInYears) => seasons.reduce((acc, season) => {
+          |            const seasonNumber = getSeasonNumber(Object.keys(acc).length, season, seasonNumbersInYears);
+          |            if (seasonNumber === 1) {
+          |                acc[seasonNumber] = prependNullsForSeason(0);
+          |            }
+          |            if (seasonNumber < seasonNumbersInYears ? seasons.length : getMaxSeasonNumber(seasons)) {
+          |                acc[seasonNumber + 1] = prependNullsForSeason(season.episodes.filter(episode => episode.imDbRating !== "").length + acc[seasonNumber].length);
+          |            }
+          |            return acc;
+          |        }, {});
+          |
+          |        const defineMetadataForDataPoint = (season) => season.episodes
+          |                .filter(episode => episode.imDbRating !== "")
+          |                .map(episode => {
+          |                    return {
+          |                        number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
+          |                        rating: episode.imDbRating,
+          |                        released: episode.released,
+          |                        title: episode.title,
+          |                        value: episode.imDbRating
           |                    }
-          |                    return acc;
-          |                }, {})[seasonNumbersInYears ? index + 1 : season.episodes[0].seasonNumber], ...season.episodes
-          |                        .filter(episode => episode.imDbRating !== "")
-          |                        .map(episode => {
-          |                            return {
-          |                                number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
-          |                                rating: episode.imDbRating,
-          |                                released: episode.released,
-          |                                title: episode.title,
-          |                                value: episode.imDbRating
-          |                            }
-          |                        })]}));
-          |            let chart = new Chartist.Line('.ct-chart', {
-          |                series: seasons.map((season, index) => {
-          |                    return [...seasons.reduce((acc, season) => {
-          |                        const accLen = Object.keys(acc).length;
-          |                        const seasonNumber = seasonNumbersInYears ?
-          |                                (accLen >= 2 ? accLen : accLen + 1) :
-          |                                parseInt(season.episodes[0].seasonNumber);
-          |                        if (seasonNumber === 1) {
-          |                            acc[seasonNumber] = [];
-          |                            acc[seasonNumber + 1] = [...Array(season.episodes.filter(episode => episode.imDbRating !== "").length).keys()].map(() => null);
-          |                        } else if (seasonNumber < seasonNumbersInYears ? seasons.length : seasons
-          |                                .map(season => parseInt(season.episodes[0].seasonNumber))
-          |                                .reduce((previousMax, curr) => Math.max(previousMax, curr), 0)) {
-          |                            acc[seasonNumber + 1] = [...Array(season.episodes.filter(episode => episode.imDbRating !== "").length + acc[seasonNumber].length).keys()].map(() => null);
-          |                        }
-          |                        return acc;
-          |                    }, {})[seasonNumbersInYears ? index + 1 : season.episodes[0].seasonNumber], ...season.episodes
-          |                            .filter(episode => episode.imDbRating !== "")
-          |                            .map(episode => {
-          |                                return {
-          |                                    number: `Season ${episode.seasonNumber}, Episode ${episode.episodeNumber}`,
-          |                                    rating: episode.imDbRating,
-          |                                    released: episode.released,
-          |                                    title: episode.title,
-          |                                    value: episode.imDbRating
-          |                                }
-          |                    })];
-          |                }),
+          |                });
+          |
+          |        const getSeasonNumberForSeries = (seasonNumbersInYears, season, index) => seasonNumbersInYears ? index + 1 : season.episodes[0].seasonNumber;
+          |
+          |        const getSeries = (seasons, seasonNumbersInYears) => seasons.map((season, index) => [
+          |            ...prependNullsForSeasons(seasons, seasonNumbersInYears)[getSeasonNumberForSeries(seasonNumbersInYears, season, index)],
+          |            ...defineMetadataForDataPoint(season)
+          |        ]);
+          |
+          |        const getLowestImdbRatingForSeries = (seasons) => seasons.map(season =>
+          |                season.episodes
+          |                        .reduce((previousMinThisSeason, curr) =>
+          |                                Math.min(previousMinThisSeason.imDbRating, curr.imDbRating), 0))
+          |                .reduce((previousMin, curr) =>
+          |                        Math.min(previousMin, curr), 0)
+          |
+          |        const makeChart = (seasons) => {
+          |            // The APIs can return season numbers either in sequential format [1, 2, 3, etc...] or in the format of the year released [2006, 2007, 2008, etc...].
+          |            const seasonNumbersInYears = parseInt(seasons[0].episodes[0].seasonNumber) >= 1953; // the year the television was invented
+          |            return new Chartist.Line('.ct-chart', {
+          |                series: getSeries(seasons, seasonNumbersInYears),
           |            }, {
-          |                low: seasons.map(season =>
-          |                        season.episodes.reduce((previousMinThisSeason, curr) => Math.min(previousMinThisSeason.imDbRating, curr.imDbRating), 0)
-          |                ).reduce((previousMin, curr) => Math.min(previousMin, curr), 0)
+          |                low: getLowestImdbRatingForSeries(seasons)
           |            });
+          |        }
+          |
+          |        const handleChartDrawEvent = (data) => {
+          |            if (data.type === 'point') {
+          |                data.element.attr({
+          |                    title: data.series[data.index].title,
+          |                    value: data.series[data.index].value,
+          |                    number: data.series[data.index].number,
+          |                    released: data.series[data.index].released,
+          |                    rating: data.series[data.index].rating
+          |                });
+          |            }
+          |        }
+          |
+          |        const disableElement = (element) => {
+          |            element.disabled = true;
+          |        }
+          |
+          |        const enableElement = (element) => {
+          |            element.disabled = false;
+          |        }
+          |
+          |        const showElement = (element) => {
+          |            element.style.display = '';
+          |        }
+          |
+          |        const hideElement = (element) => {
+          |            element.style.display = 'none';
+          |        }
+          |
+          |        const setContentOfElement = (element, content) => {
+          |            element.innerHTML = content;
+          |        }
+          |
+          |        const graphTvInput = document.getElementById("graphtv-input");
+          |        const loading = document.getElementById("loading");
+          |        const notFound = document.getElementById("not-found");
+          |
+          |        const handleDataPointHoverEvents = (dataPoint) => {
+          |            const tooltip = document.getElementById("tooltip");
+          |            dataPoint.onmouseover = (e) => {
+          |                tooltip.style.top = `${e.pageY + 25}px`;
+          |                tooltip.style.left = `${e.pageX - 60}px`;
+          |                showElement(tooltip);
+          |                setContentOfElement(tooltip, `${dataPoint.getAttribute("title")}<br/>` +
+          |                        `${dataPoint.getAttribute("number")}<br/>` +
+          |                        `${dataPoint.getAttribute("released")}<br/>` +
+          |                        `IMDB Rating: ${dataPoint.getAttribute("rating")}`)
+          |            }
+          |            dataPoint.onmouseout = () => {
+          |                hideElement(tooltip);
+          |            }
+          |        }
+          |
+          |        const handleChartCreatedEvent = (seasons) => {
+          |            hideElement(loading);
+          |            enableElement(graphTvInput);
+          |            setContentOfElement(document.getElementById("graphtv-header"), seasons[0].title);
+          |            const dataPoints = document.getElementsByClassName("ct-point");
+          |            Array.from(dataPoints).map(dataPoint => {
+          |                handleDataPointHoverEvents(dataPoint);
+          |            })
+          |        }
+          |
+          |        const makeGraph = (seasons) => {
+          |            seasons.sort((a, b) => a.episodes[0].season - b.episodes[0].season);
+          |            let chart = makeChart(seasons);
           |
           |            chart.on('draw', (data) => {
-          |                if (data.type === 'point') {
-          |                    data.element.attr({
-          |                        title: data.series[data.index].title,
-          |                        value: data.series[data.index].value,
-          |                        number: data.series[data.index].number,
-          |                        released: data.series[data.index].released,
-          |                        rating: data.series[data.index].rating
-          |                    });
-          |                }
+          |                handleChartDrawEvent(data);
           |            });
           |
           |            chart.on('created', () => {
-          |                document.getElementById("loading").style.display = "none";
-          |                document.getElementById("graphtv-input").disabled = false;
-          |                document.getElementById("graphtv-header").innerHTML = seasons[0].title;
-          |                const ctPoints = document.getElementsByClassName("ct-point");
-          |                Array.from(ctPoints).map(ctPoint => {
-          |                    const tooltip = document.getElementById("tooltip");
-          |                    ctPoint.onmouseover = (e) => {
-          |                        tooltip.style.top = `${e.pageY + 25}px`;
-          |                        tooltip.style.left = `${e.pageX - 60}px`;
-          |                        tooltip.style.display = "";
-          |                        tooltip.innerHTML = `${ctPoint.getAttribute("title")}<br/>` +
-          |                                `${ctPoint.getAttribute("number")}<br/>` +
-          |                                `${ctPoint.getAttribute("released")}<br/>` +
-          |                                `IMDB Rating: ${ctPoint.getAttribute("rating")}`;
-          |                    }
-          |                    ctPoint.onmouseout = (e) => {
-          |                        tooltip.style.display = "none";
-          |                    }
-          |                })
+          |                handleChartCreatedEvent(seasons);
           |            });
           |        }
           |
           |        const searchShows = async (searchTerm) => {
-          |            const searchResults = await fetch(`https://imdb-api.com/en/API/searchSeries/k_9fbi3vm5/${searchTerm}`).then(response => response.json());
-          |            const matchingShow = searchResults.results.filter(show => show.title.toLowerCase() === searchTerm.toLowerCase());
-          |            return matchingShow.length ? matchingShow[0] : {};
+          |            try {
+          |                const matchingShow = await fetch(`https://imdb-api.com/en/API/searchSeries/k_9fbi3vm5/${searchTerm}`)
+          |                        .then(response => response.json())
+          |                        .results
+          |                        .filter(show => show.title.toLowerCase() === searchTerm.toLowerCase());
+          |                return {
+          |                    matchingShow: matchingShow.length ? matchingShow[0] : {},
+          |                    api: "imdb-api"
+          |                }
+          |            } catch (exception) {
+          |                const matchingShow = await fetch(`https://www.omdbapi.com/?t=${searchTerm}&type=series&apikey=4f09f372`)
+          |                    .then(response => response.json());
+          |                return {
+          |                    matchingShow: matchingShow.Error ? {}: matchingShow,
+          |                    api: "omdb"
+          |                }
+          |            }
           |        }
           |
-          |        const getShowSeasonNumbers = async (id) => {
+          |        const getShowSeasonNumbersFromImdbApi = async (id) => {
           |            const showDetailResults = await fetch(`https://imdb-api.com/en/API/Title/k_9fbi3vm5/${id}`).then(response => response.json());
           |            return showDetailResults.tvSeriesInfo.seasons;
           |        }
           |
-          |        const getShowSeasonDetails = async (id, seasonNumbers) => {
+          |        const getShowSeasonDetailsFromImdbApi = async (id, seasonNumbers) => {
           |            return Promise.all(seasonNumbers.map(seasonNumber => {
           |                return fetch(`https://imdb-api.com/en/API/SeasonEpisodes/k_9fbi3vm5/${id}/${seasonNumber}`)
           |                        .then(response => response.json())
           |            }));
           |        }
-          |        const graphTvInput = document.getElementById("graphtv-input");
           |
-          |        graphTvInput.onkeyup = async (e) => {
-          |            if (e.code === "Enter") {
-          |                const loading = document.getElementById("loading");
-          |                const notFound = document.getElementById("not-found");
-          |                loading.style.display = '';
-          |                notFound.style.display = 'none';
-          |                graphTvInput.disabled = true;
-          |                const show = await searchShows(graphTvInput.value);
-          |                if (show && Object.keys(show).length !== 0 && show.constructor === Object) {
-          |                    getShowSeasonDetails(show.id, await getShowSeasonNumbers(show.id)).then(seasons => {
+          |        const getShowSeasonDetailsFromOmdb = (searchTerm, seasonNumbers) => {
+          |            return Promise.all(seasonNumbers.map(seasonNumber => {
+          |                return fetch(`https://www.omdbapi.com/?t=${searchTerm}&Season=${seasonNumber}&type=series&apikey=4f09f372`)
+          |                        .then(response => response.json())
+          |            }));
+          |        }
+          |
+          |        const foundMatchingShow = (show) => {
+          |            return show.matchingShow && Object.keys(show.matchingShow).length !== 0 && show.matchingShow.constructor === Object;
+          |        }
+          |
+          |        const mapOmdbResultsToImdbApiFormat = (seasons) => {
+          |            return seasons.map(season => {
+          |                return {
+          |                    title: season.Title,
+          |                    fullTitle: season.Title,
+          |                    type: "TVSeries",
+          |                    episodes: season.Episodes.map(episode => {
+          |                        return {
+          |                            seasonNumber: season.Season,
+          |                            episodeNumber: episode.Episode,
+          |                            title: episode.Title,
+          |                            released: episode.Released,
+          |                            imDbRating: episode.imdbRating
+          |                        }
+          |                    })
+          |                }
+          |            });
+          |        }
+          |
+          |        const mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers = (totalSeasonNumber) => {
+          |            return Array.from({ length: totalSeasonNumber }, (_, index) => index + 1);
+          |        }
+          |
+          |        const handleEnterKeyPressed = async () => {
+          |            showElement(loading);
+          |            hideElement(notFound);
+          |            disableElement(graphTvInput);
+          |            const show = await searchShows(graphTvInput.value);
+          |            if (foundMatchingShow(show)) {
+          |                if (show.api === "imdb-api") {
+          |                    getShowSeasonDetailsFromImdbApi(show.matchingShow.id, await getShowSeasonNumbersFromImdbApi(show.matchingShow.id)).then(seasons => {
           |                        makeGraph(seasons);
           |                    });
           |                } else {
-          |                    loading.style.display = 'none';
-          |                    notFound.style.display = '';
-          |                    graphTvInput.disabled = false;
+          |                    getShowSeasonDetailsFromOmdb(
+          |                        graphTvInput.value,
+          |                        mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers(show.matchingShow.totalSeasons)
+          |                    ).then(seasons => {
+          |                        makeGraph(mapOmdbResultsToImdbApiFormat(seasons));
+          |                    });
           |                }
+          |            } else {
+          |                hideElement(loading);
+          |                showElement(notFound);
+          |                enableElement(graphTvInput);
+          |            }
+          |        }
+          |
+          |        graphTvInput.onkeyup = async (e) => {
+          |            if (e.code === "Enter") {
+          |                await handleEnterKeyPressed();
           |            }
           |        };
           |    </script>

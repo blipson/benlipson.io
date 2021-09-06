@@ -80,7 +80,7 @@
     &emsp;&emsp;Going through these one-by-one we have the ID Length field, which defines the length of the colormap string in the body of the file. The color map type, which defines whether or not it's a colormapped
     image. For our purposes we won't ever use a colormapped image so you can pretty much ignore this field but if you want to know more click <a href="https://en.wikipedia.org/wiki/Color_mapping">here</a>. The image
     datatype code which defines what kind of image it is, which for our purposes will always be RGB (others include black and white, colormapped, etc...). The color map specification which includes origin, length and
-    depth. The image specification which includes the x and y origins, the width and height of the image, how many bits per pixel, and an optional image descriptor which we can ignore. The body of the file will simply
+    depth. The image specification which includes the mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers and y origins, the width and height of the image, how many bits per pixel, and an optional image descriptor which we can ignore. The body of the file will simply
     follow this format:
 </p>
     <pre><code>
@@ -284,25 +284,25 @@
     at a given X, Y location respectively. Let's define and implement those methods.
 </p>
 <pre><code>
-        TgaColor get(int x, int y);
-        bool set(int x, int y, TgaColor c);
+        TgaColor get(int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, int y);
+        bool set(int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, int y, TgaColor c);
 
-        TgaColor TgaImage::get(int x, int y)
+        TgaColor TgaImage::get(int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, int y)
         {
-            if (!data || x < 0 || y < 0 || x >= width || y >= height)
+            if (!data || mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers < 0 || y < 0 || mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers >= width || y >= height)
             {
                 return TgaColor();
             }
-            return TgaColor(data + (x + y * width) * bytesPerPixel, bytesPerPixel);
+            return TgaColor(data + (mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers + y * width) * bytesPerPixel, bytesPerPixel);
         }
 
-        bool TgaImage::set(int x, int y, TgaColor c)
+        bool TgaImage::set(int mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, int y, TgaColor c)
         {
-            if (!data || x < 0 || y < 0 || x >= width || y >= height)
+            if (!data || mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers < 0 || y < 0 || mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers >= width || y >= height)
             {
                 return false;
             }
-            memcpy(data + (x + y * width) * bytesPerPixel, c.raw, bytesPerPixel);
+            memcpy(data + (mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers + y * width) * bytesPerPixel, c.raw, bytesPerPixel);
             return true;
         }
 </code></pre>
@@ -441,7 +441,7 @@
             {
                 flipHorizontally();
             }
-            std::cerr << width << "x" << height << "/" << bytesPerPixel * 8 << "\n";
+            std::cerr << width << "mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers" << height << "/" << bytesPerPixel * 8 << "\n";
             in.close();
             return true;
         }

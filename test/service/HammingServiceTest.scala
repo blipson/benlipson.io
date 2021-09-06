@@ -59,7 +59,7 @@ class HammingServiceTest extends PlaySpec {
         ("11010011011", "221210120011011"),
         ("110100110111", "22121012001101121")
       ).map(inAndOut => {
-        hammingService.insertParityBits(inAndOut._1, inAndOut._2.length).mkString("") mustBe inAndOut._2
+        hammingService.insertPlaceholderParityBits(inAndOut._1, inAndOut._2.length).mkString("") mustBe inAndOut._2
       })
     }
 

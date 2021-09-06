@@ -8,28 +8,60 @@ import util.Utils
 @Singleton
 class HammingService {
   def calculateHammingCode(binaryInput: String): Try[String] = Try {
-    if (binaryInput.isEmpty) {
-      return Failure(new Exception("Binary input is required."))
-    }
-    if (binaryInput.length > 100) {
-      return Failure(new Exception("Max length of 100."))
-    }
-    "[^01]+".r findFirstIn binaryInput match {
-      case Some(_) => return Failure(new Exception("Only 1s and 0s allowed."))
+    checkForInvalidInput(binaryInput) match {
+      case Some(toReturn) => return toReturn
       case None => // do nothing
     }
-    def hammingCodeWithPlaceholders: List[String] = insertParityBits(
+    def hammingCodeWithPlaceholders: List[String] = insertPlaceholderParityBits(
       binaryInput,
       binaryInput.length + getNumberOfParityBits(binaryInput)
     )
     hammingCodeWithPlaceholders.zipWithIndex.map {
       case (bit, i) =>
-        if (bit == "2") {
+        if (bit != "0" && bit != "1") {
           calculateParityBitValue(hammingCodeWithPlaceholders, i + 1)
         } else {
           bit
         }
     }.mkString("")
+  }
+
+  private def checkForInvalidInput(binaryInput: String): Option[Failure[Nothing]] = {
+    checkForEmptyInput(binaryInput) match {
+      case Some(toReturn) => return toReturn
+      case None => // do nothing
+    }
+    checkForTooLongInput(binaryInput) match {
+      case Some(toReturn) => return toReturn
+      case None => // do nothing
+    }
+    checkForNonBinaryInput(binaryInput) match {
+      case Some(toReturn) => return toReturn
+      case None => // do nothing
+    }
+    None
+  }
+
+  private def checkForNonBinaryInput(binaryInput: String): Option[Option[Failure[Nothing]]] = {
+    "[^01]+".r findFirstIn binaryInput match {
+      case Some(_) => return Some(Some(Failure(new Exception("Only 1s and 0s allowed."))))
+      case None => // do nothing
+    }
+    None
+  }
+
+  private def checkForTooLongInput(binaryInput: String): Option[Option[Failure[Nothing]]] = {
+    if (binaryInput.length > 100) {
+      return Some(Some(Failure(new Exception("Max length of 100."))))
+    }
+    None
+  }
+
+  private def checkForEmptyInput(binaryInput: String): Option[Option[Failure[Nothing]]] = {
+    if (binaryInput.isEmpty) {
+      return Some(Some(Failure(new Exception("Binary input is required."))))
+    }
+    None
   }
 
   @tailrec
@@ -42,13 +74,13 @@ class HammingService {
   }
 
   @tailrec
-  final def insertParityBits(binaryInput: String, hammingLength: Int, inputPosition: Int = 0, hammingCode: List[String] = List()): List[String] = {
+  final def insertPlaceholderParityBits(binaryInput: String, hammingLength: Int, inputPosition: Int = 0, hammingCode: List[String] = List()): List[String] = {
     if (hammingCode.length == hammingLength) {
       hammingCode
     } else if (Utils.isPowerOfTwo(hammingCode.length + 1)) {
-      insertParityBits(binaryInput, hammingLength, inputPosition, hammingCode :+ "2")
+      insertPlaceholderParityBits(binaryInput, hammingLength, inputPosition, hammingCode :+ "2")
     } else {
-      insertParityBits(binaryInput, hammingLength, inputPosition + 1, hammingCode :+ binaryInput(inputPosition).toString)
+      insertPlaceholderParityBits(binaryInput, hammingLength, inputPosition + 1, hammingCode :+ binaryInput(inputPosition).toString)
     }
   }
 
