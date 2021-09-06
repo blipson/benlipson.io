@@ -14,7 +14,7 @@ import scala.util.{Failure, Success}
 class HammingController @Inject()(cc: ControllerComponents, hammingService: HammingService) extends AbstractController(cc) {
   implicit val formats: DefaultFormats.type = DefaultFormats
   def calculateHammingCode(input: String): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    hammingService.calculateHammingCode(input) match {
+    hammingService. calculateHammingCode(input) match {
       case Success(value) => Ok(StringHelpers.snakify(write(HammingCodeResponse(value))))
       case Failure(exception) => InternalServerError(exception.toString)
     }

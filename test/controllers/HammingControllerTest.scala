@@ -10,7 +10,7 @@ import scala.util.{Failure, Success}
 
 class HammingControllerTest extends PlaySpec with MockFactory {
   "Hamming controller" should {
-    "should call the Hamming Service to calculate hamming code and then format the response correctly" in {
+    "should call the Hamming service to calculate hamming code and then format the response correctly" in {
       val hammingService = mock[HammingService]
       (hammingService.calculateHammingCode _).expects("1101").returning(Success("10101010"))
       contentAsString(

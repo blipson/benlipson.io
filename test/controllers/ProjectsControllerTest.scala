@@ -98,7 +98,7 @@ class ProjectsControllerTest extends PlaySpec {
       bodyText.replaceAll(" +", "") mustBe
         """<!DOCTYPE html>
           |
-          |<html>
+          |<html lang="en">
           |    <head>
           |        <meta charset="utf-8">
           |        <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -466,28 +466,26 @@ class ProjectsControllerTest extends PlaySpec {
           |        </div>
           |    </body>
           |    <script type="text/javascript">
-          |        document.getElementById("hamming-input").onkeyup = (e) => {
-          |            const xmlHttp = new XMLHttpRequest();
+          |        const setContentOfElement = (element, content) => {
+          |            element.innerHTML = content;
+          |        }
+          |
+          |        document.getElementById("hamming-input").onkeyup = async () => {
           |            const hammingInput = document.getElementById("hamming-input")
           |            const hammingHeader = document.getElementById("hamming-header")
           |            const hammingResult = document.getElementById("hamming-result")
-          |            xmlHttp.onreadystatechange = () => {
-          |                if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-          |                    hammingHeader.innerHTML = "HERE iS YoUR HAMMiNG CoDE BEEP BooP";
-          |                    hammingResult.innerHTML = JSON.parse(xmlHttp.responseText).hamming_code;
-          |                } else if (xmlHttp.readyState === 4 && xmlHttp.status !== 200) {
-          |                    hammingHeader.innerHTML = "*BZZT* ERRoR! CAN. NoT. CoMPUTE. *SAD BooP*";
-          |                    hammingResult.innerHTML = xmlHttp.responseText.split(":")[1];
-          |                }
-          |            }
-          |            if (hammingInput.value) {
-          |                xmlHttp.open("GET", window.location.href.replace("/projects", "") + "?input=" + hammingInput.value, true);
-          |                xmlHttp.send(null);
-          |            } else {
-          |                hammingHeader.innerHTML = "";
-          |                hammingResult.innerHTML = "";
-          |
-          |            }
+          |            await fetch(`${window.location.href.replace("/projects", "")}?input=${hammingInput.value}`)
+          |                .then(async response => {
+          |                    if (response.ok) {
+          |                        setContentOfElement(hammingHeader, "HERE iS YoUR HAMMiNG CoDE BEEP BooP");
+          |                        const hammingJson = await response.json();
+          |                        setContentOfElement(hammingResult, await hammingJson.hamming_code);
+          |                    } else {
+          |                        setContentOfElement(hammingHeader, "*BZZT* ERRoR! CAN. NoT. CoMPUTE. *SAD BooP*");
+          |                        const errorText = await response.text();
+          |                        setContentOfElement(hammingResult, errorText.split(":")[1]);
+          |                    }
+          |                });
           |        }
           |    </script>
           |</html>
@@ -805,6 +803,55 @@ class ProjectsControllerTest extends PlaySpec {
           |                await handleEnterKeyPressed();
           |            }
           |        };
+          |    </script>
+          |</html>
+          |""".stripMargin.replaceAll(" +", "")
+    }
+
+    "should display the 'Restaurant Picker' project page" in {
+      val controller = new ProjectsController(Helpers.stubControllerComponents())
+      val result: Future[Result] = controller.restaurantPicker().apply(FakeRequest())
+      val bodyText: String = contentAsString(result)
+      bodyText.replaceAll(" +", "") mustBe
+        """<!DOCTYPE html>
+          |
+          |<html lang="en">
+          |    <head>
+          |        <meta charset="utf-8">
+          |        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          |        <meta name="viewport" content="width=device-width, initial-scale=i">
+          |        <link rel="shortcut icon" href="#" />
+          |        <title>Lipson</title>
+          |    </head>
+          |    <body>
+          |        <h1 class="centered">
+          |            Twin Cities Area Restaurant Picker
+          |        </h1>
+          |        <h4 class="centered">
+          |            All restaurants have been personally vetted by my friend Tony.
+          |            <br><br>
+          |            <button onclick="getRestaurant()">
+          |                <span>Generate</span>
+          |            </button>
+          |        </h4>
+          |        <h2 id="restaurant-header" class="centered">
+          |        </h2>
+          |        <h3 id="restaurant-result" class="centered">
+          |        </h3>
+          |    </body>
+          |    <script type="text/javascript">
+          |        const setContentOfElement = (element, content) => {
+          |            element.innerHTML = content;
+          |        }
+          |
+          |        async function getRestaurant() {
+          |            const restaurantHeader = document.getElementById("restaurant-header");
+          |            const restaurantResult = document.getElementById("restaurant-result");
+          |            const pickedRestaurant = await fetch( window.location.href.replace("/projects", "").replace("picker", ""))
+          |                .then(response => response.json())
+          |            setContentOfElement(restaurantHeader, "You should eat at");
+          |            setContentOfElement(restaurantResult, pickedRestaurant.restaurant);
+          |        }
           |    </script>
           |</html>
           |""".stripMargin.replaceAll(" +", "")

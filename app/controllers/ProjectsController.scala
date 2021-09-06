@@ -17,4 +17,8 @@ class ProjectsController @Inject()(cc: ControllerComponents) extends AbstractCon
   def graphTv(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.graphTv())
   }
+
+  def restaurantPicker(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.restaurantPicker())
+  }
 }

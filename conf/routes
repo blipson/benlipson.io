@@ -17,15 +17,17 @@ GET     /blog/graphicsnotes             controllers.BlogController.graphicsNotes
 GET     /blog/renderer/tgaimages        controllers.BlogController.rendererTgaImages()
 GET     /blog/renderer/drawinglines     controllers.BlogController.rendererDrawingLines()
 
-
 # Projects page
 GET     /projects                       controllers.ProjectsController.projects()
 GET     /projects/hammingcodes          controllers.ProjectsController.hammingCodes()
 GET     /projects/graphtv               controllers.ProjectsController.graphTv()
+GET     /projects/restaurantpicker      controllers.ProjectsController.restaurantPicker()
 
 # Hamming project
 GET     /hammingcodes                   controllers.HammingController.calculateHammingCode(input)
 
+# Restaurant Picker project
+GET     /restaurant                     controllers.RestaurantPickerController.pickRestaurant()
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file                   controllers.Assets.at(path="/public", file)

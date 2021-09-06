@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=i">
+        <link rel="shortcut icon" href="#" />
+        <title>Lipson</title>
+    </head>
+    <body>
+        <h1 class="centered">
+            Twin Cities Area Restaurant Picker
+        </h1>
+        <h4 class="centered">
+            All restaurants have been personally vetted by my friend Tony.
+            <br><br>
+            <button onclick="getRestaurant()">
+                <span>Generate</span>
+            </button>
+        </h4>
+        <h2 id="restaurant-header" class="centered">
+        </h2>
+        <h3 id="restaurant-result" class="centered">
+        </h3>
+    </body>
+    <script type="text/javascript">
+        const setContentOfElement = (element, content) => {
+            element.innerHTML = content;
+        }
+
+        async function getRestaurant() {
+            const restaurantHeader = document.getElementById("restaurant-header");
+            const restaurantResult = document.getElementById("restaurant-result");
+            const pickedRestaurant = await fetch( window.location.href.replace("/projects", "").replace("picker", ""))
+                .then(response => response.json())
+            setContentOfElement(restaurantHeader, "You should eat at");
+            setContentOfElement(restaurantResult, pickedRestaurant.restaurant);
+        }
+    </script>
+</html>
