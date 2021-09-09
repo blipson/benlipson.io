@@ -913,5 +913,122 @@ class ProjectsControllerTest extends PlaySpec {
           |</html>
           |""".stripMargin.replaceAll(" +", "")
     }
+
+    "should display the 'Cantus Firmus Generator' project page" in {
+      val controller = new ProjectsController(Helpers.stubControllerComponents())
+      val result: Future[Result] = controller.counterpoint().apply(FakeRequest())
+      val bodyText: String = contentAsString(result)
+      bodyText.replaceAll(" +", "") mustBe
+        """<html lang="en">
+          |    <head>
+          |        <meta charset="utf-8">
+          |        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          |        <meta name="viewport" content="width=device-width, initial-scale=1">
+          |        <link rel="shortcut icon" href="#" />
+          |        <title>Lipson</title>
+          |    </head>
+          |    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+          |    <body>
+          |        <h1>
+          |            Counterpoint Generator
+          |        </h1>
+          |        <h4>
+          |            <button onclick="getCantusFirmus()">
+          |                <span>Generate</span>
+          |            </button>
+          |        </h4>
+          |        <h2 id="counterpoint-header">
+          |        </h2>
+          |        <h3 id="counterpoint-result">
+          |        </h3>
+          |    </body>
+          |    <div id="cantusFirmusCanvas"></div>
+          |    <script src="https://npmcdn.com/vexflow/releases/vexflow-debug.js"></script>
+          |    <script type="text/javascript">
+          |        function getCantusFirmus() {
+          |            const staff = document.getElementById('cantusFirmusCanvas');
+          |            while (staff.hasChildNodes()) {
+          |                staff.removeChild(staff.lastChild);
+          |            }
+          |
+          |            const xmlHttp = new XMLHttpRequest();
+          |            xmlHttp.onreadystatechange = function () {
+          |                $("#counterpoint-header").text("Loading...");
+          |                $("#counterpoint-result").text("");
+          |                if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
+          |                    $("#counterpoint-header").text("Cantus firmus is:");
+          |                    const cantusFirmus = JSON.parse(xmlHttp.responseText).cantus_firmus.toString().split(",")
+          |                    $("#counterpoint-result").text(cantusFirmus.toString().replace(/\,/g,", "));
+          |
+          |                    const VF = Vex.Flow;
+          |
+          |                    const div = document.getElementById("cantusFirmusCanvas");
+          |                    const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
+          |
+          |                    // Configure the rendering context.
+          |                    renderer.resize(100 * cantusFirmus.length, 200);
+          |                    const context = renderer.getContext();
+          |                    context.setFont("Arial", 10, "").setBackgroundFillStyle("#eed");
+          |
+          |                    // Create a stave of width 400 at position 10, 40 on the canvas.
+          |                    const stave = new VF.Stave(10, 40, 100 * cantusFirmus.length);
+          |
+          |                    // Add a clef and time signature.
+          |                    stave.addClef("bass").addTimeSignature("4/4");
+          |
+          |                    // Connect it to the rendering context and draw!
+          |                    stave.setContext(context).draw();
+          |
+          |                    let notes = []
+          |                    for (let i = 0; i < cantusFirmus.length; i++) {
+          |                        let noteToProcess = cantusFirmus[i]
+          |                        if (noteToProcess.includes("/")) {
+          |                            noteToProcess = noteToProcess.split("/")[1]
+          |                            notes = notes.concat(
+          |                                    new VF.StaveNote(
+          |                                            {
+          |                                                keys: [[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')],
+          |                                                duration: "w",
+          |                                                clef: "bass"
+          |                                            }
+          |                                    ).addAccidental(0, new VF.Accidental("b")))
+          |                        } else {
+          |                            notes = notes.concat(new VF.StaveNote(
+          |                                    {
+          |                                        keys: [[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')],
+          |                                        duration: "w",
+          |                                        clef: "bass"
+          |                                    }
+          |                            ))
+          |                        }
+          |                        notes = notes.concat(new Vex.Flow.BarNote())
+          |
+          |                        console.log([[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')])
+          |
+          |
+          |                    }
+          |
+          |                    // Create a voice in 4/4 and add above notes
+          |                    const voice = new VF.Voice({num_beats: 4, beat_value: 4});
+          |                    voice.setStrict(false)
+          |                    voice.addTickables(notes);
+          |
+          |                    // Format and justify the notes to 400 pixels.
+          |                    const formatter = new VF.Formatter().joinVoices([voice]).format([voice], 750);
+          |
+          |                    // Render voice
+          |                    voice.draw(context, stave);
+          |                } else if (xmlHttp.readyState === 4 && xmlHttp.status === 500) {
+          |                    $("#restaurant-header").text("Error! Something broke!");
+          |                    $("#restaurant-result").text(JSON.parse(xmlHttp.responseText).error.toUpperCase());
+          |                }
+          |            }
+          |            xmlHttp.open("GET", window.location.href.replace("/projects", ""), true);
+          |            xmlHttp.send(null);
+          |        }
+          |    </script>
+          |</html>
+          |""".stripMargin.replaceAll(" +", "")
+    }
   }
 }

@@ -21,4 +21,8 @@ class ProjectsController @Inject()(cc: ControllerComponents) extends AbstractCon
   def restaurantPicker(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.restaurantPicker())
   }
+
+  def counterpoint(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.counterpoint())
+  }
 }

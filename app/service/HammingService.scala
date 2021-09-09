@@ -42,39 +42,36 @@ class HammingService {
     None
   }
 
-  private def checkForNonBinaryInput(binaryInput: String): Option[Option[Failure[Nothing]]] = {
+  private def checkForNonBinaryInput(binaryInput: String): Option[Option[Failure[Nothing]]] =
     "[^01]+".r findFirstIn binaryInput match {
-      case Some(_) => return Some(Some(Failure(new Exception("Only 1s and 0s allowed."))))
-      case None => // do nothing
+      case Some(_) => Some(Some(Failure(new Exception("Only 1s and 0s allowed."))))
+      case None => None
     }
-    None
-  }
 
-  private def checkForTooLongInput(binaryInput: String): Option[Option[Failure[Nothing]]] = {
+  private def checkForTooLongInput(binaryInput: String): Option[Option[Failure[Nothing]]] =
     if (binaryInput.length > 100) {
-      return Some(Some(Failure(new Exception("Max length of 100."))))
+      Some(Some(Failure(new Exception("Max length of 100."))))
+    } else {
+      None
     }
-    None
-  }
 
-  private def checkForEmptyInput(binaryInput: String): Option[Option[Failure[Nothing]]] = {
+  private def checkForEmptyInput(binaryInput: String): Option[Option[Failure[Nothing]]] =
     if (binaryInput.isEmpty) {
-      return Some(Some(Failure(new Exception("Binary input is required."))))
+      Some(Some(Failure(new Exception("Binary input is required."))))
+    } else {
+      None
     }
-    None
-  }
 
   @tailrec
-  final def getNumberOfParityBits(binaryInput: String, acc: Int = 0): Int = {
+  final def getNumberOfParityBits(binaryInput: String, acc: Int = 0): Int =
     if (scala.math.pow(2, acc) >= binaryInput.length + acc + 1) {
       acc
     } else {
       getNumberOfParityBits(binaryInput, acc + 1)
     }
-  }
 
   @tailrec
-  final def insertPlaceholderParityBits(binaryInput: String, hammingLength: Int, inputPosition: Int = 0, hammingCode: List[String] = List()): List[String] = {
+  final def insertPlaceholderParityBits(binaryInput: String, hammingLength: Int, inputPosition: Int = 0, hammingCode: List[String] = List()): List[String] =
     if (hammingCode.length == hammingLength) {
       hammingCode
     } else if (Utils.isPowerOfTwo(hammingCode.length + 1)) {
@@ -82,10 +79,9 @@ class HammingService {
     } else {
       insertPlaceholderParityBits(binaryInput, hammingLength, inputPosition + 1, hammingCode :+ binaryInput(inputPosition).toString)
     }
-  }
 
   @tailrec
-  private def calculateParityBitValueHelper(power: Int, hammingCode: List[String], position: Int, skipper: Int = 0, accum: Int = 0): Int = {
+  private def calculateParityBitValueHelper(power: Int, hammingCode: List[String], position: Int, skipper: Int = 0, accum: Int = 0): Int =
     if (position >= hammingCode.length) {
       accum
     } else if (skipper % (power * 2)  < power) {
@@ -93,9 +89,7 @@ class HammingService {
     } else {
       calculateParityBitValueHelper(power, hammingCode, position + 1, skipper + 1, accum)
     }
-  }
 
-  def calculateParityBitValue(hammingCode: List[String], power: Int): Int = {
+  def calculateParityBitValue(hammingCode: List[String], power: Int): Int =
     calculateParityBitValueHelper(power, hammingCode, power - 1)
-  }
 }
