@@ -15,7 +15,7 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       (randomService.between _).expects(3, AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7).returning(1)
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) => cantusFirmus.length mustBe 10
-        case Failure(_) => // do nothing
+        case Failure(e) => e.printStackTrace()
       }
     }
 
@@ -24,7 +24,7 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       (randomService.between _).expects(3, AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7).returning(6)
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) => cantusFirmus.head mustBe cantusFirmus.last mustBe "A2"
-        case Failure(_) => // do nothing
+        case Failure(e) => e.printStackTrace()
       }
     }
 
@@ -87,22 +87,64 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
     "should generate a cantus firmus where the final note is approached by the leading tone" in {
       (randomService.between _).expects(8, 17).returning(13)
       (randomService.between _).expects(3, AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7).returning(4)
-      (randomService.between _).expects(1, 11).returning(10)
+      (randomService.nextInt _).expects(13).returning(11)
+      (randomService.nextInt _).expects(13).returning(3)
+      (randomService.nextInt _).expects(13).returning(9)
+      (randomService.nextInt _).expects(13).returning(12)
+      (randomService.nextInt _).expects(13).returning(8)
+      (randomService.nextInt _).expects(13).returning(4)
+      (randomService.nextInt _).expects(13).returning(10)
+      (randomService.nextInt _).expects(13).returning(1)
+      (randomService.nextInt _).expects(13).returning(7)
+      (randomService.nextInt _).expects(13).returning(5)
+      (randomService.nextDouble _).expects().returning(1.0)
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus(cantusFirmus.length - 2) mustBe "G2"
-        case Failure(_) => // do nothing
+        case Failure(e) => e.printStackTrace()
       }
     }
 
     "should generate a cantus firmus where the final note is approached by the 2" in {
       (randomService.between _).expects(8, 17).returning(13)
       (randomService.between _).expects(3, AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7).returning(4)
-      (randomService.between _).expects(1, 11).returning(5)
+      (randomService.nextInt _).expects(13).returning(11)
+      (randomService.nextInt _).expects(13).returning(3)
+      (randomService.nextInt _).expects(13).returning(9)
+      (randomService.nextInt _).expects(13).returning(12)
+      (randomService.nextInt _).expects(13).returning(8)
+      (randomService.nextInt _).expects(13).returning(4)
+      (randomService.nextInt _).expects(13).returning(10)
+      (randomService.nextInt _).expects(13).returning(1)
+      (randomService.nextInt _).expects(13).returning(7)
+      (randomService.nextInt _).expects(13).returning(5)
+      (randomService.nextDouble _).expects().returning(0.5)
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus(cantusFirmus.length - 2) mustBe "A#/Bb2"
-        case Failure(_) => // do nothing
+        case Failure(e) => e.printStackTrace()
+      }
+    }
+
+    "should ensure that no note is followed by the same note" in {
+      (randomService.between _).expects(8, 17).returning(8)
+      (randomService.between _).expects(3, AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7).returning(7)
+      (randomService.nextInt _).expects(13).returning(2)
+      (randomService.nextInt _).expects(13).returning(2)
+      (randomService.nextInt _).expects(13).returning(2)
+      (randomService.nextInt _).expects(13).returning(2)
+      (randomService.nextInt _).expects(13).returning(2)
+      (randomService.nextDouble _).expects().returning(0.5)
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case(note, i) => {
+              if (i > 0) {
+                note must not equal cantusFirmus(i - 1)
+              }
+            }
+          }
+        case Failure(e) => e.printStackTrace()
       }
     }
 

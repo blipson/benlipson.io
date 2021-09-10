@@ -1,9 +1,9 @@
 package service
 
-import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, OCTAVE, VALID_MAJOR_KEY_INTERVALS}
+import service.CounterpointService._
 
 import javax.inject.{Inject, Singleton}
-import scala.util.{Random, Try}
+import scala.util.Try
 
 @Singleton
 class CounterpointService @Inject()(randomService: RandomService) {
@@ -31,8 +31,7 @@ class CounterpointService @Inject()(randomService: RandomService) {
 
 
   def pickPenultimateNote(tonic: String, inMajorKeyCantusFirmusNotes: Seq[String]): String = {
-    val penultimateNotePicker = randomService.between(1, 11)
-    if (penultimateNotePicker >= 7) {
+    if (randomService.nextDouble() >= 0.7) {
       inMajorKeyCantusFirmusNotes(inMajorKeyCantusFirmusNotes.indexOf(tonic) - 1)
     } else {
       inMajorKeyCantusFirmusNotes(inMajorKeyCantusFirmusNotes.indexOf(tonic) + 1)
@@ -40,22 +39,28 @@ class CounterpointService @Inject()(randomService: RandomService) {
   }
 
   def generateCantusFirmus(): Try[List[String]] = Try {
-    val length = randomService.between(8, 17)
-    val tonic = AVAILABLE_CANTUS_FIRMUS_NOTES(randomService.between(3, AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7))
+    val length = randomService.between(MIN_LENGTH, MAX_LENGTH + 1)
+    val tonic = AVAILABLE_CANTUS_FIRMUS_NOTES(randomService.between(MIN_TONIC, MAX_TONIC))
     val inMajorKeyCantusFirmusNotes = getInMajorKeyCantusFirmusNotes(tonic)
-    (1 to length).map(i => {
-      if (i == length - 1) {
-        pickPenultimateNote(tonic, inMajorKeyCantusFirmusNotes)
+    (1 to length).foldLeft(List.empty[String]){(acc, i) => {
+      if (i == 1 || i == length) {
+        acc :+ tonic
+      } else if (i == length - 1) {
+        acc :+ pickPenultimateNote(tonic, inMajorKeyCantusFirmusNotes)
       } else {
-        tonic
+        val lastNoteRemoved = inMajorKeyCantusFirmusNotes.filter(note => note != acc(i - 2))
+        acc :+ lastNoteRemoved(randomService.nextInt(lastNoteRemoved.length))
       }
-    }).toList
+    }}
   }
 
 }
 
 object CounterpointService {
   val OCTAVE = 12
+  val MIN_LENGTH = 8
+  val MAX_LENGTH = 16
+
 
   val VALID_MAJOR_KEY_INTERVALS = Set(
     0, 2, 4, 5, 7, 9, 11
@@ -84,4 +89,6 @@ object CounterpointService {
     }).toList
 
   val AVAILABLE_CANTUS_FIRMUS_NOTES: Seq[String] = GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(2, 2)
+  val MIN_TONIC: Int = 3
+  val MAX_TONIC: Int = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
 }
