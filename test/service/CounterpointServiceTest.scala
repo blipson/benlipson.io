@@ -138,12 +138,31 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus.zipWithIndex.map {
-            case(note, i) => {
+            case(note, i) =>
               if (i > 0) {
                 note must not equal cantusFirmus(i - 1)
               }
-            }
           }
+        case Failure(e) => e.printStackTrace()
+      }
+    }
+
+    "should ensure that all notes are in the right major key" in {
+      (randomService.between _).expects(8, 17).returning(11)
+      (randomService.between _).expects(3, AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7).returning(11)
+      (randomService.nextInt _).expects(13).returning(3)
+      (randomService.nextInt _).expects(13).returning(8)
+      (randomService.nextInt _).expects(13).returning(7)
+      (randomService.nextInt _).expects(13).returning(10)
+      (randomService.nextInt _).expects(13).returning(11)
+      (randomService.nextInt _).expects(13).returning(1)
+      (randomService.nextInt _).expects(13).returning(6)
+      (randomService.nextInt _).expects(13).returning(12)
+      (randomService.nextDouble _).expects().returning(0.5)
+      val notesInKey = counterpointService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(11))
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.count(note => notesInKey.contains(note)) mustBe cantusFirmus.length
         case Failure(e) => e.printStackTrace()
       }
     }
