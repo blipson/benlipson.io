@@ -1,10 +1,8 @@
 package service
 import service.RestaurantPickerService.RESTAURANT_LIST
 
-import javax.inject.Singleton
 import scala.util.Random
 
-@Singleton
 class RestaurantPickerService {
   def pickRestaurant(): Option[String] = {
     if (RESTAURANT_LIST.isEmpty) None

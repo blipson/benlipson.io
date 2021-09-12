@@ -1,11 +1,9 @@
 package service
 
-import javax.inject.Singleton
 import scala.annotation.tailrec
 import scala.util.{Failure, Try}
 import util.Utils
 
-@Singleton
 class HammingService {
   def calculateHammingCode(binaryInput: String): Try[String] = Try {
     checkForInvalidInput(binaryInput) match {
