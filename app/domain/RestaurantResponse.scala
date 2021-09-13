@@ -1,3 +1,3 @@
 package domain
 
-case class RestaurantResponse (restaurant: String)
+case class RestaurantResponse(restaurant: String)

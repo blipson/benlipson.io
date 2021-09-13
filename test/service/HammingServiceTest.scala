@@ -6,6 +6,7 @@ import scala.util.{Failure, Success}
 
 class HammingServiceTest extends PlaySpec {
   def hammingService = new HammingService()
+
   "Hamming service" should {
     "should calculate the hamming code for a binary input" in {
       Map(
@@ -97,7 +98,7 @@ class HammingServiceTest extends PlaySpec {
         "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
       ) match {
         case Success(_) => fail()
-        case Failure(e) => e.getMessage mustBe("Max length of 100.")
+        case Failure(e) => e.getMessage mustBe ("Max length of 100.")
       }
     }
   }

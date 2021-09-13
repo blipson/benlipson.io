@@ -1,3 +1,3 @@
 package domain
 
-case class HammingCodeResponse (hammingCode: String)
+case class HammingCodeResponse(hammingCode: String)

@@ -5,6 +5,7 @@ import org.scalatestplus.play.PlaySpec
 
 class RestaurantPickerServiceTest extends PlaySpec with MockFactory {
   def restaurantPickerService = new RestaurantPickerService()
+
   "Restaurant Picker service" should {
     "should pick a random restaurant" in {
       restaurantPickerService.pickRestaurant() match {

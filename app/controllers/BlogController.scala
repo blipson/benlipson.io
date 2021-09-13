@@ -1,6 +1,6 @@
 package controllers
 
-import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents, Request}
+import play.api.mvc._
 
 import javax.inject.{Inject, Singleton}
 
@@ -10,7 +10,7 @@ class BlogController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.blog())
   }
 
-  def onTravel(): Action[AnyContent] = Action { implicit  request: Request[AnyContent] =>
+  def onTravel(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.onTravel())
   }
 
@@ -18,7 +18,7 @@ class BlogController @Inject()(cc: ControllerComponents) extends AbstractControl
     Ok(views.html.onTechnology())
   }
 
-  def graphicsHistory(): Action[AnyContent] = Action { implicit  request: Request[AnyContent] =>
+  def graphicsHistory(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.graphicsHistory())
   }
 

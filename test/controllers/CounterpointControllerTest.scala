@@ -12,7 +12,7 @@ class CounterpointControllerTest extends PlaySpec with MockFactory {
   "Counterpoint controller" should {
     "should call the Counterpoint service to generate the cantus firmus correctly" in {
       val counterpointService = mock[CounterpointService]
-      (counterpointService.generateCantusFirmus _).expects().returning(Success(List("B3","D#/Eb3","E3","C#/Db3","A#/Bb3","B3","C#/Db4","B3")))
+      (counterpointService.generateCantusFirmus _).expects().returning(Success(List("B3", "D#/Eb3", "E3", "C#/Db3", "A#/Bb3", "B3", "C#/Db4", "B3")))
       contentAsString(
         new CounterpointController(Helpers.stubControllerComponents(), counterpointService)
           .generateCounterpoint()

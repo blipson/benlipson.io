@@ -12,10 +12,11 @@ import scala.util.{Failure, Success}
 
 @Singleton
 class CounterpointController @Inject()(
-  cc: ControllerComponents,
-  counterpointService: CounterpointService
-) extends AbstractController(cc) {
+                                        cc: ControllerComponents,
+                                        counterpointService: CounterpointService
+                                      ) extends AbstractController(cc) {
   implicit val formats: DefaultFormats.type = DefaultFormats
+
   def generateCounterpoint(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     counterpointService.generateCantusFirmus() match {
       case Success(value) => Ok(StringHelpers.snakify(write(CounterpointResponse(value))))

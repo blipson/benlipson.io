@@ -1,4 +1,5 @@
 package service
+
 import service.RestaurantPickerService.RESTAURANT_LIST
 
 import scala.util.Random
@@ -123,7 +124,6 @@ object RestaurantPickerService {
     "Stewart's",
     "Chip's Clubhouse"
   )
-
   val RESTAURANT_LIST: Seq[String] =
     asianFusion ++
       chinese ++

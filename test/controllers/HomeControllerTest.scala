@@ -12,8 +12,8 @@ class HomeControllerTest extends PlaySpec {
     "should display the home page" in {
       val controller = new HomeController(Helpers.stubControllerComponents())
       val result: Future[Result] = controller.home().apply(FakeRequest())
-      val bodyText: String       = contentAsString(result)
-      bodyText.replaceAll(" +", "")  mustBe
+      val bodyText: String = contentAsString(result)
+      bodyText.replaceAll(" +", "") mustBe
         """<!DOCTYPE html>
           |
           |<html lang="en">

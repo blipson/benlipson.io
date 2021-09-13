@@ -8,7 +8,9 @@ import scala.util.{Failure, Success}
 
 class CounterpointServiceTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
+
   def counterpointService = new CounterpointService(randomService)
+
   "Counterpoint service" should {
     "should generate a cantus firmus of the correct length" in {
       (randomService.between _).expects(8, 17).returning(10)
@@ -186,7 +188,7 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus.zipWithIndex.map {
-            case(note, i) =>
+            case (note, i) =>
               if (i > 0) {
                 note must not equal cantusFirmus(i - 1)
               }

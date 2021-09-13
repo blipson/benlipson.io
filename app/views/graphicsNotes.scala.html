@@ -27,14 +27,14 @@
             <li>Fragment shader output is defined with “out”.</li>
             <li>To pass data into the vertex shader you must find the attribute location for a variable in GLSL, then create a buffer, then bind the buffer, then do the same for a vertex array.</li>
             <li>Different primitives are used for drawing, but the most common is gl.TRIANGLES.</li>
-            <li>“Clip space” is what GLSL understands coordinates to be. It’s always on a plane of -1 to 1 for both mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers and y axis regardless of height and width. To pass in “normal” vertices you have to convert them to clip space.</li>
+            <li>“Clip space” is what GLSL understands coordinates to be. It’s always on a plane of -1 to 1 for both x and y axis regardless of height and width. To pass in “normal” vertices you have to convert them to clip space.</li>
             <li>Translation, rotation, and scale are types of “transformations”. Order matters for them.</li>
             <li>Translation is for moving things. Simply add it to the position: a_position + u_translation</li>
             <li>Rotation is for rotating things alone a given axis.
                 <ul>
-                    <li>Create a new rotated position: rotatedPosition = vec2(a_position.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers * u_rotation.y + a_position.y * u_rotation.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers, a_position.y * u_rotation.y - a_position.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers * u_rotation.mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers)</li>
+                    <li>Create a new rotated position: rotatedPosition = vec2(a_position.x * u_rotation.y + a_position.y * u_rotation.x, a_position.y * u_rotation.y - a_position.x * u_rotation.x)</li>
                     <li>Basically you multiply the X coordinate by the Y position on the unit circle, and the Y coordinate by the X position on the unit circle and add them together for the final X.</li>
-                    <li>Multiply the Y by Y on the circle and subtract mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers times the mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers on the circle for the final Y.</li>
+                    <li>Multiply the Y by Y on the circle and subtract x times the x on the circle for the final Y.</li>
                     <li>The points on the unit circle can be looked up using sine and cosine of an angle.</li>
                 </ul>
         <li>Scale is for making things bigger or smaller. Simply multiply it to the position: a_position * u_scale. Negative values flip the geometry.</li>

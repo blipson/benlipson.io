@@ -252,7 +252,7 @@ final def getNumberOfParityBits(binaryInput: String, acc: Int = 0): Int = {
                     skip 1 bit, etc...
                     if it's in position 2, then it will start with the second bit and add 2 bits, skip 2
                     Bits, etc... Position 4 starts with the fourth bit and adds 4, skips 4, etc... And so
-                    On and so forth. The mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers's will count as 0's. This is why we used that particular formula in step 1. Counting
+                    On and so forth. The x's will count as 0's. This is why we used that particular formula in step 1. Counting
                     by powers of 2 in a base 2 number system (binary) allows us to encode data as either even and correct (0) or
                     odd and incorrect (1). It all starts with the left hand side of that function that states 2<sup>p</sup>.
                 </p>
@@ -285,18 +285,18 @@ final def getNumberOfParityBits(binaryInput: String, acc: Int = 0): Int = {
                     </thead>
                     <tbody>
                         <td>
-                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
+                            <mark>x</mark>
                             x1x101x0011
                         </td>
                         <td>
-                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
-                            mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers
+                            <mark>x</mark>
+                            x
                             <mark>1</mark>
-                            mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers
+                            x
                             <mark>1</mark>
                             0
                             <mark>1</mark>
-                            mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers
+                            x
                             <mark>0</mark>
                             0
                             <mark>1</mark>
@@ -310,7 +310,7 @@ final def getNumberOfParityBits(binaryInput: String, acc: Int = 0): Int = {
                     </tbody>
                     <tbody>
                         <td>0
-                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
+                            <mark>x</mark>
                             1x101x0011
                         </td>
                         <td>0
@@ -329,7 +329,7 @@ final def getNumberOfParityBits(binaryInput: String, acc: Int = 0): Int = {
                     </tbody>
                     <tbody>
                         <td>011
-                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
+                            <mark>x</mark>
                             101x0011
                         </td>
                         <td>011
@@ -345,7 +345,7 @@ final def getNumberOfParityBits(binaryInput: String, acc: Int = 0): Int = {
                     </tbody>
                     <tbody>
                         <td>0111101
-                            <mark>mapTotalSeasonNumberToArrayOfIndividualSeasonNumbers</mark>
+                            <mark>x</mark>
                             0011
                         </td>
                         <td>0111101

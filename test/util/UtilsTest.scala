@@ -4,7 +4,7 @@ import org.scalatestplus.play.PlaySpec
 
 class UtilsTest extends PlaySpec {
   "Utils service" should {
-    "should determine if a number is a power of 2" in  {
+    "should determine if a number is a power of 2" in {
       Utils.isPowerOfTwo(0) mustBe true
       Utils.isPowerOfTwo(1) mustBe true
       Utils.isPowerOfTwo(2) mustBe true
