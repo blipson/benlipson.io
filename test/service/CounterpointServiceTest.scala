@@ -4,7 +4,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
 import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES}
 
-import scala.util.{Failure, Random, Success}
+import scala.util.{Failure, Success}
 
 class CounterpointServiceTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
@@ -23,10 +23,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       (randomService.nextDouble _).expects().returning(1.0)
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) => cantusFirmus.length mustBe 10
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -44,17 +43,15 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       (randomService.nextInt _).expects(11).returning(3)
       (randomService.nextDouble _).expects().returning(1.0)
       counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) => {
+        case Success(cantusFirmus) =>
           val head = cantusFirmus.head
           val last = cantusFirmus.last
           head mustBe last
           head mustBe "A2"
           last mustBe "A2"
-        }
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -129,10 +126,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus(cantusFirmus.length - 2) mustBe "G2"
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -172,10 +168,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus(cantusFirmus.length - 2) mustBe "A#/Bb2"
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -196,10 +191,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
                 note must not equal cantusFirmus(i - 1)
               }
           }
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -219,10 +213,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus.count(note => notesInKey.contains(note)) mustBe cantusFirmus.length
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -245,10 +238,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
           cantusFirmus(8) != "D3" mustBe true
           cantusFirmus(8) != "D4" mustBe true
           cantusFirmus.count(note => notesInKey.contains(note)) mustBe cantusFirmus.length
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -269,10 +261,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
           cantusFirmus(8) != "F#/Gb2" mustBe true
           cantusFirmus(8) != "F#/Gb3" mustBe true
           cantusFirmus.count(note => notesInKey.contains(note)) mustBe cantusFirmus.length
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -294,10 +285,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
                 cantusFirmus(i + 1) mustBe "G#/Ab3"
               }
           }
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
@@ -320,10 +310,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
                 cantusFirmus(i + 1) mustBe "G#/Ab3"
               }
           }
-        case Failure(e) => {
+        case Failure(e) =>
           e.printStackTrace()
           fail()
-        }
       }
     }
 
