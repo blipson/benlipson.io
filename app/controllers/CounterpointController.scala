@@ -2,10 +2,10 @@ package controllers
 
 import domain.CounterpointResponse
 import net.liftweb.json.DefaultFormats
-import play.api.mvc.{AbstractController, Action, AnyContent, ControllerComponents, Request}
 import net.liftweb.json.Serialization.write
 import net.liftweb.util.StringHelpers
-import service.{CounterpointService, RandomService}
+import play.api.mvc._
+import service.CounterpointService
 
 import javax.inject.{Inject, Singleton}
 import scala.util.{Failure, Success}

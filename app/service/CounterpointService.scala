@@ -2,11 +2,13 @@ package service
 
 import service.CounterpointService._
 
-import javax.inject.{Inject, Singleton}
 import scala.util.Try
 
-@Singleton
-class CounterpointService @Inject()(randomService: RandomService) {
+class CounterpointService(var randomService: RandomService) {
+  def this() = {
+    this(new RandomService())
+  }
+
   def getInMajorKeyCantusFirmusNotes(tonic: String): Seq[String] =
     AVAILABLE_CANTUS_FIRMUS_NOTES.filter(note => {
       noteIsInMajorKey(tonic, note, AVAILABLE_CANTUS_FIRMUS_NOTES.indices
@@ -14,7 +16,7 @@ class CounterpointService @Inject()(randomService: RandomService) {
     })
 
   private def intervalIsInMajorKey(interval: Int) =
-    VALID_MAJOR_KEY_INTERVALS.contains(interval % OCTAVE)
+    MAJOR_KEY_INTERVALS.contains(interval % OCTAVE)
 
   private def noteIsInMajorKey(tonic: String, note: String, majorKeyIntervals: Seq[Int]) =
     majorKeyIntervals
@@ -43,17 +45,80 @@ class CounterpointService @Inject()(randomService: RandomService) {
     val tonic = AVAILABLE_CANTUS_FIRMUS_NOTES(randomService.between(MIN_TONIC, MAX_TONIC))
     val inMajorKeyCantusFirmusNotes = getInMajorKeyCantusFirmusNotes(tonic)
     (1 to length).foldLeft(List.empty[String]){(acc, i) => {
-      if (i == 1 || i == length) {
+      if (isFirstNote(i) || isLastNote(length, i)) {
         acc :+ tonic
-      } else if (i == length - 1) {
-        acc :+ pickPenultimateNote(tonic, inMajorKeyCantusFirmusNotes)
       } else {
-        val lastNoteRemoved = inMajorKeyCantusFirmusNotes.filter(note => note != acc(i - 2))
-        acc :+ lastNoteRemoved(randomService.nextInt(lastNoteRemoved.length))
+        val lastNote = acc(i - 2)
+        val tonicIdx = inMajorKeyCantusFirmusNotes.indexOf(tonic)
+        if (isPenultimateNote(length, i)) {
+          if (lastNote == inMajorKeyCantusFirmusNotes(tonicIdx + 1)) {
+            acc :+ inMajorKeyCantusFirmusNotes(tonicIdx - 1)
+          } else {
+            acc :+ pickPenultimateNote(tonic, inMajorKeyCantusFirmusNotes)
+          }
+        } else {
+          val lastNoteIdx = inMajorKeyCantusFirmusNotes.indexOf(lastNote)
+          val halfOfInKeyNotesLen = inMajorKeyCantusFirmusNotes.length / 2
+          val isTonicLowerHalf = tonicIdx < halfOfInKeyNotesLen
+          val isLastNoteLowerHalf = lastNoteIdx < 7
+          val isLastNoteLeadingTone: Boolean = isLeadingTone(
+            tonicIdx,
+            lastNoteIdx,
+            isTonicLowerHalf
+          )
+          if (isLastNoteLeadingTone) {
+            if ((isLastNoteLowerHalf && isTonicLowerHalf) || (!isLastNoteLowerHalf && !isTonicLowerHalf)) {
+              acc :+ tonic
+            } else if (isLastNoteLowerHalf && !isTonicLowerHalf) {
+              acc :+ inMajorKeyCantusFirmusNotes(tonicIdx - halfOfInKeyNotesLen)
+            } else {
+              acc :+ inMajorKeyCantusFirmusNotes(tonicIdx + halfOfInKeyNotesLen)
+            }
+          } else {
+            val lastNoteRemoved = inMajorKeyCantusFirmusNotes.filter(note => note != lastNote)
+            if (isThirdToLastNote(length, i)) {
+              val leadingTones = inMajorKeyCantusFirmusNotes.filter(note => {
+                note.filterNot(c => c.isDigit) == inMajorKeyCantusFirmusNotes(tonicIdx - 1).filterNot(c => c.isDigit)
+              })
+              val leadingTonesRemoved = lastNoteRemoved.filterNot(note => leadingTones.contains(note))
+              acc :+ leadingTonesRemoved(randomService.nextInt(leadingTonesRemoved.length))
+            } else {
+              acc :+ lastNoteRemoved(randomService.nextInt(lastNoteRemoved.length))
+            }
+          }
+        }
       }
     }}
   }
 
+  private def isThirdToLastNote(length: Int, i: Int) = {
+    i == length - 2
+  }
+
+  private def isPenultimateNote(length: Int, i: Int) = {
+    i == length - 1
+  }
+
+  private def isLastNote(length: Int, i: Int) = {
+    i == length
+  }
+
+  private def isFirstNote(i: Int) = {
+    i == 1
+  }
+
+  private def isLeadingTone(tonicIdx: Int, noteIdx: Int, isTonicLowerHalf: Boolean): Boolean = {
+    val isUnalteredLeadingTone = isDirectLeadingTone(tonicIdx, noteIdx)
+    if (isTonicLowerHalf) {
+      isUnalteredLeadingTone || isDirectLeadingTone((tonicIdx + 7), noteIdx)
+    } else {
+      isUnalteredLeadingTone || isDirectLeadingTone((tonicIdx - 7), noteIdx)
+    }
+  }
+
+  private def isDirectLeadingTone(tonicIdx: Int, noteIdx: Int) = {
+    tonicIdx - noteIdx == 1
+  }
 }
 
 object CounterpointService {
@@ -62,7 +127,7 @@ object CounterpointService {
   val MAX_LENGTH = 16
 
 
-  val VALID_MAJOR_KEY_INTERVALS = Set(
+  val MAJOR_KEY_INTERVALS = Set(
     0, 2, 4, 5, 7, 9, 11
   )
 
