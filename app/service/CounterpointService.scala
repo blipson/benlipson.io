@@ -101,6 +101,7 @@ class CounterpointService(var randomService: RandomService) {
   }
 
   private def isLeadingTone(tonicIdx: Int, noteIdx: Int, isTonicLowerHalf: Boolean): Boolean = {
+    // todo: compare the note names using filterNot(isDigit) instead of doing it by index
     val isUnalteredLeadingTone = isDirectLeadingTone(tonicIdx, noteIdx)
     if (isTonicLowerHalf) {
       isUnalteredLeadingTone || isDirectLeadingTone((tonicIdx + 7), noteIdx)
@@ -121,7 +122,7 @@ class CounterpointService(var randomService: RandomService) {
     }
   }
 
-  def pickPenultimateNote(tonic: String, inMajorKeyCantusFirmusNotes: Seq[String]): String = {
+  private def pickPenultimateNote(tonic: String, inMajorKeyCantusFirmusNotes: Seq[String]): String = {
     if (randomService.nextDouble() >= 0.7) {
       inMajorKeyCantusFirmusNotes(inMajorKeyCantusFirmusNotes.indexOf(tonic) - 1)
     } else {
@@ -176,4 +177,8 @@ object CounterpointService {
       val currentOctave = startOctave + math.floor((noteIdx + stepsAboveC) / OCTAVE).toInt
       NOTES(noteIdx % NOTES.length).concat(currentOctave.toString)
     }).toList
+
+  def MELODIC_CONSONANCES = Set(
+    1, 2, 3, 4, 5, 7, 8, 9, 12
+  )
 }
