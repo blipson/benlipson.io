@@ -60,7 +60,7 @@ class CounterpointService(var randomService: RandomService) {
     val lastNoteIdx = inMajorKeyCantusFirmusNotes.indexOf(lastNote)
     val halfOfInKeyNotesLen = inMajorKeyCantusFirmusNotes.length / 2
     val isTonicLowerHalf = tonicIdx < halfOfInKeyNotesLen
-    val isLastNoteLowerHalf = lastNoteIdx < 7
+    val isLastNoteLowerHalf = lastNoteIdx < halfOfInKeyNotesLen
     val isLastNoteLeadingTone: Boolean = isLeadingTone(
       tonicIdx,
       lastNoteIdx,
@@ -70,24 +70,68 @@ class CounterpointService(var randomService: RandomService) {
       handleLastNoteAsLeadingTone(tonic, inMajorKeyCantusFirmusNotes, tonicIdx, halfOfInKeyNotesLen, isTonicLowerHalf, isLastNoteLowerHalf)
     } else {
       val lastNoteRemoved = inMajorKeyCantusFirmusNotes.filter(note => note != lastNote)
-      if (isThirdToLastNote(length, currentNoteIdx)) {
-        generateThirdToLastCantusFirmusNote(inMajorKeyCantusFirmusNotes, lastNoteRemoved, tonicIdx)
+      val leadingTones = inMajorKeyCantusFirmusNotes.filter(note => {
+        note.filterNot(c => c.isDigit) == inMajorKeyCantusFirmusNotes(tonicIdx - 1).filterNot(c => c.isDigit)
+      })
+      if (isAntePenultimateNote(length, currentNoteIdx)) {
+        val notesToChooseFrom = generateAntePenultimateNotes(inMajorKeyCantusFirmusNotes, lastNote, tonicIdx, lastNoteRemoved, leadingTones)
+        notesToChooseFrom(randomService.nextInt(notesToChooseFrom.length))
       } else {
-        lastNoteRemoved(randomService.nextInt(lastNoteRemoved.length))
+        val notesToChooseFrom = if (tonic.filterNot(c => c.isDigit) == AVAILABLE_CANTUS_FIRMUS_NOTES.head) {
+          guaranteeMelodicConsonances(lastNote, lastNoteRemoved).filter(note => note != AVAILABLE_CANTUS_FIRMUS_NOTES.last)
+        } else {
+          guaranteeMelodicConsonances(lastNote, lastNoteRemoved)
+        }
+        if (isFourthToLastNote(length, currentNoteIdx)) {
+          generateFourthToLastNote(inMajorKeyCantusFirmusNotes, notesToChooseFrom, tonicIdx, leadingTones)
+        } else {
+          notesToChooseFrom(randomService.nextInt(notesToChooseFrom.length))
+        }
       }
     }
   }
 
-  private def generateThirdToLastCantusFirmusNote(inMajorKeyCantusFirmusNotes: Seq[String], lastNoteRemoved: Seq[String], tonicIdx: Int) = {
-    val leadingTones = inMajorKeyCantusFirmusNotes.filter(note => {
-      note.filterNot(c => c.isDigit) == inMajorKeyCantusFirmusNotes(tonicIdx - 1).filterNot(c => c.isDigit)
+  private def generateFourthToLastNote(inMajorKeyCantusFirmusNotes: Seq[String], notesToChooseFrom: Seq[String], tonicIdx: Int, leadingTones: Seq[String]) = {
+    val differentOctaveLeadingTones = leadingTones.filter(note => {
+        note.filter(c => c.isDigit) != inMajorKeyCantusFirmusNotes(tonicIdx - 1).filterNot(c => c.isDigit)
     })
-    val leadingTonesRemoved = lastNoteRemoved.filterNot(note => leadingTones.contains(note))
-    leadingTonesRemoved(randomService.nextInt(leadingTonesRemoved.length))
+
+    val lookAheadNotesToChooseFrom = notesToChooseFrom.filter(noteToChooseFrom =>
+      generateAntePenultimateNotes(
+        inMajorKeyCantusFirmusNotes,
+        noteToChooseFrom,
+        tonicIdx,
+        inMajorKeyCantusFirmusNotes
+          .filter(note => note != noteToChooseFrom),
+        differentOctaveLeadingTones
+      ).nonEmpty &&
+        !differentOctaveLeadingTones.contains(noteToChooseFrom)
+    )
+    lookAheadNotesToChooseFrom(randomService.nextInt(lookAheadNotesToChooseFrom.length))
+  }
+
+  private def generateAntePenultimateNotes(inMajorKeyCantusFirmusNotes: Seq[String], lastNote: String, tonicIdx: Int, notes: Seq[String], leadingTones: Seq[String]) = {
+    guaranteeMelodicConsonances(
+      inMajorKeyCantusFirmusNotes(tonicIdx - 1),
+      guaranteeMelodicConsonances(
+        inMajorKeyCantusFirmusNotes(tonicIdx + 1),
+        guaranteeMelodicConsonances(
+          lastNote,
+          notes.filterNot(note => leadingTones.contains(note))
+        )
+      )
+    )
+  }
+
+  private def guaranteeMelodicConsonances(lastNote: String, availableNotes: Seq[String]): Seq[String] = {
+    availableNotes
+      .filter(note => MELODIC_CONSONANCES
+        .contains(math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(lastNote) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)))
+      )
   }
 
   private def handleLastNoteAsLeadingTone(tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], tonicIdx: Int, halfOfInKeyNotesLen: Int, isTonicLowerHalf: Boolean, isLastNoteLowerHalf: Boolean) = {
-    if ((isLastNoteLowerHalf && isTonicLowerHalf) || (!isLastNoteLowerHalf && !isTonicLowerHalf)) {
+    if ((isLastNoteLowerHalf && isTonicLowerHalf) || (!isLastNoteLowerHalf && !isTonicLowerHalf) || tonicIdx == inMajorKeyCantusFirmusNotes.length / 2) {
       tonic
     } else if (isLastNoteLowerHalf && !isTonicLowerHalf) {
       inMajorKeyCantusFirmusNotes(tonicIdx - halfOfInKeyNotesLen)
@@ -96,12 +140,15 @@ class CounterpointService(var randomService: RandomService) {
     }
   }
 
-  private def isThirdToLastNote(length: Int, i: Int) = {
+  private def isAntePenultimateNote(length: Int, i: Int) = {
     i == length - 2
   }
 
+  private def isFourthToLastNote(length: Int, i: Int) = {
+    i == length - 3
+  }
+
   private def isLeadingTone(tonicIdx: Int, noteIdx: Int, isTonicLowerHalf: Boolean): Boolean = {
-    // todo: compare the note names using filterNot(isDigit) instead of doing it by index
     val isUnalteredLeadingTone = isDirectLeadingTone(tonicIdx, noteIdx)
     if (isTonicLowerHalf) {
       isUnalteredLeadingTone || isDirectLeadingTone((tonicIdx + 7), noteIdx)

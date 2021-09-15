@@ -2,7 +2,7 @@ package service
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
-import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES}
+import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES, MELODIC_CONSONANCES}
 import service.CounterpointServiceTest.{MAJOR_KEY_NOTES, TRIES}
 
 import scala.util.{Failure, Random, Success}
@@ -15,23 +15,20 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
     val length = Random.between(8, 17)
     (randomService.between _).expects(8, 17).returning(length)
     (randomService.between _).expects(3, maxTonic).returning(tonic)
-    (randomService.nextInt _).expects(13).returning(Random.nextInt(13)).anyNumberOfTimes()
-    (randomService.nextInt _).expects(11).returning(Random.nextInt(11)).noMoreThanOnce()
-    (randomService.nextInt _).expects(12).returning(Random.nextInt(12)).noMoreThanOnce()
+    (1 to 13).map(i =>
+      (randomService.nextInt _).expects(i).returning(Random.nextInt(i)).anyNumberOfTimes()
+    )
     (randomService.nextDouble _).expects().returning(Random.nextDouble()).noMoreThanOnce()
   }
 
   "Counterpoint service" should {
     "should generate a cantus firmus that starts and ends with the tonic" in {
       (1 to TRIES).map(_ => {
-        // given
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        // when
         counterpointService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
-            // then
             val head = cantusFirmus.head
             val last = cantusFirmus.last
             head mustBe last
@@ -44,14 +41,11 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
 
     "should ensure the final note is approached by stepwise motion" in {
       (1 to TRIES).map(_ => {
-        // given
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        // when
         counterpointService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
-            // then
             List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2)).contains(cantusFirmus(cantusFirmus.length - 2)) mustBe true
           case Failure(e) =>
             e.printStackTrace()
@@ -62,16 +56,13 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
 
     "should always approach the final note by the leading tone if the third to last note is the 2" in {
       (1 to TRIES).map(_ => {
-        // given
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
 
         counterpointService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
-            // when
             if (cantusFirmus(cantusFirmus.length - 3) == AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2)) {
-              // then
               cantusFirmus(cantusFirmus.length - 2) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1)
             }
           case Failure(e) =>
@@ -152,7 +143,32 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
                   .filter(note =>
                     note.filterNot(c => c.isDigit) == AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit)
                   ).contains(note)) {
-                  cantusFirmus(i + 1).filterNot(c => c.isDigit) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(tonic).filterNot(c => c.isDigit)
+                  cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
+                }
+            }
+          case Failure(e) =>
+            e.printStackTrace()
+            fail()
+        }
+      })
+    }
+
+    "should ensure that all note-to-note progressions are melodic consonances and ensure that no leaps are greater than an octave" in {
+      (1 to TRIES).map(_ => {
+        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+        val tonic = Random.between(3, maxTonic)
+        setUp(tonic, maxTonic)
+        counterpointService.generateCantusFirmus() match {
+          case Success(cantusFirmus) =>
+            cantusFirmus.zipWithIndex.map {
+              case (note, i) =>
+                if (i > 0) {
+                  MELODIC_CONSONANCES.contains(
+                    math.abs(
+                      AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) -
+                        AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i - 1))
+                    )
+                  ) mustBe true
                 }
             }
           case Failure(e) =>
@@ -222,5 +238,5 @@ object CounterpointServiceTest {
     List("D#/Eb3", "F3", "G3", "G#/Ab3", "A#/Bb3", "C4", "D4", "D#/Eb4", "F2", "G2", "G#/Ab2", "A#/Bb2", "C3", "D3"),
   )
 
-  val TRIES = 100
+  val TRIES = 1000
 }
