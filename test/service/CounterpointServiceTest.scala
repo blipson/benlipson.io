@@ -2,180 +2,267 @@ package service
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
-import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES, MELODIC_CONSONANCES}
-import service.CounterpointServiceTest.{MAJOR_KEY_NOTES, TRIES}
+import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES}
 
 import scala.util.{Failure, Random, Success}
 
 class CounterpointServiceTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
-  def counterpointService = new CounterpointService(randomService)
-
-  private def setUp(tonic: Int, maxTonic: Int) = {
-    val length = Random.between(8, 17)
-    (randomService.between _).expects(8, 17).returning(length)
-    (randomService.between _).expects(3, maxTonic).returning(tonic)
-    (1 to 13).map(i =>
-      (randomService.nextInt _).expects(i).returning(Random.nextInt(i)).anyNumberOfTimes()
-    )
-    (randomService.nextDouble _).expects().returning(Random.nextDouble()).noMoreThanOnce()
-  }
+  val counterpointService = new CounterpointService(randomService)
 
   "Counterpoint service" should {
     "should generate a cantus firmus that starts and ends with the tonic" in {
-      (1 to TRIES).map(_ => {
-        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-        val tonic = Random.between(3, maxTonic)
-        setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
-          case Success(cantusFirmus) =>
-            val head = cantusFirmus.head
-            val last = cantusFirmus.last
-            head mustBe last
-          case Failure(e) =>
-            e.printStackTrace()
-            fail()
-        }
-      })
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(12)
+      (1 to 13).map(i =>
+        (randomService.nextInt _).expects(i).returning(Random.nextInt(i)).anyNumberOfTimes()
+      )
+      (randomService.nextDouble _).expects().returning(Random.nextDouble()).noMoreThanOnce()
+      // [E3, C#/Db4, A3, G#/Ab3, B2, F#/Gb2, C#/Db3, C#/Db4, E3, B3, F#/Gb3, E3]
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          val head = cantusFirmus.head
+          val last = cantusFirmus.last
+          head mustBe "E3"
+          last mustBe "E3"
+          head mustBe last
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
     }
 
-    "should ensure the final note is approached by stepwise motion" in {
-      (1 to TRIES).map(_ => {
-        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-        val tonic = Random.between(3, maxTonic)
-        setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
-          case Success(cantusFirmus) =>
-            List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2)).contains(cantusFirmus(cantusFirmus.length - 2)) mustBe true
-          case Failure(e) =>
-            e.printStackTrace()
-            fail()
-        }
-      })
+    "should approach the final note by the leading tone less often" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(12)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(4).returning(2)
+      (randomService.nextDouble _).expects().returning(0.7)
+      // E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, G#/Ab3, [D#/Eb3, E3]
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          AVAILABLE_CANTUS_FIRMUS_NOTES(11) mustBe cantusFirmus(cantusFirmus.length - 2)
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
     }
 
-    "should always approach the final note by the leading tone if the third to last note is the 2" in {
-      (1 to TRIES).map(_ => {
-        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-        val tonic = Random.between(3, maxTonic)
-        setUp(tonic, maxTonic)
-
-        counterpointService.generateCantusFirmus() match {
-          case Success(cantusFirmus) =>
-            if (cantusFirmus(cantusFirmus.length - 3) == AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2)) {
-              cantusFirmus(cantusFirmus.length - 2) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1)
-            }
-          case Failure(e) =>
-            e.printStackTrace()
-            fail()
-        }
-      })
+    "should approach the final note by the 2 more often" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(12)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(4).returning(2)
+      (randomService.nextDouble _).expects().returning(0.6)
+      // E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, G#/Ab3, [F#/Gb3, E3]
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          AVAILABLE_CANTUS_FIRMUS_NOTES(14) mustBe cantusFirmus(cantusFirmus.length - 2)
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
     }
 
-    "should ensure that no note is followed by the same note" in {
-      (1 to TRIES).map(_ => {
-        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-        val tonic = Random.between(3, maxTonic)
-        setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
-          case Success(cantusFirmus) =>
-            cantusFirmus.zipWithIndex.map {
-              case (note, i) =>
-                if (i > 0) {
-                  note must not equal cantusFirmus(i - 1)
-                }
-            }
-          case Failure(e) =>
-            e.printStackTrace()
-            fail()
-        }
-      })
-    }
-
-    "should ensure that all notes are in the right major key" in {
-      (1 to TRIES).map(_ => {
-        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-        val tonic = Random.between(3, maxTonic)
-        setUp(tonic, maxTonic)
-        val notesInKey = MAJOR_KEY_NOTES
-          .filter(key =>
-            key.head.filterNot(c => c.isDigit) ==
-              AVAILABLE_CANTUS_FIRMUS_NOTES(tonic).filterNot(c => c.isDigit)
-          ).head
-        counterpointService.generateCantusFirmus() match {
-          case Success(cantusFirmus) =>
-            cantusFirmus.count(note => notesInKey.contains(note)) mustBe cantusFirmus.length
-          case Failure(e) =>
-            e.printStackTrace()
-            fail()
-        }
-      })
-    }
-
-    "should ensure that the third to last note is not the leading tone" in {
-      (1 to TRIES).map(_ => {
-        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-        val tonic = Random.between(3, maxTonic)
-        setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
-          case Success(cantusFirmus) =>
+    "should ensure that the leading tone always leads to the tonic when the tonic is E3" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(12)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(4).returning(2)
+      (randomService.nextDouble _).expects().returning(0.6)
+      // E3, [D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3], G#/Ab3, F#/Gb3, E3
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case (note, i) =>
+              if (AVAILABLE_CANTUS_FIRMUS_NOTES
+                .filter(note => note == "D#/Eb3"
+                ).contains(note)) {
+                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
+              }
+          }
+          cantusFirmus.count(note =>
             AVAILABLE_CANTUS_FIRMUS_NOTES
-              .filter(note =>
-                note.filterNot(c => c.isDigit) == AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit)
-              ).contains(cantusFirmus(cantusFirmus.length - 3)) mustBe false
-          case Failure(e) =>
-            e.printStackTrace()
-            fail()
-        }
-      })
+              .filter(note => note == "D#/Eb3"
+              ).contains(note)
+          ) > 0 mustBe true
+
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
     }
 
-    "should ensure that the leading tone always leads to the tonic" in {
-      (1 to TRIES).map(_ => {
-        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-        val tonic = Random.between(3, maxTonic)
-        setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
-          case Success(cantusFirmus) =>
-            cantusFirmus.zipWithIndex.map {
-              case (note, i) =>
-                if (AVAILABLE_CANTUS_FIRMUS_NOTES
-                  .filter(note =>
-                    note.filterNot(c => c.isDigit) == AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit)
-                  ).contains(note)) {
-                  cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
-                }
-            }
-          case Failure(e) =>
-            e.printStackTrace()
-            fail()
-        }
-      })
+
+    "should ensure that the leading tone always leads to the tonic when the tonic is" +
+      " in the lower half and the leading tone is in the upper half" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(3)
+      (randomService.nextInt _).expects(8).returning(5)
+      (randomService.nextInt _).expects(11).returning(6)
+      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(8).returning(5)
+      (randomService.nextInt _).expects(1).returning(0)
+      (randomService.nextDouble _).expects().returning(0.6)
+      // G2, D3, [F#/Gb3, G3, F#/Gb3, G3, F#/Gb3, G3], A3, D3, A2, G2
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case (note, i) =>
+              if (AVAILABLE_CANTUS_FIRMUS_NOTES
+                .filter(note => note == "F#/Gb3"
+                ).contains(note)) {
+                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
+              }
+          }
+          cantusFirmus.count(note =>
+            AVAILABLE_CANTUS_FIRMUS_NOTES
+              .filter(note => note == "F#/Gb3"
+              ).contains(note)
+          ) > 0 mustBe true
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
     }
 
-    "should ensure that all note-to-note progressions are melodic consonances and ensure that no leaps are greater than an octave" in {
-      (1 to TRIES).map(_ => {
-        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-        val tonic = Random.between(3, maxTonic)
-        setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
-          case Success(cantusFirmus) =>
-            cantusFirmus.zipWithIndex.map {
-              case (note, i) =>
-                if (i > 0) {
-                  MELODIC_CONSONANCES.contains(
-                    math.abs(
-                      AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) -
-                        AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i - 1))
-                    )
-                  ) mustBe true
-                }
-            }
-          case Failure(e) =>
-            e.printStackTrace()
-            fail()
-        }
-      })
+    "should ensure that the leading tone always leads to the tonic when the tonic and " +
+      "the leading tone are both in the lower half" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(3)
+      (randomService.nextInt _).expects(8).returning(1)
+      (randomService.nextInt _).expects(8).returning(4)
+      (randomService.nextInt _).expects(9).returning(6)
+      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(3).returning(0)
+      (randomService.nextDouble _).expects().returning(0.6)
+      // [G2, [F#/Gb2, G2], C3, G3, F#/Gb3, G3, F#/Gb3, G3, G2, A2, G2]
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case (note, i) =>
+              if (AVAILABLE_CANTUS_FIRMUS_NOTES
+                .filter(note => note == "F#/Gb2"
+                ).contains(note)) {
+                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
+              }
+          }
+          cantusFirmus.count(note =>
+            AVAILABLE_CANTUS_FIRMUS_NOTES
+              .filter(note => note == "F#/Gb2"
+              ).contains(note)
+          ) > 0 mustBe true
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    }
+
+    "should ensure that the leading tone always leads to the tonic when the tonic and " +
+      "the leading tone are both in the upper half" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(maxTonic - 2)
+      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(4).returning(0)
+      (randomService.nextDouble _).expects().returning(0.6)
+      // [G3, F#/Gb3, G3, [F#/Gb3, G3, F#/Gb3, G3, F#/Gb3, G3], D3, A3, G3]
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case (note, i) =>
+              if (AVAILABLE_CANTUS_FIRMUS_NOTES
+                .filter(note => note == "F#/Gb3"
+                ).contains(note)) {
+                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
+              }
+          }
+          cantusFirmus.count(note =>
+            AVAILABLE_CANTUS_FIRMUS_NOTES
+              .filter(note => note == "F#/Gb3"
+              ).contains(note)
+          ) > 0 mustBe true
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    }
+
+    "should ensure that the leading tone always leads to the tonic when the tonic is " +
+      "in the upper half and the leading tone is in the lower half" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(maxTonic - 2)
+      (randomService.nextInt _).expects(10).returning(0)
+      (randomService.nextInt _).expects(8).returning(1)
+      (randomService.nextInt _).expects(8).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(10).returning(0)
+      (randomService.nextInt _).expects(2).returning(0)
+      (randomService.nextDouble _).expects().returning(0.6)
+      // [G3, G2, [F#/Gb2, G2], D3, E3, D3, E3, E2, A2, A3, G3]
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case (note, i) =>
+              if (AVAILABLE_CANTUS_FIRMUS_NOTES
+                .filter(note => note == "F#/Gb2"
+                ).contains(note)) {
+                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
+              }
+          }
+          cantusFirmus.count(note =>
+            AVAILABLE_CANTUS_FIRMUS_NOTES
+              .filter(note => note == "F#/Gb2"
+              ).contains(note)
+          ) > 0 mustBe true
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    }
+
+    "should ensure that the highest cantus firmus note is unavailable when the tonic is " +
+      "one half step above, as it would then be a leading tone" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(12)
+      (randomService.nextInt _).expects(11).returning(10)
+      // this line would expect (7) instead of (6) if the highest note were available
+      (randomService.nextInt _).expects(6).returning(1)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(4).returning(0)
+      (randomService.nextDouble _).expects().returning(0.6)
+      // E3, C#/Db4, [E3], D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, B2, F#/Gb3, E3
+      counterpointService.generateCantusFirmus()
+    }
+
+    "should construct a new service" in {
+      val counterpointService = new CounterpointService()
     }
 
     "should generate available cantus firmus notes" in {
@@ -220,23 +307,4 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
         )
     }
   }
-}
-
-object CounterpointServiceTest {
-  val MAJOR_KEY_NOTES = Set(
-    List("E2", "F#/Gb2", "G#/Ab2", "A2", "B2", "C#/Db3", "D#/Eb3", "E3", "F#/Gb3", "G#/Ab3", "A3", "B3", "C#/Db4", "D#/Eb4"),
-    List("F2", "G2", "A2", "A#/Bb2", "C3", "D3", "E3", "F3", "G3", "A3", "A#/Bb3", "C4", "D4", "E2"),
-    List("F#/Gb2", "G#/Ab2", "A#/Bb2", "B2", "C#/Db3", "D#/Eb3", "F3", "F#/Gb3", "G#/Ab3", "A#/Bb3", "B3", "C#/Db4", "D#/Eb4", "F2"),
-    List("G2", "A2", "B2", "C3", "D3", "E3", "F#/Gb3", "G3", "A3", "B3", "C4", "D4", "E2", "F#/Gb2"),
-    List("G#/Ab2", "A#/Bb2", "C3", "C#/Db3", "D#/Eb3", "F3", "G3", "G#/Ab3", "A#/Bb3", "C4", "C#/Db4", "D#/Eb4", "F2", "G2"),
-    List("A2", "B2", "C#/Db3", "D3", "E3", "F#/Gb3", "G#/Ab3", "A3", "B3", "C#/Db4", "D4", "E2", "F#/Gb2", "G#/Ab2"),
-    List("A#/Bb2", "C3", "D3", "D#/Eb3", "F3", "G3", "A3", "A#/Bb3", "C4", "D4", "D#/Eb4", "F2", "G2", "A2"),
-    List("B2", "C#/Db3", "D#/Eb3", "E3", "F#/Gb3", "G#/Ab3", "A#/Bb3", "B3", "C#/Db4", "D#/Eb4", "E2", "F#/Gb2", "G#/Ab2", "A#/Bb2"),
-    List("C3", "D3", "E3", "F3", "G3", "A3", "B3", "C4", "D4", "E2", "F2", "G2", "A2", "B2"),
-    List("C#/Db3", "D#/Eb3", "F3", "F#/Gb3", "G#/Ab3", "A#/Bb3", "C4", "C#/Db4", "D#/Eb4", "F2", "F#/Gb2", "G#/Ab2", "A#/Bb2", "C3"),
-    List("D3", "E3", "F#/Gb3", "G3", "A3", "B3", "C#/Db4", "D4", "E2", "F#/Gb2", "G2", "A2", "B2", "C#/Db3"),
-    List("D#/Eb3", "F3", "G3", "G#/Ab3", "A#/Bb3", "C4", "D4", "D#/Eb4", "F2", "G2", "G#/Ab2", "A#/Bb2", "C3", "D3"),
-  )
-
-  val TRIES = 1000
 }

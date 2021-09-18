@@ -20,8 +20,7 @@ class CounterpointService(var randomService: RandomService) {
         val lastNote = acc(currentNoteIdx - 2)
         acc :+ generateNonFirstOrLastCantusFirmusNote(length, tonic, inMajorKeyCantusFirmusNotes, lastNote, currentNoteIdx)
       }
-    }
-    }
+    }}
   }
 
   def getInMajorKeyCantusFirmusNotes(tonic: String): Seq[String] =
@@ -49,7 +48,7 @@ class CounterpointService(var randomService: RandomService) {
   private def generateNonFirstOrLastCantusFirmusNote(length: Int, tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], lastNote: String, currentNoteIdx: Int): String = {
     val tonicIdx = inMajorKeyCantusFirmusNotes.indexOf(tonic)
     if (isPenultimateNote(length, currentNoteIdx)) {
-      generatePenultimateCantusFirmusNote(tonic, inMajorKeyCantusFirmusNotes, lastNote, tonicIdx)
+      pickPenultimateNote(tonic, inMajorKeyCantusFirmusNotes)
     } else {
       generateMiddleCantusFirmusNote(length, tonic, inMajorKeyCantusFirmusNotes, lastNote, currentNoteIdx, tonicIdx)
     }
@@ -77,7 +76,7 @@ class CounterpointService(var randomService: RandomService) {
         val notesToChooseFrom = generateAntePenultimateNotes(inMajorKeyCantusFirmusNotes, lastNote, tonicIdx, lastNoteRemoved, leadingTones)
         notesToChooseFrom(randomService.nextInt(notesToChooseFrom.length))
       } else {
-        val notesToChooseFrom = if (tonic.filterNot(c => c.isDigit) == AVAILABLE_CANTUS_FIRMUS_NOTES.head) {
+        val notesToChooseFrom = if (tonic.filterNot(c => c.isDigit) == AVAILABLE_CANTUS_FIRMUS_NOTES.head.filterNot(c => c.isDigit)) {
           guaranteeMelodicConsonances(lastNote, lastNoteRemoved).filter(note => note != AVAILABLE_CANTUS_FIRMUS_NOTES.last)
         } else {
           guaranteeMelodicConsonances(lastNote, lastNoteRemoved)
@@ -130,10 +129,10 @@ class CounterpointService(var randomService: RandomService) {
       )
   }
 
-  private def handleLastNoteAsLeadingTone(tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], tonicIdx: Int, halfOfInKeyNotesLen: Int, isTonicLowerHalf: Boolean, isLastNoteLowerHalf: Boolean) = {
-    if ((isLastNoteLowerHalf && isTonicLowerHalf) || (!isLastNoteLowerHalf && !isTonicLowerHalf) || tonicIdx == inMajorKeyCantusFirmusNotes.length / 2) {
+  private def handleLastNoteAsLeadingTone(tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], tonicIdx: Int, halfOfInKeyNotesLen: Int, isTonicLowerHalf: Boolean, isLeadingToneLowerHalf: Boolean) = {
+    if ((isLeadingToneLowerHalf && isTonicLowerHalf) || (!isLeadingToneLowerHalf && !isTonicLowerHalf) || tonicIdx == inMajorKeyCantusFirmusNotes.length / 2) {
       tonic
-    } else if (isLastNoteLowerHalf && !isTonicLowerHalf) {
+    } else if (isLeadingToneLowerHalf && !isTonicLowerHalf) {
       inMajorKeyCantusFirmusNotes(tonicIdx - halfOfInKeyNotesLen)
     } else {
       inMajorKeyCantusFirmusNotes(tonicIdx + halfOfInKeyNotesLen)
@@ -159,14 +158,6 @@ class CounterpointService(var randomService: RandomService) {
 
   private def isDirectLeadingTone(tonicIdx: Int, noteIdx: Int) = {
     tonicIdx - noteIdx == 1
-  }
-
-  private def generatePenultimateCantusFirmusNote(tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], lastNote: String, tonicIdx: Int) = {
-    if (lastNote == inMajorKeyCantusFirmusNotes(tonicIdx + 1)) {
-      inMajorKeyCantusFirmusNotes(tonicIdx - 1)
-    } else {
-      pickPenultimateNote(tonic, inMajorKeyCantusFirmusNotes)
-    }
   }
 
   private def pickPenultimateNote(tonic: String, inMajorKeyCantusFirmusNotes: Seq[String]): String = {

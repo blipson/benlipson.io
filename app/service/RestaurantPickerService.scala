@@ -6,8 +6,7 @@ import scala.util.Random
 
 class RestaurantPickerService {
   def pickRestaurant(): Option[String] = {
-    if (RESTAURANT_LIST.isEmpty) None
-    else RESTAURANT_LIST.lift(Random.nextInt(RESTAURANT_LIST.length))
+    RESTAURANT_LIST.lift(Random.nextInt(RESTAURANT_LIST.length))
   }
 }
 
