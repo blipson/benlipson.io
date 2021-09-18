@@ -113,13 +113,14 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       (randomService.between _).expects(8, 17).returning(12)
       (randomService.between _).expects(3, maxTonic).returning(3)
       (randomService.nextInt _).expects(8).returning(5)
-      (randomService.nextInt _).expects(11).returning(6)
-      (randomService.nextInt _).expects(10).returning(5)
-      (randomService.nextInt _).expects(10).returning(5)
-      (randomService.nextInt _).expects(8).returning(5)
+      (randomService.nextInt _).expects(9).returning(6)
+      (randomService.nextInt _).expects(7).returning(6)
+      (randomService.nextInt _).expects(6).returning(5)
+      (randomService.nextInt _).expects(7).returning(5)
+      (randomService.nextInt _).expects(6).returning(5)
       (randomService.nextInt _).expects(1).returning(0)
       (randomService.nextDouble _).expects().returning(0.6)
-      // G2, D3, [F#/Gb3, G3, F#/Gb3, G3, F#/Gb3, G3], A3, D3, A2, G2
+      // [G2, D3, [F#/Gb3, G3], A3, G3, [F#/Gb3, G3], A3, D3, A2, G2]
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus.zipWithIndex.map {
@@ -148,9 +149,9 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       (randomService.between _).expects(3, maxTonic).returning(3)
       (randomService.nextInt _).expects(8).returning(1)
       (randomService.nextInt _).expects(8).returning(4)
-      (randomService.nextInt _).expects(9).returning(6)
-      (randomService.nextInt _).expects(10).returning(5)
-      (randomService.nextInt _).expects(10).returning(5)
+      (randomService.nextInt _).expects(7).returning(6)
+      (randomService.nextInt _).expects(6).returning(5)
+      (randomService.nextInt _).expects(6).returning(5)
       (randomService.nextInt _).expects(3).returning(0)
       (randomService.nextDouble _).expects().returning(0.6)
       // [G2, [F#/Gb2, G2], C3, G3, F#/Gb3, G3, F#/Gb3, G3, G2, A2, G2]
@@ -214,15 +215,13 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       (randomService.between _).expects(8, 17).returning(12)
       (randomService.between _).expects(3, maxTonic).returning(maxTonic - 2)
       (randomService.nextInt _).expects(10).returning(0)
-      (randomService.nextInt _).expects(8).returning(1)
-      (randomService.nextInt _).expects(8).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(10).returning(0)
+      (randomService.nextInt _).expects(7).returning(0)
+      (randomService.nextInt _).expects(7).returning(5)
+      (randomService.nextInt _).expects(7).returning(5)
+      (randomService.nextInt _).expects(6).returning(5)
       (randomService.nextInt _).expects(2).returning(0)
       (randomService.nextDouble _).expects().returning(0.6)
-      // [G3, G2, [F#/Gb2, G2], D3, E3, D3, E3, E2, A2, A3, G3]
+      // [G3, G2, [F#/Gb2, G2], E3, F#/Gb3, G3, F#/Gb3, G3, D3, A3, G3]
       counterpointService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
           cantusFirmus.zipWithIndex.map {
@@ -252,13 +251,43 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       (randomService.nextInt _).expects(11).returning(10)
       // this line would expect (7) instead of (6) if the highest note were available
       (randomService.nextInt _).expects(6).returning(1)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
+      (randomService.nextInt _).expects(8).returning(5)
+      (randomService.nextInt _).expects(6).returning(5)
+      (randomService.nextInt _).expects(6).returning(5)
+      (randomService.nextInt _).expects(7).returning(0)
+      (randomService.nextInt _).expects(6).returning(0)
+      (randomService.nextInt _).expects(6).returning(0)
       (randomService.nextInt _).expects(4).returning(0)
       (randomService.nextDouble _).expects().returning(0.6)
       // E3, C#/Db4, [E3], D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, B2, F#/Gb3, E3
       counterpointService.generateCantusFirmus()
+    }
+
+    "should not pick any notes larger than 14 half steps away during the middle " +
+      "in order to leave room for the leading tone or the 2 at the end" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      val tonic = Random.between(3, maxTonic)
+      (randomService.between _).expects(8, 17).returning(12)
+      (randomService.between _).expects(3, maxTonic).returning(3)
+      (randomService.nextInt _).expects(8).returning(7)
+      // this line would expect (8) if a tenth (B3) were allowed
+      (randomService.nextInt _).expects(7).returning(6)
+      (randomService.nextInt _).expects(6).returning(4)
+      (randomService.nextInt _).expects(7).returning(6)
+      (randomService.nextInt _).expects(6).returning(4)
+      (randomService.nextInt _).expects(6).returning(4)
+      (randomService.nextInt _).expects(3).returning(1)
+      (randomService.nextDouble _).expects().returning(0.7)
+      // [G2, G3, B3, G3, B3, G3, B3, G3, B3, D3, [A2], G2]
+      // is what it would be if it were in err
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          val stepwiseValues = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note))
+          stepwiseValues.max - stepwiseValues.min <= 16 mustBe true
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
     }
 
     "should construct a new service" in {

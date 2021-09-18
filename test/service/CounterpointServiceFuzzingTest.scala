@@ -218,22 +218,26 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         }
       })
     }
-    //
-    //    "should ensure that the range between the lowest note and the highest note is no larger than a tenth" in {
-    //      (1 to TRIES).map(_ => {
-    //        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-    //        val tonic = Random.between(3, maxTonic)
-    //        setUp(tonic, maxTonic)
-    //        counterpointService.generateCantusFirmus() match {
-    //          case Success(cantusFirmus) =>
-    //            val stepwiseValues = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note))
-    //            stepwiseValues.max - stepwiseValues.min <= 16 mustBe true
-    //          case Failure(e) =>
-    //            e.printStackTrace()
-    //            fail()
-    //        }
-    //      })
-    //    }
+
+    "should ensure that the range between the lowest note and the highest note is no larger than a tenth" in {
+      (1 to TRIES).map(_ => {
+        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+        val tonic = Random.between(3, maxTonic)
+        setUp(tonic, maxTonic)
+        counterpointService.generateCantusFirmus() match {
+          case Success(cantusFirmus) =>
+            val stepwiseValues = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note))
+            if (stepwiseValues.max - stepwiseValues.min > 16) {
+              println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+              println(cantusFirmus.toString())
+            }
+            stepwiseValues.max - stepwiseValues.min <= 16 mustBe true
+          case Failure(e) =>
+            e.printStackTrace()
+            fail()
+        }
+      })
+    }
   }
 }
 
