@@ -238,6 +238,37 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         }
       })
     }
+
+    "should ensure that there are no more than two leaps larger than a 4th" in {
+      (1 to TRIES).map(_ => {
+        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+        val tonic = Random.between(3, maxTonic)
+        setUp(tonic, maxTonic)
+        counterpointService.generateCantusFirmus() match {
+          case Success(cantusFirmus) =>
+            val numLeaps = cantusFirmus.zipWithIndex.map {
+              case (note, i) =>
+                if (i > 0) {
+                  if (math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i - 1))) > 5) {
+                    note
+                  } else {
+                    ""
+                  }
+                } else {
+                  ""
+                }
+            }.count(note => note != "")
+            if (numLeaps > 2) {
+              println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+              println(cantusFirmus.toString())
+            }
+            numLeaps <= 2 mustBe true
+          case Failure(e) =>
+            e.printStackTrace()
+            fail()
+        }
+      })
+    }
   }
 }
 

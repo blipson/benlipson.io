@@ -13,13 +13,28 @@ class CounterpointService(var randomService: RandomService) {
     val length = randomService.between(MIN_LENGTH, MAX_LENGTH + 1)
     val tonic = AVAILABLE_CANTUS_FIRMUS_NOTES(randomService.between(MIN_TONIC, MAX_TONIC))
     val inMajorKeyCantusFirmusNotes = getInMajorKeyCantusFirmusNotes(tonic)
+//    println("length: " + length)
+//    println("tonic: " + tonic)
     (1 to length).foldLeft(List.empty[String]) { (acc, currentNoteIdx) => {
+//      println(acc)
       if (isFirstNote(currentNoteIdx) || isLastNote(length, currentNoteIdx)) {
         acc :+ tonic
       } else {
         val lastNote = acc(currentNoteIdx - 2)
         val lowestNote = acc.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).min
         val highestNote = acc.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).max
+        val numLeaps = acc.zipWithIndex.map {
+          case (note, i) =>
+            if (i > 0) {
+              if (math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(acc(i - 1))) > 5) {
+                note
+              } else {
+                ""
+              }
+            } else {
+              ""
+            }
+        }.count(note => note != "")
         acc :+ generateNonFirstOrLastCantusFirmusNote(
           length,
           tonic,
@@ -27,7 +42,8 @@ class CounterpointService(var randomService: RandomService) {
           lastNote,
           currentNoteIdx,
           lowestNote,
-          highestNote
+          highestNote,
+          numLeaps
         )
       }
     }}
@@ -55,10 +71,9 @@ class CounterpointService(var randomService: RandomService) {
         (OCTAVE * 2)
     )
 
-  private def generateNonFirstOrLastCantusFirmusNote(length: Int, tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], lastNote: String, currentNoteIdx: Int, lowestNote: Int, highestNote: Int): String = {
+  private def generateNonFirstOrLastCantusFirmusNote(length: Int, tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], lastNote: String, currentNoteIdx: Int, lowestNote: Int, highestNote: Int, numLeaps: Int): String = {
     val tonicIdx = inMajorKeyCantusFirmusNotes.indexOf(tonic)
     if (isPenultimateNote(length, currentNoteIdx)) {
-      // what if the leading tone being lower makes it more than a tenth?
       pickPenultimateNote(tonic, inMajorKeyCantusFirmusNotes)
     } else {
       generateMiddleCantusFirmusNote(
@@ -69,13 +84,14 @@ class CounterpointService(var randomService: RandomService) {
         currentNoteIdx,
         tonicIdx,
         lowestNote,
-        highestNote
+        highestNote,
+        numLeaps
       )
     }
   }
 
   // "middle" is defined as not the first, last, or second to last note
-  private def generateMiddleCantusFirmusNote(length: Int, tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], lastNote: String, currentNoteIdx: Int, tonicIdx: Int, lowestNote: Int, highestNote: Int) = {
+  private def generateMiddleCantusFirmusNote(length: Int, tonic: String, inMajorKeyCantusFirmusNotes: Seq[String], lastNote: String, currentNoteIdx: Int, tonicIdx: Int, lowestNote: Int, highestNote: Int, numLeaps: Int) = {
     val lastNoteIdx = inMajorKeyCantusFirmusNotes.indexOf(lastNote)
     val halfOfInKeyNotesLen = inMajorKeyCantusFirmusNotes.length / 2
     val isTonicLowerHalf = tonicIdx < halfOfInKeyNotesLen
@@ -86,7 +102,6 @@ class CounterpointService(var randomService: RandomService) {
       isTonicLowerHalf
     )
     if (isLastNoteLeadingTone) {
-      // what if the leading tone leads to a note that's a tenth above the lowest note?
       handleLastNoteAsLeadingTone(tonic, inMajorKeyCantusFirmusNotes, tonicIdx, halfOfInKeyNotesLen, isTonicLowerHalf, isLastNoteLowerHalf)
     } else {
       val lastNoteRemoved = inMajorKeyCantusFirmusNotes.filter(note => note != lastNote)
@@ -97,15 +112,20 @@ class CounterpointService(var randomService: RandomService) {
         val noteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)
         noteIdx - lowestNote <= 14 && highestNote - noteIdx <= 14
       })
+      val leapsRemoved = if (numLeaps >= 1 || isFourthToLastNote(length, currentNoteIdx)) {
+        moreThanATenthRemoved.filter(note => isALeap(lastNote, note))
+      } else {
+        moreThanATenthRemoved
+      }
 
       if (isAntePenultimateNote(length, currentNoteIdx)) {
-        val notesToChooseFrom = generateAntePenultimateNotes(inMajorKeyCantusFirmusNotes, lastNote, tonicIdx, moreThanATenthRemoved, leadingTones)
+        val notesToChooseFrom = generateAntePenultimateNotes(inMajorKeyCantusFirmusNotes, lastNote, tonicIdx, leapsRemoved, leadingTones)
         notesToChooseFrom(randomService.nextInt(notesToChooseFrom.length))
       } else {
         val notesToChooseFrom = if (tonic.filterNot(c => c.isDigit) == AVAILABLE_CANTUS_FIRMUS_NOTES.head.filterNot(c => c.isDigit)) {
-          guaranteeMelodicConsonances(lastNote, moreThanATenthRemoved).filter(note => note != AVAILABLE_CANTUS_FIRMUS_NOTES.last)
+          guaranteeMelodicConsonances(lastNote, leapsRemoved).filter(note => note != AVAILABLE_CANTUS_FIRMUS_NOTES.last)
         } else {
-          guaranteeMelodicConsonances(lastNote, moreThanATenthRemoved)
+          guaranteeMelodicConsonances(lastNote, leapsRemoved)
         }
         if (isFourthToLastNote(length, currentNoteIdx)) {
           generateFourthToLastNote(inMajorKeyCantusFirmusNotes, notesToChooseFrom, tonicIdx, leadingTones)
@@ -116,9 +136,15 @@ class CounterpointService(var randomService: RandomService) {
     }
   }
 
+  private def isALeap(lastNote: String, note: String) = {
+    val noteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)
+    val lastNoteIdxInAvailable = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(lastNote)
+    math.abs(noteIdx - lastNoteIdxInAvailable) <= 5
+  }
+
   private def generateFourthToLastNote(inMajorKeyCantusFirmusNotes: Seq[String], notesToChooseFrom: Seq[String], tonicIdx: Int, leadingTones: Seq[String]) = {
     val differentOctaveLeadingTones = leadingTones.filter(note => {
-        note.filter(c => c.isDigit) != inMajorKeyCantusFirmusNotes(tonicIdx - 1).filterNot(c => c.isDigit)
+      note.filter(c => c.isDigit) != inMajorKeyCantusFirmusNotes(tonicIdx - 1).filterNot(c => c.isDigit)
     })
 
     val lookAheadNotesToChooseFrom = notesToChooseFrom.filter(noteToChooseFrom =>
@@ -129,13 +155,16 @@ class CounterpointService(var randomService: RandomService) {
         inMajorKeyCantusFirmusNotes
           .filter(note => note != noteToChooseFrom),
         differentOctaveLeadingTones
-      ).nonEmpty &&
+      ).exists(note => isALeap(noteToChooseFrom, note)) &&
         !differentOctaveLeadingTones.contains(noteToChooseFrom)
     )
     lookAheadNotesToChooseFrom(randomService.nextInt(lookAheadNotesToChooseFrom.length))
   }
 
   private def generateAntePenultimateNotes(inMajorKeyCantusFirmusNotes: Seq[String], lastNote: String, tonicIdx: Int, notes: Seq[String], leadingTones: Seq[String]) = {
+    // should the logic for the penultimate note live in the same place as this logic?
+    // there is a case where the ante penultimate note would be a leap with either
+    // the leading tone xor the 2 and not both
     guaranteeMelodicConsonances(
       inMajorKeyCantusFirmusNotes(tonicIdx - 1),
       guaranteeMelodicConsonances(
