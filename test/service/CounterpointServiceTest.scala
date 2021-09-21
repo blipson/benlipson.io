@@ -8,7 +8,6 @@ import scala.util.{Failure, Random, Success}
 
 class CounterpointServiceTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
-  val counterpointService = new CounterpointService(randomService)
   val counterpointRecursiveService = new CounterpointRecursiveService(randomService)
 
   "Counterpoint service" should {
@@ -174,7 +173,7 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
     }
 
     "should construct a new service" in {
-      val counterpointService = new CounterpointService()
+      val counterpointService = new CounterpointRecursiveService()
     }
 
     "should generate available cantus firmus notes" in {
