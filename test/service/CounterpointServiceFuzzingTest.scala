@@ -114,11 +114,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        val notesInKey = MAJOR_KEY_NOTES
-          .filter(key =>
-            key.head.filterNot(c => c.isDigit) ==
-              AVAILABLE_CANTUS_FIRMUS_NOTES(tonic).filterNot(c => c.isDigit)
-          ).head
+        val notesInKey = counterpointRecursiveService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic))
         counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             if (cantusFirmus.count(note => notesInKey.contains(note)) != cantusFirmus.length) {
@@ -301,6 +297,38 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         }
       })
     }
+  }
+
+  "should ensure that there are no more than two leaps in a row" in {
+    (1 to TRIES).map(_ => {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      val tonic = Random.between(3, maxTonic)
+      val notesInKey = counterpointRecursiveService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic))
+      setUp(tonic, maxTonic)
+      counterpointRecursiveService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case (note, i) =>
+              if (i > 2) {
+                val prevNote = cantusFirmus(i - 1)
+                val prevPrevNote = cantusFirmus(i - 2)
+                val prevPrevPrevNote = cantusFirmus(i - 3)
+                if (math.abs(notesInKey.indexOf(prevPrevPrevNote) - notesInKey.indexOf(prevPrevNote)) > 1) {
+                  if (math.abs(notesInKey.indexOf(prevPrevNote) - notesInKey.indexOf(prevNote)) > 1) {
+                    if (math.abs(notesInKey.indexOf(prevNote) - notesInKey.indexOf(note)) > 1) {
+                      println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+                      println(cantusFirmus.toString())
+                    }
+                    math.abs(notesInKey.indexOf(prevNote) - notesInKey.indexOf(note)) > 1 mustBe false
+                  }
+                }
+              }
+          }
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    })
   }
 }
 

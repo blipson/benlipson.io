@@ -4,7 +4,7 @@ import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
 import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES}
 
-import scala.util.{Failure, Random, Success}
+import scala.util.{Failure, Success}
 
 class CounterpointServiceTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
@@ -171,6 +171,62 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
           fail()
       }
     }
+
+//    "should ensure that there are no more than two leaps in a row" in {
+//      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+//      val tonic = 7
+//      (randomService.between _).expects(8, 17).returning(12)
+//      (randomService.between _).expects(3, maxTonic).returning(tonic)
+//      val notesInKey = counterpointRecursiveService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic))
+//
+//      (randomService.nextInt _).expects(10).returning(6).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(1).returning(0).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(11).returning(3).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(2).returning(1).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(8).returning(5).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(7).returning(4).anyNumberOfTimes()
+//      // FAILURE FOUND WITH THIS CANTUS FIRMUS:
+//      // List()
+//      // List(B2)
+//      // List(B2, E3)
+//      // List(B2, E3, D#/Eb3)
+//      // List(B2, E3, D#/Eb3, B2)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2, E3)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2, E3, D#/Eb3)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2, E3, D#/Eb3, F#/Gb3)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2, E3, D#/Eb3)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2, E3, D#/Eb3, E3)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2, E3, D#/Eb3, E3, C#/Db3)
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2, E3, D#/Eb3, E3, C#/Db3, B2)
+//      //FAILURE FOUND WITH THIS CANTUS FIRMUS:
+//      // List(B2, E3, D#/Eb3, B2, C#/Db3, A#/Bb2, B2, E3, D#/Eb3, E3, C#/Db3, B2)
+//      counterpointRecursiveService.generateCantusFirmus() match {
+//        case Success(cantusFirmus) =>
+//          cantusFirmus.zipWithIndex.map {
+//            case (note, i) =>
+//              if (i > 2) {
+//                val prevNote = cantusFirmus(i - 1)
+//                val prevPrevNote = cantusFirmus(i - 2)
+//                val prevPrevPrevNote = cantusFirmus(i - 3)
+//                if (math.abs(notesInKey.indexOf(prevPrevPrevNote) - notesInKey.indexOf(prevPrevNote)) > 1) {
+//                  if (math.abs(notesInKey.indexOf(prevPrevNote) - notesInKey.indexOf(prevNote)) > 1) {
+//                    if (math.abs(notesInKey.indexOf(prevNote) - notesInKey.indexOf(note)) > 1) {
+//                      println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+//                      println(cantusFirmus.toString())
+//                    }
+//                    math.abs(notesInKey.indexOf(prevNote) - notesInKey.indexOf(note)) > 1 mustBe false
+//                  }
+//                }
+//              }
+//          }
+//        case Failure(e) =>
+//          e.printStackTrace()
+//          fail()
+//      }
+//    }
 
     "should construct a new service" in {
       val counterpointService = new CounterpointRecursiveService()

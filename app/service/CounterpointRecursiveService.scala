@@ -16,7 +16,8 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     return Success(generateCantusFirmusRecursive(length, tonic, inMajorKeyCantusFirmusNotes))
   }
 
-  def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: Seq[String], cantusFirmus: List[String] = List(), invalidNextNotes: List[String] = List(), invalidNotePos: Int = -1): List[String] = {
+  def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidNextNotes: List[String] = List(), invalidNotePos: Int = -1): List[String] = {
+    println(cantusFirmus)
     if (cantusFirmus.length == length) {
       cantusFirmus
     } else if (isFirstNote(cantusFirmus) || isLastNote(length, cantusFirmus)) {
@@ -37,11 +38,11 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     }
   }
 
-  def generateCantusFirmusNote(inMajorKeyNotes: Seq[String], length: Int, cantusFirmus: List[String], invalidNotes: Seq[String]): Try[String] = {
+  def generateCantusFirmusNote(inMajorKeyNotes: List[String], length: Int, cantusFirmus: List[String], invalidNotes: Seq[String]): Try[String] = {
     val tonic = cantusFirmus.head
     val universalRulesApplied = applyUniversalRules(inMajorKeyNotes, cantusFirmus, invalidNotes)
-    val stepwiseAfterLeapsApplied = applyStepwiseAfterLargeLeapsRule(inMajorKeyNotes, cantusFirmus, universalRulesApplied)
-    val availableNotes = applyIndividualRules(inMajorKeyNotes, length, cantusFirmus, tonic, stepwiseAfterLeapsApplied)
+    val leapsRulesApplied = applyLeapsRules(inMajorKeyNotes, cantusFirmus, universalRulesApplied)
+    val availableNotes = applyIndividualRules(inMajorKeyNotes, length, cantusFirmus, tonic, leapsRulesApplied)
 
     val prev = cantusFirmus.last
     if (availableNotes.isEmpty) {
@@ -67,7 +68,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
       })
       .contains(note)
 
-  private def getInMajorKeyCantusFirmusNotes(tonic: String): Seq[String] =
+  def getInMajorKeyCantusFirmusNotes(tonic: String): List[String] =
     AVAILABLE_CANTUS_FIRMUS_NOTES.filter(note => {
       noteIsInMajorKey(tonic, note, AVAILABLE_CANTUS_FIRMUS_NOTES.indices
         .filter(interval => intervalIsInMajorKey(interval)))
@@ -112,7 +113,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
   private def isPenultimateNote(length: Int, cantusFirmus: List[String]) =
     cantusFirmus.length == length - 2
 
-  private def applyStepwiseAfterLargeLeapsRule(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], notes: Seq[String]) =
+  private def applyLeapsRules(inMajorKeyNotes: List[String], cantusFirmus: List[String], notes: Seq[String]) =
     if (followingALargeLeap(cantusFirmus)) {
       val next = if (isDownwardsMotion(cantusFirmus)) {
         inMajorKeyNotes(inMajorKeyNotes.indexOf(cantusFirmus.last) + 1)
@@ -124,6 +125,8 @@ class CounterpointRecursiveService(var randomService: RandomService) {
       } else {
         Seq()
       }
+    } else if (followingTwoLeaps(cantusFirmus, inMajorKeyNotes)) {
+      notes.filter(note => !isALeap(note, cantusFirmus.last, inMajorKeyNotes))
     } else {
       notes
     }
@@ -134,6 +137,14 @@ class CounterpointRecursiveService(var randomService: RandomService) {
   private def followingALargeLeap(cantusFirmus: List[String]) =
     cantusFirmus.length > 1 &&
       math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus.last) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(cantusFirmus.length - 2))) >= 5
+
+  private def followingTwoLeaps(cantusFirmus: List[String], inMajorKeyNotes: List[String]) =
+    cantusFirmus.length > 2 &&
+      isALeap(cantusFirmus(cantusFirmus.length - 2), cantusFirmus(cantusFirmus.length - 3), inMajorKeyNotes) &&
+      isALeap(cantusFirmus.last, cantusFirmus(cantusFirmus.length - 2), inMajorKeyNotes)
+
+  private def isALeap(note: String, prevNote: String, inMajorKeyNotes: List[String]): Boolean =
+    math.abs(inMajorKeyNotes.indexOf(note) - inMajorKeyNotes.indexOf(prevNote)) > 1
 
   private def applyUniversalRules(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], invalidNotes: Seq[String]) = {
     val lowestNote = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).min
@@ -175,11 +186,11 @@ object CounterpointService {
     "D",
     "D#/Eb"
   )
-  val AVAILABLE_CANTUS_FIRMUS_NOTES: Seq[String] = GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(2, 2)
+  val AVAILABLE_CANTUS_FIRMUS_NOTES: List[String] = GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(2, 2)
   val MIN_TONIC: Int = 3
   val MAX_TONIC: Int = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
 
-  def GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(numOctaves: Int, startOctave: Int): Seq[String] =
+  def GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(numOctaves: Int, startOctave: Int): List[String] =
     (0 until NOTES.length * numOctaves).map(noteIdx => {
       val stepsAboveC = OCTAVE - NOTES.slice(NOTES.length - NOTES.indexOf("C"), NOTES.length).length
       val currentOctave = startOctave + math.floor((noteIdx + stepsAboveC) / OCTAVE).toInt
