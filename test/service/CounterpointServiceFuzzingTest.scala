@@ -10,7 +10,7 @@ import scala.util.{Failure, Random, Success}
 class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
 
-  def counterpointService = new CounterpointService(randomService)
+  def counterpointRecursiveService = new CounterpointRecursiveService(randomService)
 
   private def setUp(tonic: Int, maxTonic: Int) = {
     val length = Random.between(8, 17)
@@ -28,7 +28,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             val head = cantusFirmus.head
             val last = cantusFirmus.last
@@ -49,7 +49,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             if (!List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2)).contains(cantusFirmus(cantusFirmus.length - 2))) {
               println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
@@ -69,7 +69,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
 
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             if (cantusFirmus(cantusFirmus.length - 3) == AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2)) {
               if (cantusFirmus(cantusFirmus.length - 2) != AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1)) {
@@ -90,7 +90,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             cantusFirmus.zipWithIndex.map {
               case (note, i) =>
@@ -119,7 +119,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
             key.head.filterNot(c => c.isDigit) ==
               AVAILABLE_CANTUS_FIRMUS_NOTES(tonic).filterNot(c => c.isDigit)
           ).head
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             if (cantusFirmus.count(note => notesInKey.contains(note)) != cantusFirmus.length) {
               println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
@@ -138,7 +138,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             if (AVAILABLE_CANTUS_FIRMUS_NOTES
               .filter(note =>
@@ -163,7 +163,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             cantusFirmus.zipWithIndex.map {
               case (note, i) =>
@@ -190,7 +190,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             cantusFirmus.zipWithIndex.map {
               case (note, i) =>
@@ -221,10 +221,11 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
 
     "should ensure that the range between the lowest note and the highest note is no larger than a tenth" in {
       (1 to TRIES).map(_ => {
+        // says it passes but I think it's lying
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
             val stepwiseValues = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note))
             if (stepwiseValues.max - stepwiseValues.min > 16) {
@@ -239,30 +240,61 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
       })
     }
 
-    "should ensure that there are no more than two leaps larger than a 4th" in {
+//    "should ensure that there are no more than two leaps larger than a 4th" in {
+//      (1 to TRIES).map(_ => {
+//        val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+//        val tonic = Random.between(3, maxTonic)
+//        setUp(tonic, maxTonic)
+//        counterpointRecursiveService.generateCantusFirmus() match {
+//          case Success(cantusFirmus) =>
+//            val numLeaps = cantusFirmus.zipWithIndex.map {
+//              case (note, i) =>
+//                if (i > 0) {
+//                  if (math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i - 1))) > 5) {
+//                    note
+//                  } else {
+//                    ""
+//                  }
+//                } else {
+//                  ""
+//                }
+//            }.count(note => note != "")
+//            if (numLeaps > 2) {
+//              println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+//              println(cantusFirmus.toString())
+//            }
+//            numLeaps <= 2 mustBe true
+//          case Failure(e) =>
+//            e.printStackTrace()
+//            fail()
+//        }
+//      })
+//    }
+
+    "should ensure that each leap greater than a 3rd is " +
+      "followed by a stepwise motion in the opposite direction" in {
       (1 to TRIES).map(_ => {
         val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
         val tonic = Random.between(3, maxTonic)
         setUp(tonic, maxTonic)
-        counterpointService.generateCantusFirmus() match {
+        counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
-            val numLeaps = cantusFirmus.zipWithIndex.map {
+            println(cantusFirmus)
+            cantusFirmus.zipWithIndex.map {
               case (note, i) =>
-                if (i > 0) {
-                  if (math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i - 1))) > 5) {
-                    note
-                  } else {
-                    ""
+                if (i > 0 && i < cantusFirmus.length - 1) {
+                  val noteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)
+                  val prevNoteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i - 1))
+                  val nextNoteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i + 1))
+                  if (math.abs(noteIdx - prevNoteIdx) > 4) {
+                    if (math.abs(nextNoteIdx - noteIdx) > 2) {
+                      println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+                      println(cantusFirmus.toString())
+                    }
+                    math.abs(nextNoteIdx - noteIdx) <= 2 mustBe true
                   }
-                } else {
-                  ""
                 }
-            }.count(note => note != "")
-            if (numLeaps > 2) {
-              println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
-              println(cantusFirmus.toString())
             }
-            numLeaps <= 2 mustBe true
           case Failure(e) =>
             e.printStackTrace()
             fail()

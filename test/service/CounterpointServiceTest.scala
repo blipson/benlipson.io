@@ -9,319 +9,164 @@ import scala.util.{Failure, Random, Success}
 class CounterpointServiceTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
   val counterpointService = new CounterpointService(randomService)
+  val counterpointRecursiveService = new CounterpointRecursiveService(randomService)
 
   "Counterpoint service" should {
-    "should generate a cantus firmus that starts and ends with the tonic" in {
+//    "should go back and override invalid notes" in {
+//      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+//      (randomService.between _).expects(8, 17).returning(15)
+//      (randomService.between _).expects(3, maxTonic).returning(11)
+//      (randomService.nextInt _).expects(11).returning(6)
+//      (randomService.nextInt _).expects(11).returning(6)
+//      (randomService.nextInt _).expects(8).returning(7)
+//      (randomService.nextInt _).expects(6).returning(1)
+//      (randomService.nextInt _).expects(11).returning(6)
+//      (randomService.nextInt _).expects(8).returning(7)
+//      (randomService.nextInt _).expects(6).returning(1)
+//      (randomService.nextInt _).expects(11).returning(6)
+//      (randomService.nextInt _).expects(8).returning(7)
+//      (randomService.nextInt _).expects(6).returning(1)
+//      (randomService.nextInt _).expects(11).returning(6)
+//      (randomService.nextInt _).expects(8).returning(7)
+//      (randomService.nextInt _).expects(7).returning(6)
+//      (randomService.nextInt _).expects(1).returning(0)
+//
+//      // Len: 15
+//      // List(D#/Eb3, G3, G#/Ab3, D#/Eb4, G3, G#/Ab3, D#/Eb4, G3, G#/Ab3, D#/Eb4, G3, G#/Ab3, D#/Eb4)
+//      counterpointRecursiveService.generateCantusFirmus() match {
+//        case Success(cantusFirmus) =>
+//          val head = cantusFirmus.head
+//          val last = cantusFirmus.last
+//          if (head != last) {
+//            println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+//            println(cantusFirmus.toString())
+//          }
+//          head mustBe last
+//        case Failure(e) =>
+//          e.printStackTrace()
+//          fail()
+//      }
+//    }
+//
+//    "should go back multiple times on the same note if it finds multiple invalid notes" in {
+//      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+//      (randomService.between _).expects(8, 17).returning(8)
+//      (randomService.between _).expects(3, maxTonic).returning(4)
+//      (randomService.nextInt _).expects(8).returning(7).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(10).returning(5).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(9).returning(8).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(6).returning(1).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(7).returning(6).anyNumberOfTimes()
+//      (randomService.nextInt _).expects(1).returning(0).anyNumberOfTimes()
+//
+//      // Len: 8
+//      // List(G#/Ab2, G#/Ab3, G3, D#/Eb4, G3, D#/Eb4)
+//      // List(G#/Ab2, G#/Ab3, G3, D#/Eb4, G3)
+//      // List(G#/Ab2, G#/Ab3, G3, D#/Eb4, G3, C4)
+//      // List(G#/Ab2, G#/Ab3, G3, D#/Eb4, G3)
+//      // List(G#/Ab2, G#/Ab3, G3, D#/Eb4, G3, A#/Bb3)
+//      // List(G#/Ab2, G#/Ab3, G3, D#/Eb4, G3, A#/Bb3, A#/Bb2)
+//      // List(G#/Ab2, G#/Ab3, G3, D#/Eb4, G3, A#/Bb3, A#/Bb2, G#/Ab2)
+//      counterpointRecursiveService.generateCantusFirmus() match {
+//        case Success(cantusFirmus) =>
+//          val head = cantusFirmus.head
+//          val last = cantusFirmus.last
+//          if (head != last) {
+//            println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+//            println(cantusFirmus.toString())
+//          }
+//          head mustBe last
+//        case Failure(e) =>
+//          e.printStackTrace()
+//          fail()
+//      }
+//    }
+//
+//    "should ensure that the leading tone always leads to the tonic" in {
+//      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+//      val tonic = Random.between(3, maxTonic)
+//      // List(G2, C3, G3, F#/Gb3, G3, F#/Gb3, G3, F#/Gb3, A2, F#/Gb2, G2)
+//      counterpointRecursiveService.generateCantusFirmus() match {
+//        case Success(cantusFirmus) =>
+//          cantusFirmus.zipWithIndex.map {
+//            case (note, i) =>
+//              if (AVAILABLE_CANTUS_FIRMUS_NOTES
+//                .filter(note =>
+//                  note.filterNot(c => c.isDigit) == AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit)
+//                ).contains(note)) {
+//                if (cantusFirmus(i + 1) != AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)) {
+//                  println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+//                  println(cantusFirmus.toString())
+//                }
+//                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
+//              }
+//          }
+//        case Failure(e) =>
+//          e.printStackTrace()
+//          fail()
+//      }
+//    }
+//
+//    "should ensure that the range between the lowest note and the highest note is no larger than a tenth" in {
+//      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+//      (randomService.between _).expects(8, 17).returning(8)
+//      (randomService.between _).expects(3, maxTonic).returning(3)
+//      (randomService.nextInt _).expects(8).returning(7)
+//      // would be 10 if it allowed more than a 10th
+//      (randomService.nextInt _).expects(8).returning(7)
+//      (randomService.nextInt _).expects(6).returning(5)
+//      (randomService.nextInt _).expects(7).returning(6)
+//      (randomService.nextInt _).expects(5).returning(4)
+//      (randomService.nextInt _).expects(1).returning(0)
+//
+//      // List(G2, G3, D4, C4, D4, A3, A2, G2)
+//      counterpointRecursiveService.generateCantusFirmus() match {
+//        case Success(cantusFirmus) =>
+//          val stepwiseValues = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note))
+//          if (stepwiseValues.max - stepwiseValues.min > 16) {
+//            println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+//            println(cantusFirmus.toString())
+//          }
+//          stepwiseValues.max - stepwiseValues.min <= 16 mustBe true
+//        case Failure(e) =>
+//          e.printStackTrace()
+//          fail()
+//      }
+//    }
+
+    "should ensure that each leap greater than a 3rd is " +
+      "followed by a stepwise motion in the opposite direction" in {
       val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(12)
-      (1 to 13).map(i =>
-        (randomService.nextInt _).expects(i).returning(Random.nextInt(i)).anyNumberOfTimes()
-      )
-      (randomService.nextDouble _).expects().returning(Random.nextDouble()).noMoreThanOnce()
-      // [E3, C#/Db4, A3, G#/Ab3, B2, F#/Gb2, C#/Db3, C#/Db4, E3, B3, F#/Gb3, E3]
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          val head = cantusFirmus.head
-          val last = cantusFirmus.last
-          head mustBe "E3"
-          last mustBe "E3"
-          head mustBe last
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-    "should approach the final note by the leading tone less often" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(12)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(4).returning(2)
-      (randomService.nextDouble _).expects().returning(0.7)
-      // E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, G#/Ab3, [D#/Eb3, E3]
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          AVAILABLE_CANTUS_FIRMUS_NOTES(11) mustBe cantusFirmus(cantusFirmus.length - 2)
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-    "should approach the final note by the 2 more often" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(12)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(4).returning(2)
-      (randomService.nextDouble _).expects().returning(0.6)
-      // E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, G#/Ab3, [F#/Gb3, E3]
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          AVAILABLE_CANTUS_FIRMUS_NOTES(14) mustBe cantusFirmus(cantusFirmus.length - 2)
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-    "should ensure that the leading tone always leads to the tonic when the tonic is E3" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(12)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(11).returning(5)
-      (randomService.nextInt _).expects(4).returning(2)
-      (randomService.nextDouble _).expects().returning(0.6)
-      // E3, [D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3, D#/Eb3, E3], G#/Ab3, F#/Gb3, E3
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          cantusFirmus.zipWithIndex.map {
-            case (note, i) =>
-              if (AVAILABLE_CANTUS_FIRMUS_NOTES
-                .filter(note => note == "D#/Eb3"
-                ).contains(note)) {
-                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
-              }
-          }
-          cantusFirmus.count(note =>
-            AVAILABLE_CANTUS_FIRMUS_NOTES
-              .filter(note => note == "D#/Eb3"
-              ).contains(note)
-          ) > 0 mustBe true
-
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-
-    "should ensure that the leading tone always leads to the tonic when the tonic is" +
-      " in the lower half and the leading tone is in the upper half" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(3)
-      (randomService.nextInt _).expects(8).returning(5)
-      (randomService.nextInt _).expects(6).returning(4)
-      (randomService.nextInt _).expects(4).returning(3)
-      (randomService.nextInt _).expects(3).returning(1)
-      (randomService.nextInt _).expects(4).returning(3)
-      (randomService.nextInt _).expects(2).returning(0)
-      (randomService.nextInt _).expects(2).returning(0)
-      (randomService.nextDouble _).expects().returning(0.6)
-      // List(G2, D3, [F#/Gb3, G3], A3, [F#/Gb3, G3], A3, E3, B2, A2)
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          cantusFirmus.zipWithIndex.map {
-            case (note, i) =>
-              if (AVAILABLE_CANTUS_FIRMUS_NOTES
-                .filter(note => note == "F#/Gb3"
-                ).contains(note)) {
-                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
-              }
-          }
-          cantusFirmus.count(note =>
-            AVAILABLE_CANTUS_FIRMUS_NOTES
-              .filter(note => note == "F#/Gb3"
-              ).contains(note)
-          ) > 0 mustBe true
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-    "should ensure that the leading tone always leads to the tonic when the tonic and " +
-      "the leading tone are both in the lower half" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(3)
-      (randomService.nextInt _).expects(8).returning(1)
-      (randomService.nextInt _).expects(8).returning(4)
-      (randomService.nextInt _).expects(7).returning(6)
-      (randomService.nextInt _).expects(3).returning(0)
+      (randomService.between _).expects(8, 17).returning(9)
+      (randomService.between _).expects(3, maxTonic).returning(5)
+      (randomService.nextInt _).expects(9).returning(1)
+      (randomService.nextInt _).expects(7).returning(0)
       (randomService.nextInt _).expects(6).returning(5)
-      (randomService.nextInt _).expects(3).returning(2)
+      // would be 8 if it didn't force stepwise motion in the opposite direction
       (randomService.nextInt _).expects(1).returning(0)
-      (randomService.nextDouble _).expects().returning(0.6)
-      // List(G2, [F#/Gb2, G2], C3, G3, D3, G3, F#/Gb3, G3, D3, A2)
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          cantusFirmus.zipWithIndex.map {
-            case (note, i) =>
-              if (AVAILABLE_CANTUS_FIRMUS_NOTES
-                .filter(note => note == "F#/Gb2"
-                ).contains(note)) {
-                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
-              }
-          }
-          cantusFirmus.count(note =>
-            AVAILABLE_CANTUS_FIRMUS_NOTES
-              .filter(note => note == "F#/Gb2"
-              ).contains(note)
-          ) > 0 mustBe true
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-    "should ensure that the leading tone always leads to the tonic when the tonic and " +
-      "the leading tone are both in the upper half" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(maxTonic - 2)
-      (randomService.nextInt _).expects(10).returning(5)
-      (randomService.nextInt _).expects(10).returning(5)
-      (randomService.nextInt _).expects(10).returning(5)
-      (randomService.nextInt _).expects(10).returning(5)
-      (randomService.nextInt _).expects(4).returning(0)
-      (randomService.nextDouble _).expects().returning(0.6)
-      // [G3, F#/Gb3, G3, [F#/Gb3, G3, F#/Gb3, G3, F#/Gb3, G3], D3, A3, G3]
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          cantusFirmus.zipWithIndex.map {
-            case (note, i) =>
-              if (AVAILABLE_CANTUS_FIRMUS_NOTES
-                .filter(note => note == "F#/Gb3"
-                ).contains(note)) {
-                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
-              }
-          }
-          cantusFirmus.count(note =>
-            AVAILABLE_CANTUS_FIRMUS_NOTES
-              .filter(note => note == "F#/Gb3"
-              ).contains(note)
-          ) > 0 mustBe true
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-    "should ensure that the leading tone always leads to the tonic when the tonic is " +
-      "in the upper half and the leading tone is in the lower half" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(maxTonic - 2)
-      (randomService.nextInt _).expects(10).returning(0)
-      (randomService.nextInt _).expects(4).returning(0)
-      (randomService.nextInt _).expects(4).returning(0)
-      (randomService.nextInt _).expects(4).returning(0)
-      (randomService.nextInt _).expects(3).returning(0)
-      (randomService.nextInt _).expects(1).returning(0)
-      (randomService.nextDouble _).expects().returning(0.6)
-      // List(G3, G2, [F#/Gb2, G2, F#/Gb2, G2, F#/Gb2, G2], A2, D3, A3)
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          cantusFirmus.zipWithIndex.map {
-            case (note, i) =>
-              if (AVAILABLE_CANTUS_FIRMUS_NOTES
-                .filter(note => note == "F#/Gb2"
-                ).contains(note)) {
-                cantusFirmus(i + 1) mustBe AVAILABLE_CANTUS_FIRMUS_NOTES(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) + 1)
-              }
-          }
-          cantusFirmus.count(note =>
-            AVAILABLE_CANTUS_FIRMUS_NOTES
-              .filter(note => note == "F#/Gb2"
-              ).contains(note)
-          ) > 0 mustBe true
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-    "should ensure that the highest cantus firmus note is unavailable when the tonic is " +
-      "one half step above, as it would then be a leading tone" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(12)
-      (randomService.nextInt _).expects(11).returning(10)
-      // this line would expect (4) instead of (3) if the highest note were available
-      (randomService.nextInt _).expects(3).returning(1)
-      (randomService.nextInt _).expects(5).returning(4)
-      (randomService.nextInt _).expects(3).returning(2)
-      (randomService.nextInt _).expects(4).returning(2)
-      (randomService.nextInt _).expects(5).returning(2)
-      (randomService.nextInt _).expects(6).returning(2)
-      (randomService.nextInt _).expects(5).returning(2)
+      (randomService.nextInt _).expects(6).returning(5)
+      (randomService.nextInt _).expects(6).returning(5)
       (randomService.nextInt _).expects(2).returning(1)
-      (randomService.nextDouble _).expects().returning(0.6)
-      // List(E3, C#/Db4, [A3], C#/Db4, B3, A3, G#/Ab3, F#/Gb3, G#/Ab3, B3, F#/Gb3)
-      counterpointService.generateCantusFirmus()
-    }
-
-    "should not pick any notes larger than 14 half steps away during the middle " +
-      "in order to leave room for the leading tone or the 2 at the end" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(12)
-      (randomService.between _).expects(3, maxTonic).returning(3)
-      (randomService.nextInt _).expects(8).returning(7)
-      // this line would expect (5) if a tenth (B3) were allowed
-      (randomService.nextInt _).expects(4).returning(3)
-      (randomService.nextInt _).expects(3).returning(2)
-      (randomService.nextInt _).expects(4).returning(3)
-      (randomService.nextInt _).expects(3).returning(1)
-      (randomService.nextInt _).expects(4).returning(3)
-      (randomService.nextInt _).expects(2).returning(1)
-      (randomService.nextInt _).expects(1).returning(0)
-      (randomService.nextDouble _).expects().returning(0.7)
-      // List(G2, G3, [A3], G3, A3, F#/Gb3, G3, A3, G3, D3, [F#/Gb2], G2)
-      // is what it would be if it were in err
-      counterpointService.generateCantusFirmus() match {
+      // OLD: List(A2, F#/Gb2, E2, E3, G#/Ab2, A2, E2, B2, A2)
+      // NEW: List(A2, F#/Gb2, E2, E3, D3, F#/Gb3, E3, B2, A2)
+      counterpointRecursiveService.generateCantusFirmus() match {
         case Success(cantusFirmus) =>
-          val stepwiseValues = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note))
-          stepwiseValues.max - stepwiseValues.min <= 16 mustBe true
-        case Failure(e) =>
-          e.printStackTrace()
-          fail()
-      }
-    }
-
-    "should ensure that the 4th to last note includes leaps when looking ahead " +
-      "to the 3rd to last note" in {
-      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-      (randomService.between _).expects(8, 17).returning(11)
-      // length: 11
-      // tonic: G#/Ab2
-      (randomService.between _).expects(3, maxTonic).returning(4)
-      (randomService.nextInt _).expects(8).returning(7)
-      (randomService.nextInt _).expects(4).returning(3)
-      (randomService.nextInt _).expects(3).returning(1)
-      (randomService.nextInt _).expects(4).returning(3)
-      (randomService.nextInt _).expects(3).returning(1)
-      // would be (4) to allow the errored firmus
-      (randomService.nextInt _).expects(1).returning(0)
-      (randomService.nextDouble _).expects().returning(0.6)
-      // List(G#/Ab2, G#/Ab3, A#/Bb3, G3, G#/Ab3, A#/Bb3, G3, [G#/Ab3], G#/Ab2, A#/Bb2, G#/Ab2)
-      counterpointService.generateCantusFirmus() match {
-        case Success(cantusFirmus) =>
-          val numLeaps = cantusFirmus.zipWithIndex.map {
+          println(cantusFirmus)
+          cantusFirmus.zipWithIndex.map {
             case (note, i) =>
-              if (i > 0) {
-                if (math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i - 1))) > 5) {
-                  note
-                } else {
-                  ""
+              if (i > 0 && i < cantusFirmus.length - 1) {
+                val noteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)
+                val prevNoteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i - 1))
+                val nextNoteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(i + 1))
+                if (math.abs(noteIdx - prevNoteIdx) > 4) {
+                  if (math.abs(nextNoteIdx - noteIdx) > 2) {
+                    println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+                    println(cantusFirmus.toString())
+                  }
+                  math.abs(nextNoteIdx - noteIdx) <= 2 mustBe true
                 }
-              } else {
-                ""
               }
-          }.count(note => note != "")
-          numLeaps <= 2 mustBe true
+          }
         case Failure(e) =>
           e.printStackTrace()
           fail()

@@ -5,7 +5,7 @@ import net.liftweb.json.DefaultFormats
 import net.liftweb.json.Serialization.write
 import net.liftweb.util.StringHelpers
 import play.api.mvc._
-import service.CounterpointService
+import service.CounterpointRecursiveService
 
 import javax.inject.{Inject, Singleton}
 import scala.util.{Failure, Success}
@@ -13,7 +13,7 @@ import scala.util.{Failure, Success}
 @Singleton
 class CounterpointController @Inject()(
                                         cc: ControllerComponents,
-                                        counterpointService: CounterpointService
+                                        counterpointService: CounterpointRecursiveService
                                       ) extends AbstractController(cc) {
   implicit val formats: DefaultFormats.type = DefaultFormats
 
