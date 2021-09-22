@@ -32,11 +32,11 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
           case Success(cantusFirmus) =>
             val head = cantusFirmus.head
             val last = cantusFirmus.last
-            if (head != last) {
+            if (head.filterNot(c => c.isDigit) != last.filterNot(c => c.isDigit)) {
               println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
               println(cantusFirmus.toString())
             }
-            head mustBe last
+            head.filterNot(c => c.isDigit) mustBe last.filterNot(c => c.isDigit)
           case Failure(e) =>
             e.printStackTrace()
             fail()

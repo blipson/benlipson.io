@@ -30,7 +30,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
 //    }
     if (cantusFirmus.length == length) {
       cantusFirmus
-    } else if (isFirstNote(cantusFirmus) || isLastNote(length, cantusFirmus)) {
+    } else if (isFirstNote(cantusFirmus)) {
       generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus :+ tonic)
     } else {
       val invalidNextNotesForCurrentPosition = if (cantusFirmus.length > invalidNotePos) {
@@ -38,7 +38,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
       } else {
         invalidNextNotes.filter(noteToPosition => noteToPosition._2.toInt == cantusFirmus.length)
       }
-      generateCantusFirmusNote(inMajorKeyNotes, length, cantusFirmus, invalidNextNotesForCurrentPosition) match {
+      generateCantusFirmusNote(length, tonic, inMajorKeyNotes, cantusFirmus, invalidNextNotesForCurrentPosition) match {
         case Success(nextNote) =>
           generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus :+ nextNote, invalidNextNotes, invalidNotePos)
         case Failure(invalidNoteException) =>
@@ -48,8 +48,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     }
   }
 
-  def generateCantusFirmusNote(inMajorKeyNotes: List[String], length: Int, cantusFirmus: List[String], invalidNotes: Map[String, String]): Try[String] = {
-    val tonic = cantusFirmus.head
+  def generateCantusFirmusNote(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String], invalidNotes: Map[String, String]): Try[String] = {
     val universalRulesApplied = applyUniversalRules(inMajorKeyNotes, cantusFirmus, invalidNotes)
     val leapsRulesApplied = applyLeapsRules(inMajorKeyNotes, cantusFirmus, universalRulesApplied)
     val availableNotes = applyIndividualRules(inMajorKeyNotes, length, cantusFirmus, tonic, leapsRulesApplied)
@@ -93,7 +92,9 @@ class CounterpointRecursiveService(var randomService: RandomService) {
   }
 
   private def applyIndividualRules(inMajorKeyNotes: Seq[String], length: Int, cantusFirmus: List[String], tonic: String, notes: Seq[String]) =
-    if (isPenultimateNote(length, cantusFirmus)) {
+    if (isLastNote(length, cantusFirmus)) {
+      notes.filter(note => applyFinalNoteAsTonicRule(inMajorKeyNotes, cantusFirmus, tonic, note))
+    } else if (isPenultimateNote(length, cantusFirmus)) {
       notes.filter(note => applyPenultimateStepwiseMotionRule(inMajorKeyNotes, tonic).contains(note))
     } else if (isLeadingTone(inMajorKeyNotes, cantusFirmus, tonic)) {
       notes.filter(note => applyLeadingToneLeadsToTonicRule(cantusFirmus, note))
@@ -102,6 +103,9 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     } else {
       notes
     }
+
+  private def applyFinalNoteAsTonicRule(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], tonic: String, note: String) =
+    (note.filterNot(c => c.isDigit) == tonic.filterNot(c => c.isDigit)) && (math.abs(inMajorKeyNotes.indexOf(cantusFirmus.last) - inMajorKeyNotes.indexOf(note)) == 1)
 
   private def applyAntePenultimateCannotBeLeadingToneRule(inMajorKeyNotes: Seq[String], tonic: String, note: String) =
     note.filterNot(c => c.isDigit) != inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) - 1).filterNot(c => c.isDigit)
@@ -117,7 +121,9 @@ class CounterpointRecursiveService(var randomService: RandomService) {
 
   private def applyPenultimateStepwiseMotionRule(inMajorKeyNotes: Seq[String], tonic: String) =
     inMajorKeyNotes.filter(note => {
-      note == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) - 1) || note == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) + 1)
+      val noteWithoutOctave = note.filterNot(c => c.isDigit)
+      noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) - 1).filterNot(c => c.isDigit) ||
+        noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) + 1).filterNot(c => c.isDigit)
     })
 
   private def isPenultimateNote(length: Int, cantusFirmus: List[String]) =
@@ -176,10 +182,10 @@ class CounterpointRecursiveService(var randomService: RandomService) {
   private def isALeap(note: String, prevNote: String, inMajorKeyNotes: List[String]): Boolean =
     math.abs(inMajorKeyNotes.indexOf(note) - inMajorKeyNotes.indexOf(prevNote)) > 1
 
-  private def applyUniversalRules(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], invalidNotes: Map[String, String]) = {
+  private def applyUniversalRules(notes: Seq[String], cantusFirmus: List[String], invalidNotes: Map[String, String]) = {
     val lowestNote = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).min
     val highestNote = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).max
-    inMajorKeyNotes
+    notes
       .filter(note => {
         val noteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)
         note != cantusFirmus.last &&
