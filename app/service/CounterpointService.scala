@@ -17,34 +17,38 @@ class CounterpointRecursiveService(var randomService: RandomService) {
   }
 
 //  var layers: scala.collection.mutable.ArrayBuffer[Int] = scala.collection.mutable.ArrayBuffer.empty[Int]
+//  var count = 0
 
-  def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidNextNotes: List[String] = List(), invalidNotePos: Int = -1): List[String] = {
-//    println(cantusFirmus)
+  def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidNextNotes: Map[String, String] = Map(), invalidNotePos: Int = -1): List[String] = {
+    println(cantusFirmus)
 //    layers.addOne(cantusFirmus.length)
 //    if (cantusFirmus.length < layers.max - 1) {
-//      val x = 1
+//      count += 1
+//      if (count > 2) {
+//        val x = 1
+//      }
 //    }
     if (cantusFirmus.length == length) {
       cantusFirmus
     } else if (isFirstNote(cantusFirmus) || isLastNote(length, cantusFirmus)) {
       generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus :+ tonic)
     } else {
-      val newInvalidNextNotes = if (cantusFirmus.length > invalidNotePos) {
-        List()
+      val invalidNextNotesForCurrentPosition = if (cantusFirmus.length > invalidNotePos) {
+        Map[String, String]()
       } else {
-        invalidNextNotes
+        invalidNextNotes.filter(noteToPosition => noteToPosition._2.toInt == cantusFirmus.length)
       }
-      generateCantusFirmusNote(inMajorKeyNotes, length, cantusFirmus, newInvalidNextNotes) match {
+      generateCantusFirmusNote(inMajorKeyNotes, length, cantusFirmus, invalidNextNotesForCurrentPosition) match {
         case Success(nextNote) =>
           generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus :+ nextNote, invalidNextNotes, invalidNotePos)
         case Failure(invalidNoteException) =>
           val invalidNoteMessage = invalidNoteException.getMessage.split(":")
-          generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus.dropRight(1), invalidNextNotes :+ invalidNoteMessage.head, invalidNoteMessage.last.toInt)
+          generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus.dropRight(1), invalidNextNotes + (invalidNoteMessage.head -> invalidNoteMessage.last), invalidNoteMessage.last.toInt)
       }
     }
   }
 
-  def generateCantusFirmusNote(inMajorKeyNotes: List[String], length: Int, cantusFirmus: List[String], invalidNotes: Seq[String]): Try[String] = {
+  def generateCantusFirmusNote(inMajorKeyNotes: List[String], length: Int, cantusFirmus: List[String], invalidNotes: Map[String, String]): Try[String] = {
     val tonic = cantusFirmus.head
     val universalRulesApplied = applyUniversalRules(inMajorKeyNotes, cantusFirmus, invalidNotes)
     val leapsRulesApplied = applyLeapsRules(inMajorKeyNotes, cantusFirmus, universalRulesApplied)
@@ -172,7 +176,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
   private def isALeap(note: String, prevNote: String, inMajorKeyNotes: List[String]): Boolean =
     math.abs(inMajorKeyNotes.indexOf(note) - inMajorKeyNotes.indexOf(prevNote)) > 1
 
-  private def applyUniversalRules(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], invalidNotes: Seq[String]) = {
+  private def applyUniversalRules(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], invalidNotes: Map[String, String]) = {
     val lowestNote = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).min
     val highestNote = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).max
     inMajorKeyNotes
@@ -180,7 +184,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
         val noteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)
         note != cantusFirmus.last &&
           noteIdx - lowestNote <= 16 && highestNote - noteIdx <= 16 &&
-          !invalidNotes.contains(note) &&
+          !invalidNotes.keys.toList.contains(note) &&
           MELODIC_CONSONANCES
             .contains(math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus.last) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)))
       })
