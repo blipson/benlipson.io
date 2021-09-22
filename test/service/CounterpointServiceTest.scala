@@ -172,6 +172,109 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       }
     }
 
+    "should ensure that consecutive leaps don't go in the same direction" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(10)
+      val tonic = 3
+      (randomService.between _).expects(3, maxTonic).returning(tonic)
+      (randomService.nextInt _).expects(8).returning(7).anyNumberOfTimes()
+      (randomService.nextInt _).expects(1).returning(0).anyNumberOfTimes()
+      (randomService.nextInt _).expects(6).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(7).returning(5).anyNumberOfTimes()
+      (randomService.nextInt _).expects(5).returning(2).anyNumberOfTimes()
+      (randomService.nextInt _).expects(4).returning(2).anyNumberOfTimes()
+
+      // FAILURE FOUND WITH THIS CANTUS FIRMUS:
+      // List(G2)
+      // List(G2, G3)
+      // List(G2, G3, F#/Gb3)
+      // List(G2, G3, F#/Gb3, G3)
+      // List(G2, G3, F#/Gb3, G3, B3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3, B3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3, G3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3, A2)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3, C3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3, D3)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3, D3, A2)
+      // List(G2, G3, F#/Gb3, G3, B3, D3, E3, D3, A2, G2)
+      val notesInKey = counterpointRecursiveService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic))
+      counterpointRecursiveService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case (note, i) =>
+              if (i > 1) {
+                val prevNote = cantusFirmus(i - 1)
+                val prevPrevNote = cantusFirmus(i - 2)
+                val firstLeapMinusVal = notesInKey.indexOf(prevPrevNote) - notesInKey.indexOf(prevNote)
+                if (math.abs(firstLeapMinusVal) > 1) {
+                  val direction = if (firstLeapMinusVal > 0) {
+                    "down"
+                  } else {
+                    "up"
+                  }
+                  val secondLeapMinusVal = notesInKey.indexOf(prevNote) - notesInKey.indexOf(note)
+                  if (math.abs(secondLeapMinusVal) > 1) {
+                    if ((secondLeapMinusVal > 0 && direction == "down") || (secondLeapMinusVal < 0 && direction == "up")) {
+                      println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+                      println(cantusFirmus.toString())
+                    }
+                    if (secondLeapMinusVal > 0) {
+                      direction mustBe "up"
+                    } else {
+                      direction mustBe "down"
+                    }
+                  }
+                }
+              }
+          }
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    }
+
+
+    "should" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(10)
+      (randomService.between _).expects(3, maxTonic).returning(10)
+      (randomService.nextInt _).expects(11).returning(10).anyNumberOfTimes()
+      (randomService.nextInt _).expects(1).returning(0).anyNumberOfTimes()
+      (randomService.nextInt _).expects(6).returning(5).anyNumberOfTimes()
+
+      // FAILURE FOUND WITH THIS CANTUS FIRMUS:
+      // List(D3)
+      // List(D3, D4)
+      // List(D3, D4, C#/Db4)
+      // List(D3, D4, C#/Db4, D4)
+      // List(D3, D4, C#/Db4, D4, C#/Db4)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4, C#/Db4)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4, C#/Db4, D4)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4, C#/Db4)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4, F#/Gb3)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4, F#/Gb3, G3)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4, F#/Gb3, G3, E3)
+      // List(D3, D4, C#/Db4, D4, C#/Db4, D4, F#/Gb3, G3, E3, D3)
+      counterpointRecursiveService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          println("wheee")
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    }
+
+
+
+
 //    "should ensure that there are no more than two leaps in a row" in {
 //      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
 //      val tonic = 7

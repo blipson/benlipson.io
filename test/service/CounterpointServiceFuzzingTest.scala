@@ -330,6 +330,48 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
       }
     })
   }
+
+  "should ensure that consecutive leaps don't go in the same direction" in {
+    (1 to TRIES).map(_ => {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      val tonic = Random.between(3, maxTonic)
+      val notesInKey = counterpointRecursiveService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic))
+      setUp(tonic, maxTonic)
+      counterpointRecursiveService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          cantusFirmus.zipWithIndex.map {
+            case (note, i) =>
+              if (i > 1) {
+                val prevNote = cantusFirmus(i - 1)
+                val prevPrevNote = cantusFirmus(i - 2)
+                val firstLeapMinusVal = notesInKey.indexOf(prevPrevNote) - notesInKey.indexOf(prevNote)
+                if (math.abs(firstLeapMinusVal) > 1) {
+                  val direction = if (firstLeapMinusVal > 0) {
+                    "down"
+                  } else {
+                    "up"
+                  }
+                  val secondLeapMinusVal = notesInKey.indexOf(prevNote) - notesInKey.indexOf(note)
+                  if (math.abs(secondLeapMinusVal) > 1) {
+                    if ((secondLeapMinusVal > 0 && direction == "down") || (secondLeapMinusVal < 0 && direction == "up")) {
+                      println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+                      println(cantusFirmus.toString())
+                    }
+                    if (secondLeapMinusVal > 0) {
+                      direction mustBe "up"
+                    } else {
+                      direction mustBe "down"
+                    }
+                  }
+                }
+              }
+          }
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    })
+  }
 }
 
 object CounterpointServiceFuzzingTest {
