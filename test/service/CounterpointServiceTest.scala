@@ -239,6 +239,68 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       }
     }
 
+
+    "should" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(8)
+      (randomService.between _).expects(2, 6).returning(2)
+      val tonic = 10
+      (randomService.between _).expects(3, maxTonic).returning(tonic)
+      (randomService.nextInt _).expects(1).returning(0).anyNumberOfTimes()
+      (randomService.nextInt _).expects(2).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(3).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(4).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(5).returning(4).anyNumberOfTimes()
+      (randomService.nextInt _).expects(6).returning(0).anyNumberOfTimes()
+      (randomService.nextInt _).expects(7).returning(4).anyNumberOfTimes()
+      (randomService.nextInt _).expects(8).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(9).returning(7).anyNumberOfTimes()
+      (randomService.nextInt _).expects(10).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(11).returning(4).anyNumberOfTimes()
+      (randomService.nextInt _).expects(12).returning(11).anyNumberOfTimes()
+      (randomService.nextInt _).expects(13).returning(10).anyNumberOfTimes()
+
+
+      val notesInKey = counterpointService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic))
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          println("huh")
+        case Failure(e) =>
+          println("as it should.")
+      }
+    }
+
+
+    "should 2" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(15)
+      (randomService.between _).expects(5, 10).returning(6)
+      val tonic = 8
+      (randomService.between _).expects(3, maxTonic).returning(tonic)
+      (randomService.nextInt _).expects(1).returning(0).anyNumberOfTimes()
+      (randomService.nextInt _).expects(2).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(3).returning(2).anyNumberOfTimes()
+      (randomService.nextInt _).expects(4).returning(3).anyNumberOfTimes()
+      (randomService.nextInt _).expects(5).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(6).returning(3).anyNumberOfTimes()
+      (randomService.nextInt _).expects(7).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(8).returning(5).anyNumberOfTimes()
+      (randomService.nextInt _).expects(9).returning(3).anyNumberOfTimes()
+      (randomService.nextInt _).expects(10).returning(4).anyNumberOfTimes()
+      (randomService.nextInt _).expects(11).returning(4).anyNumberOfTimes()
+      (randomService.nextInt _).expects(12).returning(3).anyNumberOfTimes()
+      (randomService.nextInt _).expects(13).returning(4).anyNumberOfTimes()
+
+
+      val notesInKey = counterpointService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic))
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          println("huh")
+        case Failure(e) =>
+          println("as it should.")
+      }
+    }
+
     "should construct a new service" in {
       val counterpointService = new CounterpointRecursiveService()
     }

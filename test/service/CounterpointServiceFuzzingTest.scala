@@ -15,10 +15,13 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
   private def setUp(tonic: Int, maxTonic: Int) = {
     val length = Random.between(8, 17)
     (randomService.between _).expects(8, 17).returning(length)
+    println("length " + length.toString)
     (randomService.between _).expects(3, maxTonic).returning(tonic)
-    (1 to 13).map(i =>
-      (randomService.nextInt _).expects(i).returning(Random.nextInt(i)).anyNumberOfTimes()
-    )
+    (1 to 13).map(i => {
+      val next = Random.nextInt(i)
+      println(i.toString + " to " + next.toString)
+      (randomService.nextInt _).expects(i).returning(next).anyNumberOfTimes()
+    })
     (randomService.nextDouble _).expects().returning(Random.nextDouble()).noMoreThanOnce()
   }
 
@@ -55,7 +58,7 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
               println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
               println(cantusFirmus.toString())
             }
-            List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2)).contains(cantusFirmus(cantusFirmus.length - 2)) mustBe true
+            List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit)) mustBe true
           case Failure(e) =>
             e.printStackTrace()
             fail()
@@ -366,6 +369,24 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
                 }
               }
           }
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    })
+  }
+
+  "should ensure that there's one high point and that it's near the middle" in {
+    (1 to TRIES).map(_ => {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      val tonic = Random.between(3, maxTonic)
+      setUp(tonic, maxTonic)
+      counterpointRecursiveService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          val highestNote = cantusFirmus.maxBy(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note))
+          cantusFirmus.count(note => note == highestNote) mustBe 1
+//          cantusFirmus.indexOf(highestNote) >= cantusFirmus.length / 3 mustBe true
+//          cantusFirmus.indexOf(highestNote) <= cantusFirmus.length - (cantusFirmus.length / 3) mustBe true
         case Failure(e) =>
           e.printStackTrace()
           fail()
