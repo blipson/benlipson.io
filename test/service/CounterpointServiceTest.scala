@@ -11,6 +11,45 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
   val counterpointService = new CounterpointRecursiveService(randomService)
 
   "Counterpoint service" should {
+    "should 3" in {
+      val maxTonic = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+      (randomService.between _).expects(8, 17).returning(10)
+      val tonic = 16
+      (randomService.between _).expects(3, maxTonic).returning(tonic)
+      (randomService.nextInt _).expects(5).returning(4).anyNumberOfTimes()
+      (randomService.nextInt _).expects(6).returning(0).anyNumberOfTimes()
+      (randomService.nextInt _).expects(7).returning(5).anyNumberOfTimes()
+      (randomService.nextInt _).expects(8).returning(5).anyNumberOfTimes()
+      (randomService.nextInt _).expects(9).returning(7).anyNumberOfTimes()
+      (randomService.nextInt _).expects(10).returning(9).anyNumberOfTimes()
+      (randomService.nextInt _).expects(11).returning(3).anyNumberOfTimes()
+      (randomService.nextInt _).expects(12).returning(9).anyNumberOfTimes()
+      (randomService.nextInt _).expects(13).returning(5).anyNumberOfTimes()
+
+      (randomService.nextInt _).expects(2).returning(1).anyNumberOfTimes()
+      (randomService.nextInt _).expects(3).returning(0).anyNumberOfTimes()
+      (randomService.nextInt _).expects(4).returning(1).anyNumberOfTimes()
+
+
+      (randomService.nextInt _).expects(1).returning(0).anyNumberOfTimes()
+
+      val notesInKey = counterpointService.getInMajorKeyCantusFirmusNotes(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic))
+      counterpointService.generateCantusFirmus() match {
+        case Success(cantusFirmus) =>
+          val highestNote = cantusFirmus.maxBy(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note))
+          if (cantusFirmus.count(note => note == highestNote) != 1 || !(cantusFirmus.indexOf(highestNote) >= cantusFirmus.length / 4) || !(cantusFirmus.indexOf(highestNote) <= cantusFirmus.length - (cantusFirmus.length / 4))) {
+            println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+            println(cantusFirmus.toString())
+          }
+          cantusFirmus.count(note => note == highestNote) mustBe 1
+          cantusFirmus.indexOf(highestNote) >= cantusFirmus.length / 4 mustBe true
+          cantusFirmus.indexOf(highestNote) <= cantusFirmus.length - (cantusFirmus.length / 4) mustBe true
+        case Failure(e) =>
+          e.printStackTrace()
+          fail()
+      }
+    }
+
     "should construct a new service" in {
       val counterpointService = new CounterpointRecursiveService()
     }
