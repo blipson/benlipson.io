@@ -6,104 +6,128 @@
         <link rel="shortcut icon" href="#" />
         <title>Lipson</title>
     </head>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
     <body>
         <h1>
             Counterpoint Generator
         </h1>
-        <h4>
-            <button onclick="getCantusFirmus()">
-                <span>Generate</span>
-            </button>
-        </h4>
-        <h2 id="counterpoint-header">
-        </h2>
-        <h3 id="counterpoint-result">
-        </h3>
+        <button id="get-cantus-firmus-button" onclick="getCantusFirmus()">
+            <span>Generate</span>
+        </button>
+        <p>
+            <span id="counterpoint-header">
+            </span>
+            <span id="counterpoint-result">
+            </span>
+        </p>
     </body>
-    <div id="cantusFirmusCanvas"></div>
+    <div id="cantus-firmus-canvas"></div>
     <script src="https://npmcdn.com/vexflow/releases/vexflow-debug.js"></script>
     <script type="text/javascript">
-        function getCantusFirmus() {
-            const staff = document.getElementById('cantusFirmusCanvas');
+        const getCantusFirmus = async () => {
+            const getCantusFirmusButton = document.getElementById("get-cantus-firmus-button");
+            getCantusFirmusButton.disabled = true;
+            const staff = document.getElementById('cantus-firmus-canvas');
             while (staff.hasChildNodes()) {
                 staff.removeChild(staff.lastChild);
             }
+            const counterpointHeader = document.getElementById("counterpoint-header");
+            const counterpointResult = document.getElementById("counterpoint-result");
+            counterpointHeader.innerHTML = "Loading...";
+            counterpointResult.innerHTML = "";
 
-            const xmlHttp = new XMLHttpRequest();
-            xmlHttp.onreadystatechange = function () {
-                $("#counterpoint-header").text("Loading...");
-                $("#counterpoint-result").text("");
-                if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-                    $("#counterpoint-header").text("Cantus firmus is:");
-                    const cantusFirmus = JSON.parse(xmlHttp.responseText).cantus_firmus.toString().split(",")
-                    $("#counterpoint-result").text(cantusFirmus.toString().replace(/\,/g,", "));
+            const flatKeys = ["f", "a#/bb", "d#/eb", "g#/ab", "c#/db", "f#/gb"];
+            const sharpKeys = ["a", "b", "c", "d", "e", "g"];
 
-                    const VF = Vex.Flow;
+            const res = await fetch(window.location.href.replace("/projects", ""))
+            .then(async response => {
+                const cantusFirmusResult = await response.json();
+                counterpointHeader.innerHTML = "Cantus firmus is:";
+                const cantusFirmus = cantusFirmusResult.cantus_firmus.toString().split(",");
+                counterpointResult.innerHTML = "";
+                counterpointResult.innerHTML = cantusFirmus.toString().replace(/\,/g, ", ");
 
-                    const div = document.getElementById("cantusFirmusCanvas");
-                    const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
+                const VF = Vex.Flow;
 
-                    // Configure the rendering context.
-                    renderer.resize(100 * cantusFirmus.length, 200);
-                    const context = renderer.getContext();
-                    context.setFont("Arial", 10, "").setBackgroundFillStyle("#eed");
+                // future work:
+                // - choose a voice/clef!
+                //     - soprano, alto, tenor, bass, or generic (alto clef)
+                // - choose a key!
+                //
+                var div = document.getElementById("cantus-firmus-canvas")
 
-                    // Create a stave of width 400 at position 10, 40 on the canvas.
-                    const stave = new VF.Stave(10, 40, 100 * cantusFirmus.length);
+                var renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
+                renderer.resize(cantusFirmus.length * 100, 500);
+                var context = renderer.getContext();
 
-                    // Add a clef and time signature.
-                    stave.addClef("bass").addTimeSignature("4/4");
-
-                    // Connect it to the rendering context and draw!
+                cantusFirmus.forEach((note, index) => {
+                    const stave = new VF.Stave(index * 100, 0, 100);
+                    if (index === 0) {
+                        stave.addClef("bass");
+                    } else if (index === cantusFirmus.length - 1) {
+                        stave.setEndBarType(3);
+                    }
                     stave.setContext(context).draw();
 
-                    let notes = []
-                    for (let i = 0; i < cantusFirmus.length; i++) {
-                        let noteToProcess = cantusFirmus[i]
-                        if (noteToProcess.includes("/")) {
-                            noteToProcess = noteToProcess.split("/")[1]
-                            notes = notes.concat(
-                                    new VF.StaveNote(
-                                            {
-                                                keys: [[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')],
-                                                duration: "w",
-                                                clef: "bass"
-                                            }
-                                    ).addAccidental(0, new VF.Accidental("b")))
-                        } else {
-                            notes = notes.concat(new VF.StaveNote(
-                                    {
-                                        keys: [[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')],
-                                        duration: "w",
-                                        clef: "bass"
-                                    }
-                            ))
-                        }
-                        notes = notes.concat(new Vex.Flow.BarNote())
+                    const staveNote = new VF.StaveNote({
+                        keys: [note],
+                        duration: "w",
+                        clef: "bass"
+                    });
 
-                        console.log([[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')])
-
-
+                    if (note.includes("#")) {
+                        staveNote.addAccidental(0, new VF.Accidental("#"));
+                    } else if ((note.charAt(0) !== "b" && note.includes("b")) || (note.charAt(0) === "b" && note.split("b").length === 3)) {
+                        staveNote.addAccidental(0, new VF.Accidental("b"));
                     }
+                    VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
 
-                    // Create a voice in 4/4 and add above notes
-                    const voice = new VF.Voice({num_beats: 4, beat_value: 4});
-                    voice.setStrict(false)
-                    voice.addTickables(notes);
 
-                    // Format and justify the notes to 400 pixels.
-                    const formatter = new VF.Formatter().joinVoices([voice]).format([voice], 750);
 
-                    // Render voice
-                    voice.draw(context, stave);
-                } else if (xmlHttp.readyState === 4 && xmlHttp.status === 500) {
-                    $("#restaurant-header").text("Error! Something broke!");
-                    $("#restaurant-result").text(JSON.parse(xmlHttp.responseText).error.toUpperCase());
-                }
-            }
-            xmlHttp.open("GET", window.location.href.replace("/projects", ""), true);
-            xmlHttp.send(null);
+
+                    // const stave = new VF.Stave(index * 100, 0, 100);
+                    // if (index === 0) {
+                    //     stave.addClef("bass");
+                    // } else if (index === cantusFirmus.length - 1) {
+                    //     stave.setEndBarType(3);
+                    // }
+                    // stave.setContext(context).draw();
+                    //
+                    // let vexNote;
+                    // if (note.includes("#")) {
+                    //     let lowerNote;
+                    //     const key = cantusFirmus[0].slice(0, -1);
+                    //     if (sharpKeys.includes(key)) {
+                    //         lowerNote = note.split("/")[0].toLowerCase() + note.charAt(note.length - 1);
+                    //     } else if (flatKeys.includes(key)) {
+                    //         lowerNote = note.split("/")[1].toLowerCase();
+                    //     }
+                    //
+                    //     vexNote = lowerNote.toLowerCase().substring(0, lowerNote.length - 1) + "/" + lowerNote.charAt(lowerNote.length - 1);
+                    // } else {
+                    //     const lowerNote = note.toLowerCase();
+                    //     vexNote = lowerNote.toLowerCase().substring(0, lowerNote.length - 1) + "/" + lowerNote.charAt(lowerNote.length - 1);
+                    // }
+                    //
+                    // console.log(vexNote);
+                    // const staveNote = new VF.StaveNote({
+                    //     keys: [vexNote],
+                    //     duration: "w",
+                    //     clef: "bass"
+                    // });
+                    //
+                    // if (note.includes("#")) {
+                    //     if (sharpKeys.filter(key => key.includes(cantusFirmus[0].slice(0, -1))).length === 1) {
+                    //         staveNote.addAccidental(0, new VF.Accidental("#"));
+                    //     } else {
+                    //         staveNote.addAccidental(0, new VF.Accidental("b"));
+                    //     }
+                    // }
+                    //
+                    // VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
+                });
+
+                getCantusFirmusButton.disabled = false;
+            });
         }
     </script>
 </html>

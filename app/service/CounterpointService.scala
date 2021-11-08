@@ -1,6 +1,6 @@
 package service
 
-import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, MAJOR_KEY_INTERVALS, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC, OCTAVE}
+import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, FLAT_KEYS, MAJOR_KEY_INTERVALS, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC, OCTAVE, SHARP_KEYS}
 
 import scala.util.{Failure, Success, Try}
 
@@ -19,6 +19,19 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     } else {
       Failure(new Exception("Could not generate cantus firmus."))
     }
+  }
+
+  def formatCantusFirmus(cantusFirmus: List[String]): List[String] = {
+    cantusFirmus.map(note => {
+      val key = cantusFirmus.head.dropRight(1)
+      if (note.contains("#") && SHARP_KEYS.contains(key)) {
+        note.split("/").head.toLowerCase + "/" + note.last
+      } else if (note.contains("#") && FLAT_KEYS.contains(key.split("/")(1))) {
+        note.split("/")(1).toLowerCase.dropRight(1) + "/" + note.last
+      } else {
+        note.toLowerCase.dropRight(1) + "/" + note.last
+      }
+    })
   }
 
 //  var layers: scala.collection.mutable.ArrayBuffer[Int] = scala.collection.mutable.ArrayBuffer.empty[Int]
@@ -163,8 +176,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     } else if (isInFirstQuarter(cantusFirmus, length)) {
       notes.filter(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) < 19)
     } else if (isTheNoteBeforeBackQuarter(cantusFirmus, length) && climaxIsInTheBeginning(cantusFirmus, length)) {
-      val n = notes.filter(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) > getMaxNote(cantusFirmus))
-      n
+      notes.filter(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) > getMaxNote(cantusFirmus))
     } else if (isInMiddle(cantusFirmus, length) && climaxIsInTheBeginning(cantusFirmus, length)) {
       notes.filter(note => directionIsUpwards(cantusFirmus, note))
     } else {
@@ -360,6 +372,8 @@ object CounterpointService {
   val OCTAVE = 12
   val MIN_LENGTH = 8
   val MAX_LENGTH = 16
+  val SHARP_KEYS = Set("A", "B", "C", "D", "E", "G")
+  val FLAT_KEYS = Set("F", "Bb", "Eb", "Ab", "Db", "Gb")
 
 
   val MAJOR_KEY_INTERVALS = Set(
