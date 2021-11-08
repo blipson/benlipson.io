@@ -16,9 +16,14 @@ class CounterpointServiceTest extends PlaySpec with MockFactory {
       counterpointService.formatCantusFirmus(cantusFirmus) mustBe List("b/3", "d#/3", "e/3", "c#/3", "a#/3", "b/3", "c#/4", "b/3")
     }
 
-    "should format a cantus firmus in a flat key" in {
+    "should format a cantus firmus in a flat key that starts with a secondary note" in {
       val cantusFirmus = List("D#/Eb3", "C3", "A#/Bb2", "G#/Ab2", "F2", "G2", "G3", "F3", "D3", "D#/Eb3")
       counterpointService.formatCantusFirmus(cantusFirmus) mustBe List("eb/3", "c/3", "bb/2", "ab/2", "f/2", "g/2", "g/3", "f/3", "d/3", "eb/3")
+    }
+
+    "should format a cantus firmus in a flat key that starts with a primary note" in {
+      val cantusFirmus = List("F3", "A3", "A#/Bb3", "G3", "A3", "G3", "E3", "F3", "D3", "D4", "C4", "E3", "F3")
+      counterpointService.formatCantusFirmus(cantusFirmus) mustBe List("f/3", "a/3", "bb/3", "g/3", "a/3", "g/3", "e/3", "f/3", "d/3", "d/4", "c/4", "e/3", "f/3")
     }
 
     "should format a cantus firmus in C" in {

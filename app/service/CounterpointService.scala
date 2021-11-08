@@ -23,19 +23,55 @@ class CounterpointRecursiveService(var randomService: RandomService) {
 
   def formatCantusFirmus(cantusFirmus: List[String]): List[String] = {
     cantusFirmus.map(note => {
-      val key = cantusFirmus.head.dropRight(1)
-      if (note.contains("#") && SHARP_KEYS.contains(key)) {
-        note.split("/").head.toLowerCase + "/" + note.last
-      } else if (note.contains("#") && FLAT_KEYS.contains(key.split("/")(1))) {
-        note.split("/")(1).toLowerCase.dropRight(1) + "/" + note.last
+      val tonic = cantusFirmus.head.dropRight(1)
+      if (isSecondaryNoteAndTonicOfSharpKey(note, tonic)) {
+        formatSharpKeySecondaryNote(note)
+      } else if (isSecondaryNoteAndTonicOfFlatKey(note, tonic)) {
+        formatFlatKeySecondaryNote(note)
       } else {
-        note.toLowerCase.dropRight(1) + "/" + note.last
+        formatPrimaryNote(note)
       }
     })
   }
 
 //  var layers: scala.collection.mutable.ArrayBuffer[Int] = scala.collection.mutable.ArrayBuffer.empty[Int]
 //  var count = 0
+
+  private def formatPrimaryNote(note: String) = {
+    note.toLowerCase.dropRight(1) + "/" + note.last
+  }
+
+  private def formatFlatKeySecondaryNote(note: String) = {
+    note.split("/")(1).toLowerCase.dropRight(1) + "/" + note.last
+  }
+
+  private def formatSharpKeySecondaryNote(note: String) = {
+    note.split("/").head.toLowerCase + "/" + note.last
+  }
+
+  private def isSecondaryNoteAndTonicOfFlatKey(note: String, tonic: String) = {
+    isSecondaryNote(note) && isTonicOfFlatKey(tonic)
+  }
+
+  private def isTonicOfFlatKey(tonic: String) = {
+    if (isSecondaryNote(tonic)) {
+      FLAT_KEYS.contains(tonic.split("/")(1))
+    } else {
+      FLAT_KEYS.contains(tonic)
+    }
+  }
+
+  private def isSecondaryNote(note: String) = {
+    note.contains("#")
+  }
+
+  private def isSecondaryNoteAndTonicOfSharpKey(note: String, key: String) = {
+    isSecondaryNote(note) && isTonicOfSharpKey(key)
+  }
+
+  private def isTonicOfSharpKey(key: String) = {
+    SHARP_KEYS.contains(key)
+  }
 
   def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
     println(cantusFirmus)
