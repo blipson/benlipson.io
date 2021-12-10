@@ -927,104 +927,110 @@ class ProjectsControllerTest extends PlaySpec {
           |        <link rel="shortcut icon" href="#" />
           |        <title>Lipson</title>
           |    </head>
-          |    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
           |    <body>
           |        <h1>
           |            Counterpoint Generator
           |        </h1>
-          |        <h4>
-          |            <button onclick="getCantusFirmus()">
-          |                <span>Generate</span>
-          |            </button>
-          |        </h4>
-          |        <h2 id="counterpoint-header">
-          |        </h2>
-          |        <h3 id="counterpoint-result">
-          |        </h3>
+          |        <button id="get-cantus-firmus-button" onclick="getCantusFirmus()">
+          |            <span>Generate</span>
+          |        </button>
+          |        <button id="play-cantus-firmus-button" onclick="playCantusFirmus()" disabled>
+          |            <span>Play</span>
+          |        </button>
+          |        <span id="counterpoint-header">
+          |        </span>
           |    </body>
-          |    <div id="cantusFirmusCanvas"></div>
+          |    <div id="cantus-firmus-canvas"></div>
           |    <script src="https://npmcdn.com/vexflow/releases/vexflow-debug.js"></script>
+          |    <script src="/assets/js/midi.min.js"></script>
+          |    <script src="/assets/js/teoria/teoria.js"></script>
           |    <script type="text/javascript">
-          |        function getCantusFirmus() {
-          |            const staff = document.getElementById('cantusFirmusCanvas');
+          |       const getCantusFirmusButton = document.getElementById("get-cantus-firmus-button");
+          |       const playCantusFirmusButton = document.getElementById("play-cantus-firmus-button");
+          |       const counterpointHeader = document.getElementById("counterpoint-header");
+          |       let cantusFirmus;
+          |
+          |        const getCantusFirmus = async () => {
+          |            getCantusFirmusButton.disabled = true;
+          |            const staff = document.getElementById('cantus-firmus-canvas');
           |            while (staff.hasChildNodes()) {
           |                staff.removeChild(staff.lastChild);
           |            }
+          |            counterpointHeader.innerHTML = "Loading...";
           |
-          |            const xmlHttp = new XMLHttpRequest();
-          |            xmlHttp.onreadystatechange = function () {
-          |                $("#counterpoint-header").text("Loading...");
-          |                $("#counterpoint-result").text("");
-          |                if (xmlHttp.readyState === 4 && xmlHttp.status === 200) {
-          |                    $("#counterpoint-header").text("Cantus firmus is:");
-          |                    const cantusFirmus = JSON.parse(xmlHttp.responseText).cantus_firmus.toString().split(",")
-          |                    $("#counterpoint-result").text(cantusFirmus.toString().replace(/\,/g,", "));
+          |            await fetch(window.location.href.replace("/projects", ""))
+          |                .then(async response => {
+          |                    const cantusFirmusResult = await response.json();
+          |                    counterpointHeader.innerHTML = "";
+          |                    cantusFirmus = cantusFirmusResult.cantus_firmus;
           |
           |                    const VF = Vex.Flow;
           |
-          |                    const div = document.getElementById("cantusFirmusCanvas");
+          |                    // future work:
+          |                    // - choose a voice/clef!
+          |                    //     - soprano, alto, tenor, bass, or generic (alto clef)
+          |                    // - choose a key!
+          |                    //
+          |                    const div = document.getElementById("cantus-firmus-canvas")
+          |
           |                    const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
-          |
-          |                    // Configure the rendering context.
-          |                    renderer.resize(100 * cantusFirmus.length, 200);
+          |                    renderer.resize(cantusFirmus.length * 100, 500);
           |                    const context = renderer.getContext();
-          |                    context.setFont("Arial", 10, "").setBackgroundFillStyle("#eed");
           |
-          |                    // Create a stave of width 400 at position 10, 40 on the canvas.
-          |                    const stave = new VF.Stave(10, 40, 100 * cantusFirmus.length);
-          |
-          |                    // Add a clef and time signature.
-          |                    stave.addClef("bass").addTimeSignature("4/4");
-          |
-          |                    // Connect it to the rendering context and draw!
-          |                    stave.setContext(context).draw();
-          |
-          |                    let notes = []
-          |                    for (let i = 0; i < cantusFirmus.length; i++) {
-          |                        let noteToProcess = cantusFirmus[i]
-          |                        if (noteToProcess.includes("/")) {
-          |                            noteToProcess = noteToProcess.split("/")[1]
-          |                            notes = notes.concat(
-          |                                    new VF.StaveNote(
-          |                                            {
-          |                                                keys: [[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')],
-          |                                                duration: "w",
-          |                                                clef: "bass"
-          |                                            }
-          |                                    ).addAccidental(0, new VF.Accidental("b")))
-          |                        } else {
-          |                            notes = notes.concat(new VF.StaveNote(
-          |                                    {
-          |                                        keys: [[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')],
-          |                                        duration: "w",
-          |                                        clef: "bass"
-          |                                    }
-          |                            ))
+          |                    cantusFirmus.forEach((note, index) => {
+          |                        const stave = new VF.Stave(index * 100, 0, 100);
+          |                        if (index === 0) {
+          |                            stave.addClef("bass");
+          |                        } else if (index === cantusFirmus.length - 1) {
+          |                            stave.setEndBarType(3);
           |                        }
-          |                        notes = notes.concat(new Vex.Flow.BarNote())
+          |                        stave.setContext(context).draw();
           |
-          |                        console.log([[noteToProcess.slice(0, noteToProcess.length - 1), "/", noteToProcess.slice(noteToProcess.length - 1)].join('')])
+          |                        const staveNote = new VF.StaveNote({
+          |                            keys: [note],
+          |                            duration: "w",
+          |                            clef: "bass"
+          |                        });
           |
+          |                        if (note.includes("#")) {
+          |                            staveNote.addAccidental(0, new VF.Accidental("#"));
+          |                        } else if ((note.charAt(0) !== "b" && note.includes("b")) || (note.charAt(0) === "b" && note.split("b").length === 3)) {
+          |                            staveNote.addAccidental(0, new VF.Accidental("b"));
+          |                        }
+          |                        VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
+          |                    });
+          |                    getCantusFirmusButton.disabled = false;
+          |                    playCantusFirmusButton.disabled = false;
+          |                });
+          |        }
           |
+          |        const playCantusFirmus = () => {
+          |            counterpointHeader.innerHTML = "Playing...";
+          |            getCantusFirmusButton.disabled = true;
+          |            playCantusFirmusButton.disabled = true;
+          |            MIDI.loadPlugin({
+          |                soundfontUrl: "../assets/js/soundfont/",
+          |                instrument: "acoustic_grand_piano",
+          |                instruments: [ "acoustic_grand_piano" ],
+          |                onsuccess: () => {
+          |                    MIDI.setVolume(0, 127);
+          |                    let i = 0
+          |                    const playLoop = () => {
+          |                        setTimeout(function () {
+          |                            MIDI.noteOn(0, teoria.note(cantusFirmus[i].replace("/", "")).midi(), 127, 0);
+          |                            i += 1;
+          |                            if (i < cantusFirmus.length) {
+          |                                playLoop();
+          |                            } else {
+          |                                getCantusFirmusButton.disabled = false;
+          |                                playCantusFirmusButton.disabled = false;
+          |                                counterpointHeader.innerHTML = "";
+          |                            }
+          |                        }, 1000);
           |                    }
-          |
-          |                    // Create a voice in 4/4 and add above notes
-          |                    const voice = new VF.Voice({num_beats: 4, beat_value: 4});
-          |                    voice.setStrict(false)
-          |                    voice.addTickables(notes);
-          |
-          |                    // Format and justify the notes to 400 pixels.
-          |                    const formatter = new VF.Formatter().joinVoices([voice]).format([voice], 750);
-          |
-          |                    // Render voice
-          |                    voice.draw(context, stave);
-          |                } else if (xmlHttp.readyState === 4 && xmlHttp.status === 500) {
-          |                    $("#restaurant-header").text("Error! Something broke!");
-          |                    $("#restaurant-result").text(JSON.parse(xmlHttp.responseText).error.toUpperCase());
+          |                    playLoop();
           |                }
-          |            }
-          |            xmlHttp.open("GET", window.location.href.replace("/projects", ""), true);
-          |            xmlHttp.send(null);
+          |            });
           |        }
           |    </script>
           |</html>

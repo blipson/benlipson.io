@@ -34,9 +34,6 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     })
   }
 
-//  var layers: scala.collection.mutable.ArrayBuffer[Int] = scala.collection.mutable.ArrayBuffer.empty[Int]
-//  var count = 0
-
   private def formatPrimaryNote(note: String) = {
     note.toLowerCase.dropRight(1) + "/" + note.last
   }
@@ -74,14 +71,6 @@ class CounterpointRecursiveService(var randomService: RandomService) {
   }
 
   def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
-    println(cantusFirmus)
-//    layers.addOne(cantusFirmus.length)
-//    if (cantusFirmus.length < layers.max - 1) {
-//      count += 1
-//      if (count > 2) {
-//        val x = 1
-//      }
-//    }
     if (cantusFirmus.length == length) {
       cantusFirmus
     } else {

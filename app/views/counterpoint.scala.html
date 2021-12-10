@@ -13,6 +13,9 @@
         <button id="get-cantus-firmus-button" onclick="getCantusFirmus()">
             <span>Generate</span>
         </button>
+        <button id="play-cantus-firmus-button" onclick="playCantusFirmus()" disabled>
+            <span>Play</span>
+        </button>
         <span id="counterpoint-header">
         </span>
     </body>
@@ -21,21 +24,24 @@
     <script src="@controllers.routes.Assets.at("js/midi.min.js")"></script>
     <script src="@controllers.routes.Assets.at("js/teoria/teoria.js")"></script>
     <script type="text/javascript">
+       const getCantusFirmusButton = document.getElementById("get-cantus-firmus-button");
+       const playCantusFirmusButton = document.getElementById("play-cantus-firmus-button");
+       const counterpointHeader = document.getElementById("counterpoint-header");
+       let cantusFirmus;
+
         const getCantusFirmus = async () => {
-            const getCantusFirmusButton = document.getElementById("get-cantus-firmus-button");
             getCantusFirmusButton.disabled = true;
             const staff = document.getElementById('cantus-firmus-canvas');
             while (staff.hasChildNodes()) {
                 staff.removeChild(staff.lastChild);
             }
-            const counterpointHeader = document.getElementById("counterpoint-header");
             counterpointHeader.innerHTML = "Loading...";
 
             await fetch(window.location.href.replace("/projects", ""))
                 .then(async response => {
                     const cantusFirmusResult = await response.json();
                     counterpointHeader.innerHTML = "";
-                    const cantusFirmus = cantusFirmusResult.cantus_firmus;
+                    cantusFirmus = cantusFirmusResult.cantus_firmus;
 
                     const VF = Vex.Flow;
 
@@ -44,11 +50,11 @@
                     //     - soprano, alto, tenor, bass, or generic (alto clef)
                     // - choose a key!
                     //
-                    var div = document.getElementById("cantus-firmus-canvas")
+                    const div = document.getElementById("cantus-firmus-canvas")
 
-                    var renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
+                    const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
                     renderer.resize(cantusFirmus.length * 100, 500);
-                    var context = renderer.getContext();
+                    const context = renderer.getContext();
 
                     cantusFirmus.forEach((note, index) => {
                         const stave = new VF.Stave(index * 100, 0, 100);
@@ -72,31 +78,38 @@
                         }
                         VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
                     });
-
-
-                    console.log(cantusFirmus);
-                    MIDI.loadPlugin({
-                        soundfontUrl: "../assets/js/soundfont/",
-                        instrument: "acoustic_grand_piano",
-                        instruments: [ "acoustic_grand_piano" ],
-                        onsuccess: () => {
-                            MIDI.setVolume(0, 127);
-                            let i = 0
-                            const playLoop = () => {
-                                setTimeout(function () {
-                                    MIDI.noteOn(0, teoria.note(cantusFirmus[i].replace("/", "")).midi(), 127, 0);
-                                    i += 1;
-                                    if (i < cantusFirmus.length) {
-                                        playLoop();
-                                    } else {
-                                        getCantusFirmusButton.disabled = false;
-                                    }
-                                }, 1000);
-                            }
-                            playLoop();
-                        }
-                    });
+                    getCantusFirmusButton.disabled = false;
+                    playCantusFirmusButton.disabled = false;
                 });
+        }
+
+        const playCantusFirmus = () => {
+            counterpointHeader.innerHTML = "Playing...";
+            getCantusFirmusButton.disabled = true;
+            playCantusFirmusButton.disabled = true;
+            MIDI.loadPlugin({
+                soundfontUrl: "../assets/js/soundfont/",
+                instrument: "acoustic_grand_piano",
+                instruments: [ "acoustic_grand_piano" ],
+                onsuccess: () => {
+                    MIDI.setVolume(0, 127);
+                    let i = 0
+                    const playLoop = () => {
+                        setTimeout(function () {
+                            MIDI.noteOn(0, teoria.note(cantusFirmus[i].replace("/", "")).midi(), 127, 0);
+                            i += 1;
+                            if (i < cantusFirmus.length) {
+                                playLoop();
+                            } else {
+                                getCantusFirmusButton.disabled = false;
+                                playCantusFirmusButton.disabled = false;
+                                counterpointHeader.innerHTML = "";
+                            }
+                        }, 1000);
+                    }
+                    playLoop();
+                }
+            });
         }
     </script>
 </html>

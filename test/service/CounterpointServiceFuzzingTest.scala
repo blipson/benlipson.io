@@ -15,11 +15,9 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
   private def setUp(tonic: Int, maxTonic: Int) = {
     val length = Random.between(8, 17)
     (randomService.between _).expects(8, 17).returning(length)
-    println("length " + length.toString)
     (randomService.between _).expects(3, maxTonic).returning(tonic)
     (1 to 13).map(i => {
       val next = Random.nextInt(i)
-      println(i.toString + " to " + next.toString)
       (randomService.nextInt _).expects(i).returning(next).anyNumberOfTimes()
     })
     (randomService.nextDouble _).expects().returning(Random.nextDouble()).anyNumberOfTimes()
@@ -246,7 +244,6 @@ class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
         setUp(tonic, maxTonic)
         counterpointRecursiveService.generateCantusFirmus() match {
           case Success(cantusFirmus) =>
-            println(cantusFirmus)
             cantusFirmus.zipWithIndex.map {
               case (note, i) =>
                 if (i > 0 && i < cantusFirmus.length - 1) {
