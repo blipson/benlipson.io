@@ -8,7 +8,7 @@
     </head>
     <body>
         <h1>
-            Counterpoint Generator
+            Cantus Firmus Generator
         </h1>
         <button id="get-cantus-firmus-button" onclick="getCantusFirmus()">
             <span>Generate</span>
@@ -18,6 +18,22 @@
         </button>
         <span id="counterpoint-header">
         </span>
+        <h4>
+            A cantus firmus generator. It adheres to the following rules:
+            <ol>
+                <li>Length must be 8-16 notes.</li>
+                <li>First and last note must be tonic</li>
+                <li>Final note must typically be approached by a step above, occasionally by a half step below.</li>
+                <li>The leading tone always progresses to the tonic.</li>
+                <li>All notes must be in the correct key.</li>
+                <li>All note-to-note progressions are melodic consonances.</li>
+                <li>No note may be followed by the same note.</li>
+                <li>Range (interval between lowest and highest notes) of no more than a tenth.</li>
+                <li>No more than 2 melodic motions larger a 4th or larger.</li>
+                <li>Any large leaps (a 4th or larger) are followed by stepwise motion in the opposite direction.</li>
+                <li>A single climax (high point) that appears only once in the melody.</li>
+            </ol>
+        </h4>
     </body>
     <div id="cantus-firmus-canvas"></div>
     <script src="https://npmcdn.com/vexflow/releases/vexflow-debug.js"></script>

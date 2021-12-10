@@ -61,6 +61,9 @@
         </h4>
         <label for="graphtv-input"></label>
         <input id="graphtv-input" class="input" type="text" placeholder="TV Show" autofocus>
+        <button id="graphtv-button" onclick="graphTvShow()">
+            <span>Graph</span>
+        </button>
         <span id="loading" style="display: none">Loading...</span>
         <span id="not-found" style="display: none">TV show not found.</span>
         <h2 id="graphtv-header">
@@ -164,6 +167,7 @@
         const graphTvInput = document.getElementById("graphtv-input");
         const loading = document.getElementById("loading");
         const notFound = document.getElementById("not-found");
+        const graphTvButton = document.getElementById("graphtv-button");
 
         const handleDataPointHoverEvents = (dataPoint) => {
             const tooltip = document.getElementById("tooltip");
@@ -184,6 +188,7 @@
         const handleChartCreatedEvent = (seasons) => {
             hideElement(loading);
             enableElement(graphTvInput);
+            enableElement(graphTvButton);
             setContentOfElement(document.getElementById("graphtv-header"), seasons[0].title);
             const dataPoints = document.getElementsByClassName("ct-point");
             Array.from(dataPoints).map(dataPoint => {
@@ -328,10 +333,11 @@
             });
         }
 
-        const handleEnterKeyPressed = async () => {
+        const graphTvShow = async () => {
             showElement(loading);
             hideElement(notFound);
             disableElement(graphTvInput);
+            disableElement(graphTvButton)
             const show = await determineApiAndSearchShows(graphTvInput.value);
             if (foundMatchingShow(show)) {
                 if (show.api === "imdb-api") {
@@ -353,12 +359,13 @@
                 hideElement(loading);
                 showElement(notFound);
                 enableElement(graphTvInput);
+                enableElement(graphTvButton);
             }
         }
 
         graphTvInput.onkeyup = async (e) => {
             if (e.code === "Enter") {
-                await handleEnterKeyPressed();
+                await graphTvShow();
             }
         };
     </script>

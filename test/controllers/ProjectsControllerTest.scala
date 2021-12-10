@@ -26,25 +26,25 @@ class ProjectsControllerTest extends PlaySpec {
           |        <h1>Projects</h1>
           |        <ul>
           |            <li>
-          |                <a href="/projects/counterpoint">Counterpoint Generator</a>
+          |                <a href="/projects/counterpoint">Cantus Firmus Generator</a>
           |                <br><i>
           |                6:00 AM - 05 Nov 2019
           |            </i>
           |                <ul>
-          |                    <li>A rudimentary cantus firmus generator. It adheres to the following rules:
-          |                    <ol>
-          |                        <li>Length must be 8-16 notes</li>
-          |                        <li>First and last note must be tonic</li>
-          |                        <li>Final note must typically be approached by a step above, occasionally by a half step below</li>
-          |                        <li>The leading tone always progresses to the tonic</li>
-          |                        <li>All notes must be in the correct key</li>
-          |                        <li>All note-to-note progressions are melodic consonances (almost, except 3rd to last -> 2nd to last)</li>
-          |                        <li>No note may be followed by the same note</li>
-          |                        <li>Range (interval between lowest and highest notes) of no more than a tenth</li>
-          |                        <li>No more than 2 melodic motions larger a 4th or larger (leaps)</li>
-          |                        <li>Any large leaps (fourth or larger) are followed by step in opposite direction</li>
-          |                        <li>A single climax (high point) that appears only once in the melody</li>
-          |                    </ol>
+          |                    <li>A cantus firmus generator. It adheres to the following rules:
+          |                        <ol>
+          |                            <li>Length must be 8-16 notes.</li>
+          |                            <li>First and last note must be tonic</li>
+          |                            <li>Final note must typically be approached by a step above, occasionally by a half step below.</li>
+          |                            <li>The leading tone always progresses to the tonic.</li>
+          |                            <li>All notes must be in the correct key.</li>
+          |                            <li>All note-to-note progressions are melodic consonances.</li>
+          |                            <li>No note may be followed by the same note.</li>
+          |                            <li>Range (interval between lowest and highest notes) of no more than a tenth.</li>
+          |                            <li>No more than 2 melodic motions larger a 4th or larger.</li>
+          |                            <li>Any large leaps (a 4th or larger) are followed by stepwise motion in the opposite direction.</li>
+          |                            <li>A single climax (high point) that appears only once in the melody.</li>
+          |                        </ol>
           |                </ul>
           |            </li>
           |        </ul>
@@ -560,6 +560,9 @@ class ProjectsControllerTest extends PlaySpec {
           |        </h4>
           |        <label for="graphtv-input"></label>
           |        <input id="graphtv-input" class="input" type="text" placeholder="TV Show" autofocus>
+          |        <button id="graphtv-button" onclick="graphTvShow()">
+          |            <span>Graph</span>
+          |        </button>
           |        <span id="loading" style="display: none">Loading...</span>
           |        <span id="not-found" style="display: none">TV show not found.</span>
           |        <h2 id="graphtv-header">
@@ -663,6 +666,7 @@ class ProjectsControllerTest extends PlaySpec {
           |        const graphTvInput = document.getElementById("graphtv-input");
           |        const loading = document.getElementById("loading");
           |        const notFound = document.getElementById("not-found");
+          |        const graphTvButton = document.getElementById("graphtv-button");
           |
           |        const handleDataPointHoverEvents = (dataPoint) => {
           |            const tooltip = document.getElementById("tooltip");
@@ -683,6 +687,7 @@ class ProjectsControllerTest extends PlaySpec {
           |        const handleChartCreatedEvent = (seasons) => {
           |            hideElement(loading);
           |            enableElement(graphTvInput);
+          |            enableElement(graphTvButton);
           |            setContentOfElement(document.getElementById("graphtv-header"), seasons[0].title);
           |            const dataPoints = document.getElementsByClassName("ct-point");
           |            Array.from(dataPoints).map(dataPoint => {
@@ -827,10 +832,11 @@ class ProjectsControllerTest extends PlaySpec {
           |            });
           |        }
           |
-          |        const handleEnterKeyPressed = async () => {
+          |        const graphTvShow = async () => {
           |            showElement(loading);
           |            hideElement(notFound);
           |            disableElement(graphTvInput);
+          |            disableElement(graphTvButton)
           |            const show = await determineApiAndSearchShows(graphTvInput.value);
           |            if (foundMatchingShow(show)) {
           |                if (show.api === "imdb-api") {
@@ -852,12 +858,13 @@ class ProjectsControllerTest extends PlaySpec {
           |                hideElement(loading);
           |                showElement(notFound);
           |                enableElement(graphTvInput);
+          |                enableElement(graphTvButton);
           |            }
           |        }
           |
           |        graphTvInput.onkeyup = async (e) => {
           |            if (e.code === "Enter") {
-          |                await handleEnterKeyPressed();
+          |                await graphTvShow();
           |            }
           |        };
           |    </script>
@@ -929,7 +936,7 @@ class ProjectsControllerTest extends PlaySpec {
           |    </head>
           |    <body>
           |        <h1>
-          |            Counterpoint Generator
+          |            Cantus Firmus Generator
           |        </h1>
           |        <button id="get-cantus-firmus-button" onclick="getCantusFirmus()">
           |            <span>Generate</span>
@@ -939,6 +946,22 @@ class ProjectsControllerTest extends PlaySpec {
           |        </button>
           |        <span id="counterpoint-header">
           |        </span>
+          |        <h4>
+          |            A cantus firmus generator. It adheres to the following rules:
+          |            <ol>
+          |                <li>Length must be 8-16 notes.</li>
+          |                <li>First and last note must be tonic</li>
+          |                <li>Final note must typically be approached by a step above, occasionally by a half step below.</li>
+          |                <li>The leading tone always progresses to the tonic.</li>
+          |                <li>All notes must be in the correct key.</li>
+          |                <li>All note-to-note progressions are melodic consonances.</li>
+          |                <li>No note may be followed by the same note.</li>
+          |                <li>Range (interval between lowest and highest notes) of no more than a tenth.</li>
+          |                <li>No more than 2 melodic motions larger a 4th or larger.</li>
+          |                <li>Any large leaps (a 4th or larger) are followed by stepwise motion in the opposite direction.</li>
+          |                <li>A single climax (high point) that appears only once in the melody.</li>
+          |            </ol>
+          |        </h4>
           |    </body>
           |    <div id="cantus-firmus-canvas"></div>
           |    <script src="https://npmcdn.com/vexflow/releases/vexflow-debug.js"></script>
