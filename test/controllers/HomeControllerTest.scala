@@ -32,7 +32,6 @@ class HomeControllerTest extends PlaySpec {
           |    <a href="/blog">Blog</a>
           |    <a href="/projects">Projects</a>
           |    <a href="https://github.com/blipson" target="_blank">Code</a>
-          |    <a href="https://soundcloud.com/ben_lipson" target="_blank">Music</a>
           |  </body>
           |</html>
           |""".stripMargin.replaceAll(" +", "")
