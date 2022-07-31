@@ -11,12 +11,17 @@
             Cantus Firmus Generator
         </h1>
         <button id="get-cantus-firmus-button" onclick="getCantusFirmus()">
-            <span>Generate</span>
+            <span>Generate Cantus Firmus</span>
         </button>
-        <button id="play-cantus-firmus-button" onclick="playCantusFirmus()" disabled>
+        <button id="get-first-species-button" onclick="getFirstSpecies()" disabled>
+            <span>Generate First Species</span>
+        </button>
+        <button id="play-cantus-firmus-button" onclick="play()" disabled>
             <span>Play</span>
         </button>
-        <span id="counterpoint-header">
+        <span id="first-species-header">
+        </span>
+        <span id="cantus-firmus-header">
         </span>
         <h4>
             A cantus firmus generator. It adheres to the following rules:
@@ -35,97 +40,163 @@
             </ol>
         </h4>
     </body>
+    <div id="first-species-canvas"></div>
     <div id="cantus-firmus-canvas"></div>
     <script src="https://npmcdn.com/vexflow/releases/vexflow-debug.js"></script>
     <script src="@controllers.routes.Assets.at("js/midi.min.js")"></script>
     <script src="@controllers.routes.Assets.at("js/teoria/teoria.js")"></script>
     <script type="text/javascript">
        const getCantusFirmusButton = document.getElementById("get-cantus-firmus-button");
-       const playCantusFirmusButton = document.getElementById("play-cantus-firmus-button");
-       const counterpointHeader = document.getElementById("counterpoint-header");
+       const getFirstSpeciesButton = document.getElementById("get-first-species-button");
+       const playButton = document.getElementById("play-cantus-firmus-button");
+       const counterpointHeader = document.getElementById("cantus-firmus-header");
+       const firstSpeciesHeader = document.getElementById("first-species-header");
        let cantusFirmus;
+       let rawCantusFirmus;
+       let firstSpecies;
 
-        const getCantusFirmus = async () => {
-            getCantusFirmusButton.disabled = true;
-            const staff = document.getElementById('cantus-firmus-canvas');
-            while (staff.hasChildNodes()) {
-                staff.removeChild(staff.lastChild);
-            }
-            counterpointHeader.innerHTML = "Loading...";
+       const getCantusFirmus = async () => {
+           getCantusFirmusButton.disabled = true;
+           const staff = document.getElementById('cantus-firmus-canvas');
+           while (staff.hasChildNodes()) {
+               staff.removeChild(staff.lastChild);
+           }
+           counterpointHeader.innerHTML = "Loading...";
 
-            await fetch(window.location.href.replace("/projects", ""))
-                .then(async response => {
-                    const cantusFirmusResult = await response.json();
-                    counterpointHeader.innerHTML = "";
-                    cantusFirmus = cantusFirmusResult.cantus_firmus;
+           await fetch(window.location.href.replace("/projects/counterpoint", "/cantusfirmus"))
+                   .then(async response => {
+                       const cantusFirmusResult = await response.json();
+                       counterpointHeader.innerHTML = "";
+                       cantusFirmus = cantusFirmusResult.cantus_firmus;
+                       rawCantusFirmus = cantusFirmusResult.raw;
 
-                    const VF = Vex.Flow;
+                       const VF = Vex.Flow;
 
-                    // future work:
-                    // - choose a voice/clef!
-                    //     - soprano, alto, tenor, bass, or generic (alto clef)
-                    // - choose a key!
-                    //
-                    const div = document.getElementById("cantus-firmus-canvas")
+                       // future work:
+                       // - choose a voice/clef!
+                       //     - soprano, alto, tenor, bass, or generic (alto clef)
+                       // - choose a key!
+                       //
+                       const div = document.getElementById("cantus-firmus-canvas")
 
-                    const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
-                    renderer.resize(cantusFirmus.length * 100, 500);
-                    const context = renderer.getContext();
+                       const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG);
+                       renderer.resize(cantusFirmus.length * 100, 200);
+                       const context = renderer.getContext();
 
-                    cantusFirmus.forEach((note, index) => {
-                        const stave = new VF.Stave(index * 100, 0, 100);
-                        if (index === 0) {
-                            stave.addClef("bass");
-                        } else if (index === cantusFirmus.length - 1) {
-                            stave.setEndBarType(3);
-                        }
-                        stave.setContext(context).draw();
+                       cantusFirmus.forEach((note, index) => {
+                           const stave = new VF.Stave(index * 100, 0, 100);
+                           if (index === 0) {
+                               stave.addClef("bass");
+                           } else if (index === cantusFirmus.length - 1) {
+                               stave.setEndBarType(3);
+                           }
+                           stave.setContext(context).draw();
 
-                        const staveNote = new VF.StaveNote({
-                            keys: [note],
-                            duration: "w",
-                            clef: "bass"
-                        });
+                           const staveNote = new VF.StaveNote({
+                               keys: [note],
+                               duration: "w",
+                               clef: "bass"
+                           });
 
-                        if (note.includes("#")) {
-                            staveNote.addAccidental(0, new VF.Accidental("#"));
-                        } else if ((note.charAt(0) !== "b" && note.includes("b")) || (note.charAt(0) === "b" && note.split("b").length === 3)) {
-                            staveNote.addAccidental(0, new VF.Accidental("b"));
-                        }
-                        VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
-                    });
-                    getCantusFirmusButton.disabled = false;
-                    playCantusFirmusButton.disabled = false;
-                });
-        }
+                           if (note.includes("#")) {
+                               staveNote.addAccidental(0, new VF.Accidental("#"));
+                           } else if ((note.charAt(0) !== "b" && note.includes("b")) || (note.charAt(0) === "b" && note.split("b").length === 3)) {
+                               staveNote.addAccidental(0, new VF.Accidental("b"));
+                           }
+                           VF.Formatter.FormatAndDraw(context, stave, [staveNote]);
+                       });
+                       const firstSpeciesDiv = document.getElementById("first-species-canvas")
+                       firstSpeciesDiv.replaceChildren()
+                       firstSpecies = []
+                       getCantusFirmusButton.disabled = false;
+                       getFirstSpeciesButton.disabled = false;
+                       playButton.disabled = false;
+                   });
+       }
 
-        const playCantusFirmus = () => {
-            counterpointHeader.innerHTML = "Playing...";
-            getCantusFirmusButton.disabled = true;
-            playCantusFirmusButton.disabled = true;
-            MIDI.loadPlugin({
-                soundfontUrl: "../assets/js/soundfont/",
-                instrument: "acoustic_grand_piano",
-                instruments: [ "acoustic_grand_piano" ],
-                onsuccess: () => {
-                    MIDI.setVolume(0, 127);
-                    let i = 0
-                    const playLoop = () => {
-                        setTimeout(function () {
-                            MIDI.noteOn(0, teoria.note(cantusFirmus[i].replace("/", "")).midi(), 127, 0);
-                            i += 1;
-                            if (i < cantusFirmus.length) {
-                                playLoop();
-                            } else {
-                                getCantusFirmusButton.disabled = false;
-                                playCantusFirmusButton.disabled = false;
-                                counterpointHeader.innerHTML = "";
-                            }
-                        }, 1000);
-                    }
-                    playLoop();
-                }
-            });
-        }
+       const getFirstSpecies = async () => {
+           getFirstSpeciesButton.disabled = true;
+           const staff = document.getElementById('first-species-canvas');
+           while (staff.hasChildNodes()) {
+               staff.removeChild(staff.lastChild);
+           }
+           firstSpeciesHeader.innerHTML = "Loading...";
+
+           await fetch(window.location.href.replace("/projects/counterpoint", "/firstspecies"), {
+               method: "POST",
+               body: JSON.stringify(rawCantusFirmus),
+               headers: {
+                   "Content-type": "application/json; charset=UTF-8"
+               }
+           })
+                   .then(async response => {
+                       const firstSpeciesResult = await response.json();
+                       counterpointHeader.innerHTML = ""
+                       firstSpecies = firstSpeciesResult.first_species
+                       console.log(firstSpecies);
+                       const VF = Vex.Flow;
+                       const div = document.getElementById("first-species-canvas")
+                       const renderer = new VF.Renderer(div, VF.Renderer.Backends.SVG)
+                       renderer.resize(firstSpecies.length * 100, 200)
+                       const context = renderer.getContext()
+                       firstSpecies.forEach((note, index) => {
+                           const stave = new VF.Stave(index * 100, 0, 100)
+                           if (index === 0) {
+                               stave.addClef("treble", "default", "8vb")
+                           } else if (index === firstSpecies.length - 1) {
+                               stave.setEndBarType(3)
+                           }
+                           stave.setContext(context).draw()
+                           const staveNote = new VF.StaveNote({
+                               keys: [note],
+                               duration: "w",
+                               clef: "treble"
+                           })
+                           if (note.includes("#")) {
+                               staveNote.addAccidental(0, new VF.Accidental("#"));
+                           } else if ((note.charAt(0) !== "b" && note.includes("b")) || (note.charAt(0) === "b" && note.split("b").length === 3)) {
+                               staveNote.addAccidental(0, new VF.Accidental("b"))
+                           }
+                           VF.Formatter.FormatAndDraw(context, stave, [staveNote])
+                       })
+                   });
+           getFirstSpeciesButton.disabled = false;
+           playButton.disabled = false;
+           firstSpeciesHeader.innerHTML = "";
+       }
+
+       const play = () => {
+           counterpointHeader.innerHTML = "Playing...";
+           getCantusFirmusButton.disabled = true;
+           getFirstSpeciesButton.disabled = true;
+           playButton.disabled = true;
+           MIDI.loadPlugin({
+               soundfontUrl: "../assets/js/soundfont/",
+               instrument: "acoustic_grand_piano",
+               instruments: ["acoustic_grand_piano"],
+               onsuccess: () => {
+                   MIDI.setVolume(0, 127);
+                   let i = 0
+                   const playLoop = () => {
+                       setTimeout(function () {
+                           MIDI.noteOn(0, teoria.note(cantusFirmus[i].replace("/", "")).midi(), 127, 0);
+                           if (firstSpecies.length > 0) {
+                               MIDI.noteOn(0, teoria.note(firstSpecies[i].replace("/", "")).midi(), 127, 0);
+                           }
+                           i += 1;
+                           if (i < cantusFirmus.length) {
+                               playLoop();
+                           } else {
+                               getCantusFirmusButton.disabled = false;
+                               getFirstSpeciesButton.disabled = false;
+                               playButton.disabled = false;
+                               counterpointHeader.innerHTML = "";
+                           }
+                       }, 1000);
+                   }
+                   playLoop();
+               }
+           });
+       }
     </script>
 </html>

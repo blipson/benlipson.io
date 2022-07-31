@@ -25,4 +25,8 @@ class ProjectsController @Inject()(cc: ControllerComponents) extends AbstractCon
   def counterpoint(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.counterpoint())
   }
+
+  def webGL2(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.webGL2())
+  }
 }

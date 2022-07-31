@@ -3,33 +3,37 @@
 # ~~~~
 
 # Home page
-GET        /                                    controllers.HomeController.home()
+GET         /                                    controllers.HomeController.home()
 
 # Blog page
-GET        /blog                                controllers.BlogController.blog()
-GET        /blog/ontravel                       controllers.BlogController.onTravel()
-GET        /blog/ontechnology                   controllers.BlogController.onTechnology()
-GET        /blog/graphicshistory                controllers.BlogController.graphicsHistory()
-GET        /blog/onsports                       controllers.BlogController.onSports()
-GET        /blog/functionalenlightenment        controllers.BlogController.functionalEnlightenment()
-GET        /blog/ongod                          controllers.BlogController.onGod()
-GET        /blog/graphicsnotes                  controllers.BlogController.graphicsNotes()
-GET        /blog/renderer/tgaimages             controllers.BlogController.rendererTgaImages()
-GET        /blog/renderer/drawinglines          controllers.BlogController.rendererDrawingLines()
+GET         /blog                                controllers.BlogController.blog()
+GET         /blog/ontravel                       controllers.BlogController.onTravel()
+GET         /blog/ontechnology                   controllers.BlogController.onTechnology()
+GET         /blog/graphicshistory                controllers.BlogController.graphicsHistory()
+GET         /blog/onsports                       controllers.BlogController.onSports()
+GET         /blog/functionalenlightenment        controllers.BlogController.functionalEnlightenment()
+GET         /blog/ongod                          controllers.BlogController.onGod()
+GET         /blog/graphicsnotes                  controllers.BlogController.graphicsNotes()
+GET         /blog/renderer/tgaimages             controllers.BlogController.rendererTgaImages()
+GET         /blog/renderer/drawinglines          controllers.BlogController.rendererDrawingLines()
+GET         /blog/union                          controllers.BlogController.union()
 
 # Projects page
-GET        /projects                            controllers.ProjectsController.projects()
-GET        /projects/hammingcodes               controllers.ProjectsController.hammingCodes()
-GET        /projects/graphtv                    controllers.ProjectsController.graphTv()
-GET        /projects/restaurantpicker           controllers.ProjectsController.restaurantPicker()
-GET        /projects/counterpoint               controllers.ProjectsController.counterpoint()
+GET         /projects                            controllers.ProjectsController.projects()
+GET         /projects/hammingcodes               controllers.ProjectsController.hammingCodes()
+GET         /projects/graphtv                    controllers.ProjectsController.graphTv()
+GET         /projects/restaurantpicker           controllers.ProjectsController.restaurantPicker()
+GET         /projects/counterpoint               controllers.ProjectsController.counterpoint()
+GET         /projects/webgl2                     controllers.ProjectsController.webGL2()
 
 # Hamming project
-GET        /hammingcodes                        controllers.HammingController.calculateHammingCode(input)
-GET        /counterpoint                        controllers.CounterpointController.generateCounterpoint()
+GET         /hammingcodes                        controllers.HammingController.calculateHammingCode(input)
+GET         /cantusfirmus                        controllers.CounterpointController.generateCantusFirmus()
++nocsrf
+POST        /firstspecies                        controllers.CounterpointController.generateFirstSpecies()
 
 # Restaurant Picker project
-GET        /restaurant                          controllers.RestaurantPickerController.pickRestaurant()
+GET         /restaurant                          controllers.RestaurantPickerController.pickRestaurant()
 
 # Map static resources from the /public folder to the /assets URL path
-GET        /assets/*file                        controllers.Assets.at(path="/public", file)
+GET         /assets/*file                        controllers.Assets.at(path="/public", file)

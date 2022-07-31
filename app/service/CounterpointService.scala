@@ -1,10 +1,11 @@
 package service
 
-import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, FLAT_KEYS, MAJOR_KEY_INTERVALS, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC, OCTAVE, SHARP_KEYS}
+import service.CounterpointServiceConstants.{AVAILABLE_CANTUS_FIRMUS_NOTES, AVAILABLE_FIRST_SPECIES_NOTES, FLAT_KEYS, FULL_RANGE, MAJOR_KEY_INTERVALS, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC, NOTES, OCTAVE, SEPARATE_NOTE_AND_OCTAVE, SHARP_KEYS}
 
+import scala.util.matching.Regex
 import scala.util.{Failure, Success, Try}
 
-class CounterpointRecursiveService(var randomService: RandomService) {
+class CounterpointService(var randomService: RandomService) {
   def this() = {
     this(new RandomService())
   }
@@ -12,7 +13,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
   def generateCantusFirmus(): Try[List[String]] = Try {
     val length = randomService.between(MIN_LENGTH, MAX_LENGTH + 1)
     val tonic = AVAILABLE_CANTUS_FIRMUS_NOTES(randomService.between(MIN_TONIC, MAX_TONIC))
-    val inMajorKeyCantusFirmusNotes = getInMajorKeyCantusFirmusNotes(tonic)
+    val inMajorKeyCantusFirmusNotes = getInMajorKeyNotes(tonic.dropRight(1), AVAILABLE_CANTUS_FIRMUS_NOTES)
     val cantusFirmus = generateCantusFirmusRecursive(length, tonic, inMajorKeyCantusFirmusNotes)
     return if (cantusFirmus.nonEmpty) {
       Success(cantusFirmus)
@@ -21,7 +22,13 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     }
   }
 
-  def formatCantusFirmus(cantusFirmus: List[String]): List[String] = {
+  def generateFirstSpecies(cantusFirmus: List[String]): Try[List[String]] = {
+    val inMajorKeyFirstSpeciesNotes = getInMajorKeyNotes(cantusFirmus.head.dropRight(1), AVAILABLE_FIRST_SPECIES_NOTES)
+    val firstSpecies = generateFirstSpeciesRecursive(cantusFirmus, inMajorKeyFirstSpeciesNotes)
+    Success(firstSpecies)
+  }
+
+  def formatVoice(cantusFirmus: List[String]): List[String] = {
     cantusFirmus.map(note => {
       val tonic = cantusFirmus.head.dropRight(1)
       if (isSecondaryNoteAndTonicOfSharpKey(note, tonic)) {
@@ -82,7 +89,25 @@ class CounterpointRecursiveService(var randomService: RandomService) {
           if (invalidNoteMessage == "Can not generate cantus firmus.") {
             cantusFirmus
           } else {
-            generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus.dropRight(1), invalidLines :+  invalidNoteMessage.filter(c => !"List()".contains(c)).replace(" ", "").split(",").toList, invalidNoteMessage.last.toInt)
+            generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus.dropRight(1), invalidLines :+ invalidNoteMessage.filter(c => !"List()".contains(c)).replace(" ", "").split(",").toList, invalidNoteMessage.last.toInt)
+          }
+      }
+    }
+  }
+
+  def generateFirstSpeciesRecursive(cantusFirmus: List[String], inMajorKeyNotes: List[String], firstSpecies: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
+    if (firstSpecies.length == cantusFirmus.length) {
+      firstSpecies
+    } else {
+      generateFirstSpeciesNote(cantusFirmus, inMajorKeyNotes, firstSpecies, invalidLines) match {
+        case Success(nextNote) =>
+          generateFirstSpeciesRecursive(cantusFirmus, inMajorKeyNotes, firstSpecies :+ nextNote, invalidLines, invalidNotePos)
+        case Failure(invalidNoteException) =>
+          val invalidNoteMessage = invalidNoteException.getMessage
+          if (invalidNoteMessage == "Can not generate first species.") {
+            firstSpecies
+          } else {
+            generateFirstSpeciesRecursive(cantusFirmus, inMajorKeyNotes, firstSpecies.dropRight(1), invalidLines :+ invalidNoteMessage.filter(c => !"List()".contains(c)).replace(" ", "").split(",").toList, invalidNoteMessage.last.toInt)
           }
       }
     }
@@ -93,6 +118,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     // todo: step declination. It should ascend more than it descends.
     // todo: melodic arch would help make step declination happen.
     // todo: step inertia? kinda happens already.
+    // todo: no repeated themes
     val smallLeapsOrStepwiseAvailable = notes.exists(note => !isALargeLeap(note, cantusFirmus.last))
     if (smallLeapsOrStepwiseAvailable) {
       notes.filter(note => !isALargeLeap(note, cantusFirmus.last))
@@ -113,9 +139,9 @@ class CounterpointRecursiveService(var randomService: RandomService) {
         Success(tonic)
       }
     } else {
-      val universalRulesApplied = applyUniversalRules(inMajorKeyNotes, cantusFirmus, invalidLines, length)
+      val universalRulesApplied = applyUniversalCantusFirmusRules(inMajorKeyNotes, cantusFirmus, invalidLines, length)
       val leapsRulesApplied = applyLeapsRules(inMajorKeyNotes, cantusFirmus, universalRulesApplied)
-      val individualRulesApplied = applyIndividualRules(inMajorKeyNotes, length, cantusFirmus, tonic, leapsRulesApplied)
+      val individualRulesApplied = applyIndividualCantusFirmusRules(inMajorKeyNotes, length, cantusFirmus, tonic, leapsRulesApplied)
       val preferenceRulesApplied = applyPreferenceRules(individualRulesApplied, cantusFirmus)
       val availableNotes = preferenceRulesApplied
 
@@ -127,43 +153,83 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     }
   }
 
-  private def allSecondNotesHaveBeenTried(tonic: String, inMajorKeyNotes: List[String], invalidLines: List[List[String]]) = {
-    val x = invalidLines.filter(line => line.length > 1).map(line => line(1)).distinct.length
-    val y = inMajorKeyNotes.count(note => isMelodicConsonance(tonic, note))
-    invalidLines.filter(line => line.length > 1).map(line => line(1)).distinct.length == inMajorKeyNotes.count(note => isMelodicConsonance(tonic, note))
+  def generateFirstSpeciesNote(cantusFirmus: List[String], inMajorKeyNotes: List[String], firstSpecies: List[String], invalidLines: List[List[String]]): Try[String] = {
+    if (isFirstNote(firstSpecies)) {
+      if (invalidLines.exists(line => line.length == 1)) {
+        Failure(new Exception("Can not generate first species."))
+      } else {
+        val availableNotes = inMajorKeyNotes.filter(note => List(0, 7, 12).contains(FULL_RANGE.indexOf(note) - FULL_RANGE.indexOf(cantusFirmus.head)))
+        Success(availableNotes(randomService.nextInt(availableNotes.length)))
+      }
+    } else {
+      val universalRulesApplied = applyUniversalFirstSpeciesRules(inMajorKeyNotes, firstSpecies, invalidLines)
+
+      // TODO: make two services, cantus firmus service and first species service.
+      // Each implements the same interface.
+
+      //      val availableNotes = applyindividualFirstSpeciesRules()
+      //      if (availableNotes.isEmpty) {
+      //        Failure(new Exception(s"$firstSpecies"))
+      //      } else {
+      //        Success(availableNotes(randomService.nextInt(availableNotes.length)))
+      //      }
+      if (isLastNote(cantusFirmus.length, firstSpecies)) {
+        val penultimateNote = firstSpecies.last
+        val availableNotes = universalRulesApplied.filter(note => {
+          List(0, 12).contains(FULL_RANGE.indexOf(note) - FULL_RANGE.indexOf(cantusFirmus.last)) &&
+            math.abs(inMajorKeyNotes.indexOf(note) - inMajorKeyNotes.indexOf(penultimateNote)) == 1
+        })
+        if (availableNotes.isEmpty) {
+          Failure(new Exception(s"$firstSpecies"))
+        } else {
+          Success(availableNotes(randomService.nextInt(availableNotes.length)))
+        }
+      } else if (isPenultimateNote(cantusFirmus.length, firstSpecies)) {
+        val lastCantusNote = cantusFirmus.last
+        val penultimateCantusNote = cantusFirmus(cantusFirmus.length - 2)
+        val availableNotes = if (AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(lastCantusNote) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(penultimateCantusNote) == 1) {
+          universalRulesApplied.filter(note => List(2, 14).contains(FULL_RANGE.indexOf(note) - FULL_RANGE.indexOf(cantusFirmus.head)))
+        } else {
+          universalRulesApplied.filter(note => List(-1, 11).contains(FULL_RANGE.indexOf(note) - FULL_RANGE.indexOf(cantusFirmus.head)))
+        }
+        Success(availableNotes(randomService.nextInt(availableNotes.length)))
+      } else {
+        Success(universalRulesApplied.head)
+      }
+    }
   }
 
-  private def getNoteForInterval(tonic: String, interval: Int) =
-    AVAILABLE_CANTUS_FIRMUS_NOTES(
-      (AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(tonic) + interval) %
+  private def getNoteForInterval(tonic: String, interval: Int, availableNotes: List[String]) =
+    availableNotes(
+      (availableNotes.indexOf(availableNotes.filter(note => (note.dropRight(1) == tonic) || (note.dropRight(1) == tonic.toLowerCase())).head) + interval) %
         (OCTAVE * 2)
     )
 
   private def intervalIsInMajorKey(interval: Int) =
     MAJOR_KEY_INTERVALS.contains(interval % OCTAVE)
 
-  private def noteIsInMajorKey(tonic: String, note: String, majorKeyIntervals: Seq[Int]) =
+  private def noteIsInMajorKey(tonic: String, note: String, majorKeyIntervals: Seq[Int], availableNotes: List[String]) =
     majorKeyIntervals
       .map(interval => {
-        getNoteForInterval(tonic, interval)
+        getNoteForInterval(tonic, interval, availableNotes)
       })
       .contains(note)
 
-  def getInMajorKeyCantusFirmusNotes(tonic: String): List[String] =
-    AVAILABLE_CANTUS_FIRMUS_NOTES.filter(note => {
-      noteIsInMajorKey(tonic, note, AVAILABLE_CANTUS_FIRMUS_NOTES.indices
-        .filter(interval => intervalIsInMajorKey(interval)))
+  def getInMajorKeyNotes(tonic: String, availableNotes: List[String]): List[String] =
+    availableNotes.filter(note => {
+      noteIsInMajorKey(tonic, note, availableNotes.indices
+        .filter(interval => intervalIsInMajorKey(interval)), availableNotes)
     })
 
-  private def isLastNote(length: Int, cantusFirmus: List[String]) = {
-    cantusFirmus.length == length - 1
+  private def isLastNote(length: Int, line: List[String]) = {
+    line.length == length - 1
   }
 
-  private def isFirstNote(cantusFirmus: List[String]) = {
-    cantusFirmus.isEmpty
+  private def isFirstNote(line: List[String]) = {
+    line.isEmpty
   }
 
-  private def applyIndividualRules(inMajorKeyNotes: Seq[String], length: Int, cantusFirmus: List[String], tonic: String, notes: Seq[String]) = {
+  private def applyIndividualCantusFirmusRules(inMajorKeyNotes: Seq[String], length: Int, cantusFirmus: List[String], tonic: String, notes: Seq[String]) = {
     val climaxMustBeInMiddleApplied = applyClimaxMustBeInMiddleRule(cantusFirmus, length, notes)
     val notePairs =
       cantusFirmus.zipWithIndex.map {
@@ -180,7 +246,6 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     } else {
       climaxMustBeInMiddleApplied
     }
-
 
     if (isLastNote(length, cantusFirmus)) {
       noMotivesApplied.filter(note => applyFinalNoteAsTonicRule(inMajorKeyNotes, cantusFirmus, tonic, note))
@@ -272,8 +337,8 @@ class CounterpointRecursiveService(var randomService: RandomService) {
         noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) + 1).filterNot(c => c.isDigit)
     })
 
-  private def isPenultimateNote(length: Int, cantusFirmus: List[String]) =
-    cantusFirmus.length == length - 2
+  private def isPenultimateNote(length: Int, line: List[String]) =
+    line.length == length - 2
 
   private def applyLeapsRules(inMajorKeyNotes: List[String], cantusFirmus: List[String], notes: Seq[String]) =
     if (followingALargeLeap(cantusFirmus)) {
@@ -329,9 +394,9 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     math.abs(inMajorKeyNotes.indexOf(note) - inMajorKeyNotes.indexOf(prevNote)) > 1
 
   private def isALargeLeap(note: String, prevNote: String) =
-      math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(prevNote)) >= 5
+    math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(prevNote)) >= 5
 
-  private def applyUniversalRules(notes: Seq[String], cantusFirmus: List[String], invalidLines: List[List[String]], length: Int) = {
+  private def applyUniversalCantusFirmusRules(notes: Seq[String], cantusFirmus: List[String], invalidLines: List[List[String]], length: Int) = {
     val lowestNote = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).min
     val highestNote = cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).max
     val countsOfNotes = cantusFirmus.groupBy(identity).view.mapValues(_.size).toSeq
@@ -341,11 +406,17 @@ class CounterpointRecursiveService(var randomService: RandomService) {
         val ret = applyNoRepeatedNotesRule(cantusFirmus, note) &&
           applyMaxRangeRule(lowestNote, highestNote, noteIdx) &&
           !invalidLines.contains(cantusFirmus :+ note) &&
-        // todo: it can equal the max note if it keeps going higher than it later though
+          // todo: it can equal the max note if it keeps going higher than it later though
           note != cantusFirmus.maxBy(cantusFirmusNote => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmusNote)) &&
           isMelodicConsonance(cantusFirmus.last, note)
         applyMaxRepetitionRules(cantusFirmus, countsOfNotes, note, ret, length)
       })
+  }
+
+  private def applyUniversalFirstSpeciesRules(notes: Seq[String], firstSpecies: List[String], invalidLines: List[List[String]]) = {
+    notes.filter(note => {
+      !invalidLines.contains(firstSpecies :+ note)
+    })
   }
 
   private def applyMaxRepetitionRules(cantusFirmus: List[String], countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean, length: Int) = {
@@ -390,22 +461,27 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     MELODIC_CONSONANCES
       .contains(math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(lastNote) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)))
   }
+
+  def convertNoteToUpperCase(note: String): String = {
+    note.split("/").map(subNote => subNote.charAt(0).toUpper.toString.concat(subNote.takeRight(subNote.length - 1))).mkString("/")
+  }
 }
 
 
-object CounterpointService {
+object CounterpointServiceConstants {
   val OCTAVE = 12
   val MIN_LENGTH = 8
   val MAX_LENGTH = 16
-  val SHARP_KEYS = Set("A", "B", "C", "D", "E", "G")
-  val FLAT_KEYS = Set("F", "Bb", "Eb", "Ab", "Db", "Gb")
+  val SHARP_KEYS: Set[String] = Set("A", "B", "C", "D", "E", "G")
+  val FLAT_KEYS: Set[String] = Set("F", "Bb", "Eb", "Ab", "Db", "Gb")
 
 
-  val MAJOR_KEY_INTERVALS = Set(
+  val MAJOR_KEY_INTERVALS: Set[Int] = Set(
     0, 2, 4, 5, 7, 9, 11
   )
 
-  val NOTES = List(
+  // could this all be simpler if it goes from C -> B instead of E -> D#/Eb?
+  val NOTES: List[String] = List(
     "E",
     "F",
     "F#/Gb",
@@ -419,18 +495,72 @@ object CounterpointService {
     "D",
     "D#/Eb"
   )
-  val AVAILABLE_CANTUS_FIRMUS_NOTES: List[String] = GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(2, 2)
   val MIN_TONIC: Int = 3
-  val MAX_TONIC: Int = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
 
-  def GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(numOctaves: Int, startOctave: Int): List[String] =
-    (0 until NOTES.length * numOctaves).map(noteIdx => {
-      val stepsAboveC = OCTAVE - NOTES.slice(NOTES.length - NOTES.indexOf("C"), NOTES.length).length
-      val currentOctave = startOctave + math.floor((noteIdx + stepsAboveC) / OCTAVE).toInt
-      NOTES(noteIdx % NOTES.length).concat(currentOctave.toString)
+  val NOTE_MATCHER: Regex = """(.+)(\d+)""".r
+
+  def GET_ALL_NOTES_BETWEEN_TWO_NOTES(lowNote: String, highNote: String): List[String] = {
+    val (lowNoteName, lowOctave) =
+      SEPARATE_NOTE_AND_OCTAVE(
+        lowNote
+      )
+    val (highNoteName, highOctave) =
+      SEPARATE_NOTE_AND_OCTAVE(
+        highNote
+      )
+
+    val firstNoteIsAtOrAboveC = NOTES.indexOf(lowNoteName) >= NOTES.indexOf("C")
+    val (_, highOctaveWithCSplit) = if (firstNoteIsAtOrAboveC) {
+      val (noteName, octave) = (highNote, highOctave)
+      (noteName, octave + 1)
+    } else {
+      (highNote, highOctave)
+    }
+    (lowOctave to highOctaveWithCSplit).flatMap(octave => {
+      val filteredNotes = if (octave == lowOctave) {
+        NOTES.filter(note => NOTES.indexOf(note) >= NOTES.indexOf(lowNoteName))
+      } else if (octave == highOctaveWithCSplit) {
+        NOTES.filter(note => NOTES.indexOf(note) <= NOTES.indexOf(highNoteName))
+      } else {
+        NOTES
+      }
+
+      filteredNotes.map(note => {
+        if (NOTES.indexOf(note) < NOTES.indexOf("C") && firstNoteIsAtOrAboveC) {
+          note.concat((octave - 1).toString)
+        } else if (NOTES.indexOf(note) < NOTES.indexOf("C") && !firstNoteIsAtOrAboveC) {
+          note.concat(octave.toString)
+        } else if (NOTES.indexOf(note) >= NOTES.indexOf("C") && firstNoteIsAtOrAboveC) {
+          note.concat(octave.toString)
+        } else if (NOTES.indexOf(note) >= NOTES.indexOf("C") && !firstNoteIsAtOrAboveC) {
+          note.concat((octave + 1).toString)
+        } else {
+          // will never hit
+          note.concat(octave.toString)
+        }
+      })
     }).toList
+  }
 
-  def MELODIC_CONSONANCES = Set(
+  val AVAILABLE_CANTUS_FIRMUS_NOTES: List[String] = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "E4")
+  val MAX_TONIC: Int = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
+  val AVAILABLE_FIRST_SPECIES_NOTES: List[String] = GET_ALL_NOTES_BETWEEN_TWO_NOTES("A2", "A4")
+  val FULL_RANGE: List[String] = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")
+
+  //  def GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(): List[String] = {
+  //    (0 until NOTES.length * numOctaves).map(noteIdx => {
+  //      val stepsAtOrAboveC = OCTAVE - NOTES.slice(NOTES.length - NOTES.indexOf("C"), NOTES.length).length
+  //      val currentOctave = startOctave + math.floor((noteIdx + stepsAtOrAboveC) / OCTAVE).toInt
+  //      NOTES(noteIdx % NOTES.length).concat(currentOctave.toString)
+  //    }).toList
+  //  }
+
+  def SEPARATE_NOTE_AND_OCTAVE(note: String): (String, Int) =
+    note match {
+      case NOTE_MATCHER(note, octave) => (note, octave.toInt)
+    }
+
+  def MELODIC_CONSONANCES: Set[Int] = Set(
     1, 2, 3, 4, 5, 7, 8, 9, 12
   )
 }

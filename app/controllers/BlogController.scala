@@ -45,4 +45,8 @@ class BlogController @Inject()(cc: ControllerComponents) extends AbstractControl
   def rendererDrawingLines(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     Ok(views.html.rendererDrawingLines())
   }
+
+  def union(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    Ok(views.html.union())
+  }
 }
