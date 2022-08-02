@@ -322,6 +322,237 @@ class BlogControllerTest extends PlaySpec {
           |""".stripMargin.replaceAll(" +", "")
     }
 
+    "should display the 'WITH and UNION' blog post" in {
+      val controller = new BlogController(Helpers.stubControllerComponents())
+      val result: Future[Result] = controller.withAndUnion().apply(FakeRequest())
+      val bodyText: String = contentAsString(result)
+      bodyText.replaceAll(" +", "") mustBe
+        """<!DOCTYPE html>
+          |
+          |<html lang="en">
+          |    <head>
+          |        <meta charset="utf-8">
+          |        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          |        <meta name="viewport" content="width=device-width, initial-scale=1">
+          |        <link rel="shortcut icon" href="#" />
+          |        <title>Lipson</title>
+          |    </head>
+          |    <body>
+          |        <h1>
+          |            Using WITH and UNION to optimize SQL queries
+          |        </h1>
+          |        <p>&emsp;&emsp;I recently learned about this trick for optimizing certain SQL queries, so I thought I'd share it in a blog post.
+          |            It applies specifically to any query in which you have to retrieve some data from a table via two different routes.
+          |            What do I mean by routes? Well if we think of our database as a large graph, where the nodes are the tables and the
+          |            edges are the foreign key relationships between them, then having a "route" to certain data is just a path between
+          |            two nodes. So having two different routes to get at the data you want might look something like this:
+          |        </p>
+          |        <p>
+          |            <img src="/assets/images/empty_graph.png" width="250" alt="" />
+          |        </p>
+          |        <p>&emsp;&emsp;Normally this would be done using
+          |            <code>JOIN</code> clauses. To imagine that let's create an example schema. Perhaps you work at a company which uses
+          |            a SQL database to manage its orders. Whenever a customer places an order it gets recorded within a table called <code>orders</code>
+          |            . In addition to tracking orders, perhaps your company wants to track which customers placed which orders by name. So we have another
+          |            table called <code>customer</code>. Let's say that a group of customers can all place a single order together, and that one customer
+          |            can place many orders. As such, there must be a many-to-many relationship with a table between them, which we'll call
+          |            <code>customer_order</code>.
+          |        </p>
+          |        <pre style="display: flex">
+          |            <code>
+          |                CREATE TABLE orders(
+          |                    order_id SERIAL PRIMARY KEY,
+          |                );
+          |
+          |                CREATE TABLE customer (
+          |                    customer_id SERIAL PRIMARY KEY,
+          |                    name VARCHAR
+          |                );
+          |
+          |                CREATE TABLE customer_order (
+          |                    customer_id INTEGER NOT NULL,
+          |                    order_id INTEGER NOT NULL,
+          |                    CONSTRAINT fk_customer FOREIGN KEY(customer_id) REFERENCES customer(customer_id),
+          |                    CONSTRAINT fk_order FOREIGN KEY(order_id) REFERENCES orders(order_id)
+          |                );
+          |            </code>
+          |            <img src="/assets/images/customer_to_order.png" style="padding-left: 5%" alt="" />
+          |        </pre>
+          |        <p>&emsp;&emsp;Now let's say that you're designing a feature for your system in which you need to search for all the orders that a customer
+          |            has placed, and that you need to be able to search by the customer's name. It's pretty easy to implement this.
+          |        </p>
+          |        <pre>
+          |            <code>
+          |                SELECT orders.order_id
+          |                FROM orders
+          |                JOIN customer_order ON orders.order_id = customer_order.order_id
+          |                JOIN customer ON customer_order.customer_id = customer.customer_id
+          |                WHERE customer.name = ?;
+          |            </code>
+          |        </pre>
+          |        <p>&emsp;&emsp;That's all well and good. But now let's imagine that you want to start grouping customers. Yes customers sometimes
+          |            place orders on their own as an individual, but sometimes they do it on behalf of a company. It might be interesting to track
+          |            which company a customer belongs to, if they belong to any at all. So you add another table called <code>company</code> with
+          |            a one-to-many relationship with customers, assuming each customer can only belong to one company. But here's the kicker...
+          |            let's say when someone places an order they can choose to either do it as an individual customer, or do it on behalf of
+          |            a company. If they choose the latter, then they don't have to supply any of their own individual customer information
+          |            because all of that information is already stored when the company "registered" in our system and assigned a few
+          |            "point of contact" customers to themselves ahead of time. This means that in order to continue accurately tracking which
+          |            customers are associated with orders, we need to link the <code>company</code> and <code>order</code> tables. Like the
+          |            relationship between customers and orders, this will also have a many-to-many relationship with an intermediary table called
+          |            <code>company_order</code>. Let's see what our new schema looks like.</p>
+          |        <pre style="display: flex">
+          |            <code>
+          |                CREATE TABLE orders(
+          |                    order_id SERIAL PRIMARY KEY,
+          |                );
+          |
+          |                CREATE TABLE company (
+          |                    company_id SERIAL PRIMARY KEY,
+          |                )
+          |
+          |                CREATE TABLE customer (
+          |                    customer_id SERIAL PRIMARY KEY
+          |                    name VARCHAR,
+          |                    company_id INTEGER,
+          |                    CONSTRAINT fk_company FOREIGN KEY(company_id) REFERENCES company(company_id)
+          |                );
+          |
+          |                CREATE TABLE company_order (
+          |                    company_id INTEGER NOT NULL,
+          |                    order_id INTEGER NOT NULL,
+          |                    CONSTRAINT fk_company FOREIGN KEY(company_id) REFERENCES company(company_id),
+          |                    CONSTRAINT fk_order FOREIGN KEY(order_id) REFERENCES orders(order_id)
+          |                );
+          |
+          |                CREATE TABLE customer_order (
+          |                    customer_id INTEGER NOT NULL,
+          |                    order_id INTEGER NOT NULL,
+          |                    CONSTRAINT fk_customer FOREIGN KEY(customer_id) REFERENCES customer(customer_id),
+          |                    CONSTRAINT fk_order FOREIGN KEY(order_id) REFERENCES orders(order_id)
+          |                );
+          |            </code>
+          |            <img src="/assets/images/company_to_order.png" style="padding-left: 5%" alt="" />
+          |        </pre>
+          |        <p>&emsp;&emsp;Going back to our feature, the query to retrieve all orders a customer has placed gets a little more complicated now. We
+          |            need to account for the 2nd path where they may have placed it on behalf of a company.</p>
+          |        <pre>
+          |            <code>
+          |                SELECT orders.order_id
+          |                FROM orders
+          |                JOIN customer_order ON orders.order_id = customer_order.order_id
+          |                JOIN customer AS c1 ON customer_order.customer_id = customer.customer_id
+          |                JOIN company_order ON orders.order_id = company_order.order_id
+          |                JOIN company ON company_order.company_id = company.company_id
+          |                JOIN customer AS c2 ON company.company_id = customer.company_id
+          |                WHERE c1.name = ? OR c2.name = ?;
+          |            </code>
+          |        </pre>
+          |        <p>&emsp;&emsp;That's a lot of <code>JOIN</code>s, each of which has bad performance implications as we traverse the table. Not to mention, we actually
+          |            have to traverse through the <code>customer</code> table twice! You notice that there's an alias each time, either c1 or c2. That's because
+          |            if we didn't alias them, then in the <code>WHERE</code> clause the database would have no idea which instance of <code>customer</code> we're talking about. Are we
+          |            talking about the <code>customer</code> table we <code>JOIN</code>ed on when customers ordered directly, or the <code>customer</code> table we <code>JOIN</code>ed on when customers
+          |            ordered through companies? It'd throw an "ambiguous column name" error. c1 and c2 allow us to specify the two routes to the
+          |            <code>customer</code> table with different aliases. This means they both have to be in the <code>WHERE</code> clause if we want to make sure we're
+          |            getting all orders associated with a given customer, because it's possible that customer could make orders both individually and
+          |            on behalf of a company.
+          |            <br>
+          |            <br>
+          |            &emsp;&emsp;Alright so it's not the most efficient solution, but is it really that bad? Yes. Primarily because it doesn't scale. Let's say
+          |            we added a third route through which customers could place orders, say on behalf of some entity that we want to track separately
+          |            from companies, like a government of a foreign country. We'd then have a <code>government</code> table and a <code>government_orders</code> table and in our
+          |            query we'd then traverse through the <code>customer</code> table 3 times. Our <code>WHERE</code> clause would say <code>WHERE c1.name = ? OR c2.name = ? OR c3.name = ?"</code>.
+          |            Now imagine we add 5 more routes to get to the <code>customer</code> table from the <code>orders</code> table. Our query would be a massive mess of <code>JOIN</code>s, we'd
+          |            have to traverse the <code>customer</code> table N times, and our <code>WHERE</code> clause would be utterly unreadable. Wouldn't it be great if we could
+          |            just traverse <code>customer</code> once and search by the customer's name once?
+          |            <br>
+          |            <br>
+          |            &emsp;&emsp;Let's flip this problem on its head by starting at the end. Instead of getting all the orders
+          |            for a given customer, let's first get the given customer and then get all the orders for that customer. Step one, getting the
+          |            customer, is easy.
+          |        </p>
+          |        <pre>
+          |            <code>
+          |                SELECT customer_id, company_id FROM customer WHERE customer.name = ?;
+          |            </code>
+          |        </pre>
+          |        <p>&emsp;&emsp;Ok great, now that we have the customer let's get all orders associated with that customer using the output of that first query.</p>
+          |        <pre>
+          |            <code>
+          |                SELECT orders.order_id
+          |                FROM orders
+          |                JOIN customer_order ON orders.order_id = customer_order.order_id
+          |                WHERE customer_order.customer_id = ?; -- the ? will be populated by the id returned from the previous query.
+          |            </code>
+          |        </pre>
+          |        <p>&emsp;&emsp;You may have noticed, but we can actually optimize this little query and remove the <code>JOIN</code> because both the <code>orders</code> table and the
+          |            <code>customer_order</code> table have the field <code>order_id</code>. So instead of searching for the orders from the <code>orders</code> table, we can just use <code>customer_order</code>.
+          |        </p>
+          |        <pre>
+          |            <code>
+          |                SELECT customer_order.order_id
+          |                FROM customer_order
+          |                WHERE customer_order.customer_id = ?; -- the ? will be populated by the id returned from the previous query.
+          |            </code>
+          |        </pre>
+          |        <p>&emsp;&emsp;Ok that's great. We've optimized the query to not have to <code>JOIN</code> with the <code>customer</code> or <code>orders</code> tables at all. However, we've split it out
+          |            into two different queries, which means we'd have to write some logic in code to stitch them together. Logic that could break or cause
+          |            bugs. Wouldn't it be nice if we could do both queries together? Enter the <code>WITH</code> clause!
+          |        </p>
+          |        <pre>
+          |            <code>
+          |                WITH customer_query AS (SELECT customer_id, company_id FROM customer WHERE customer.name = ?)
+          |                SELECT customer_order.order_id
+          |                FROM customer_order
+          |                JOIN customer_query ON customer_query.customer_id = customer_order.customer_id
+          |                WHERE customer_order.customer_id = customer_query.customer_id;
+          |            </code>
+          |        </pre>
+          |        <p>&emsp;&emsp;At first glance it may seem like we're still <code>JOIN</code>ing on the <code>customer</code> table. After all, we're doing a <code>JOIN</code> on the <code>customer_id</code>. But if
+          |            you look closely you'll see that the <code>JOIN</code> actually happens on the output of the <code>WITH</code> clause, labeled as <code>customer_query</code>. This means that
+          |            it's only <code>JOIN</code>ing on the specific subset of data that we got when we did the first query inside the <code>WITH</code>. Instead of having to traverse
+          |            the entire <code>customer</code> table, it only needs to look at one row! Yes it's a <code>JOIN</code>, but a <code>JOIN</code> on a set of data with only one row barely has
+          |            an effect on performance at all.
+          |            <br>
+          |            <br>
+          |            &emsp;&emsp;Awesome, but what about the other path through the data? With what we have now we can get all orders placed directly by a customer
+          |            blazingly fast, but we still need to also get all the orders placed on behalf of a company. How can we possibly do that in the same query?
+          |            Enter the <code>UNION</code> clause!
+          |        </p>
+          |        <pre>
+          |            <code>
+          |                WITH customer_query AS (SELECT customer_id, company_id FROM customer WHERE customer.name = ?)
+          |                SELECT customer_order.order_id
+          |                FROM customer_order
+          |                JOIN customer_query ON customer_query.customer_id = customer_order.customer_id
+          |                WHERE customer_order.customer_id = customer_query.customer_id
+          |                UNION
+          |                SELECT company_order.order_id
+          |                FROM company_order
+          |                JOIN customer_query ON customer_query.company_id = company_order.company_id
+          |                WHERE company_order.company_id = customer_query.company_id;
+          |            </code>
+          |        </pre>
+          |        <p>&emsp;&emsp;Note that we now <code>JOIN</code> on the same single-line subset of the <code>customer</code> table defined in our <code>WITH</code> clause as <code>customer_query</code>, but this time
+          |            we're joining by the <code>company_id</code>. Also note that we did the same performance optimization to get the <code>order_id</code> from <code>company_order</code> rather
+          |            than having to <code>JOIN</code> on the <code>orders</code> table. Ta-da! Now we have all the data we need, we didn't have to <code>JOIN</code> on <code>orders</code> or on the full <code>customer</code>
+          |            table at all, and our query will scale as we add more and more paths through our database.
+          |            <br>
+          |            <br>
+          |            &emsp;&emsp;That's all I've got for this post! I just thought it was a cool optimization, so I decided to share it. If you're wondering how I found
+          |            out about this, I work as an engineer on the promotions team at Target. Any time there's a sale anywhere at Target, online or in store,
+          |            my team facilitated that. There was a need for people to be able to search for all the promotions that affected a given item. The problem
+          |            is that an item can be added in many distinct ways to an offer. It can be added directly by id by saying "this item is on this offer".
+          |            It can be added through the department by saying "this item is in the menswear department and the menswear department is on this offer".
+          |            It can be added through the brand by saying "this item is a part of the Levi's brand and the Levi's brand is on this offer". I won't bore
+          |            you too much, but there's 6 or 7 different paths through the data, and some of them could be combined (I.E. "this item is a part of menswear
+          |            and the Levi's brand and menswear belonging to the Levi's brand is part of this offer"). Suffice to say, doing a bunch of JOINs and having
+          |            a bunch of ORs in my WHERE clause to check the same thing wasn't going to cut it performance-wise, so I was forced to research this solution.
+          |        </p>
+          |    </body>
+          |</html>""".stripMargin.replaceAll(" +", "")
+    }
+
     "should display the 'On Technology' blog post" in {
       val controller = new BlogController(Helpers.stubControllerComponents())
       val result: Future[Result] = controller.onTechnology().apply(FakeRequest())

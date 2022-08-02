@@ -119,23 +119,23 @@
                 WHERE c1.name = ? OR c2.name = ?;
             </code>
         </pre>
-        <p>&emsp;&emsp;That's a lot of JOINs, each of which has bad performance implications as we traverse the table. Not to mention, we actually
-            have to traverse through the customer table twice! You notice that there's an alias each time, either c1 or c2. That's because
-            if we didn't alias them, then in the WHERE clause the database would have no idea which instance of customer we're talking about. Are we
-            talking about the customer table we joined on when customers ordered directly, or the customer table we joined on when customers
+        <p>&emsp;&emsp;That's a lot of <code>JOIN</code>s, each of which has bad performance implications as we traverse the table. Not to mention, we actually
+            have to traverse through the <code>customer</code> table twice! You notice that there's an alias each time, either c1 or c2. That's because
+            if we didn't alias them, then in the <code>WHERE</code> clause the database would have no idea which instance of <code>customer</code> we're talking about. Are we
+            talking about the <code>customer</code> table we <code>JOIN</code>ed on when customers ordered directly, or the <code>customer</code> table we <code>JOIN</code>ed on when customers
             ordered through companies? It'd throw an "ambiguous column name" error. c1 and c2 allow us to specify the two routes to the
-            customer table with different aliases. This means they both have to be in the where clause if we want to make sure we're
+            <code>customer</code> table with different aliases. This means they both have to be in the <code>WHERE</code> clause if we want to make sure we're
             getting all orders associated with a given customer, because it's possible that customer could make orders both individually and
-            as part of a company.
+            on behalf of a company.
             <br>
             <br>
             &emsp;&emsp;Alright so it's not the most efficient solution, but is it really that bad? Yes. Primarily because it doesn't scale. Let's say
             we added a third route through which customers could place orders, say on behalf of some entity that we want to track separately
-                from companies, like a government of a foreign country. We'd then have a <code>government</code> table and a <code>government_orders</code> table and in our
-            query we'd then traverse through the customer table 3 times. Our where clause would say <code>WHERE c1.name = ? OR c2.name = ? OR c3.name = ?"</code>.
-            Now imagine we add 5 more routes to get to the customer table from the order table. Our query would be a massive mess of JOINs, we'd
-            have to traverse the customer table N times, and our where clause would be utterly unreadable. Wouldn't it be great if we could
-            just traverse customer once and search by the customer's name once?
+            from companies, like a government of a foreign country. We'd then have a <code>government</code> table and a <code>government_orders</code> table and in our
+            query we'd then traverse through the <code>customer</code> table 3 times. Our <code>WHERE</code> clause would say <code>WHERE c1.name = ? OR c2.name = ? OR c3.name = ?"</code>.
+            Now imagine we add 5 more routes to get to the <code>customer</code> table from the <code>orders</code> table. Our query would be a massive mess of <code>JOIN</code>s, we'd
+            have to traverse the <code>customer</code> table N times, and our <code>WHERE</code> clause would be utterly unreadable. Wouldn't it be great if we could
+            just traverse <code>customer</code> once and search by the customer's name once?
             <br>
             <br>
             &emsp;&emsp;Let's flip this problem on its head by starting at the end. Instead of getting all the orders
@@ -156,8 +156,8 @@
                 WHERE customer_order.customer_id = ?; -- the ? will be populated by the id returned from the previous query.
             </code>
         </pre>
-        <p>&emsp;&emsp;You may have noticed, but we can actually optimize this little query and remove the JOIN because both the orders table and the
-            customer_order table have the field order_id. So instead of searching for the orders from the orders table, we can just use customer_order.
+        <p>&emsp;&emsp;You may have noticed, but we can actually optimize this little query and remove the <code>JOIN</code> because both the <code>orders</code> table and the
+            <code>customer_order</code> table have the field <code>order_id</code>. So instead of searching for the orders from the <code>orders</code> table, we can just use <code>customer_order</code>.
         </p>
         <pre>
             <code>
@@ -166,9 +166,9 @@
                 WHERE customer_order.customer_id = ?; -- the ? will be populated by the id returned from the previous query.
             </code>
         </pre>
-        <p>&emsp;&emsp;Ok that's great. We've optimized the query to not have to JOIN with the customer or orders tables at all. However, we've split it out
+        <p>&emsp;&emsp;Ok that's great. We've optimized the query to not have to <code>JOIN</code> with the <code>customer</code> or <code>orders</code> tables at all. However, we've split it out
             into two different queries, which means we'd have to write some logic in code to stitch them together. Logic that could break or cause
-            bugs. Wouldn't it be nice if we could do both queries together? Enter the WITH clause!
+            bugs. Wouldn't it be nice if we could do both queries together? Enter the <code>WITH</code> clause!
         </p>
         <pre>
             <code>
@@ -179,16 +179,16 @@
                 WHERE customer_order.customer_id = customer_query.customer_id;
             </code>
         </pre>
-        <p>&emsp;&emsp;At first glance it may seem like we're still joining on the customer table. After all, we're doing a JOIN on the customer_id. But if
-            you look closely you'll see that the JOIN actually happens on the output of the WITH clause, labeled as customer_query. This means that
-            it's only joining on the specific subset of data that we got when we did the first query inside the WITH. Instead of having to traverse
-            the entire customer table, it only needs to look at one row! Yes it's a JOIN, but a JOIN on a set of data with only one row barely has
+        <p>&emsp;&emsp;At first glance it may seem like we're still <code>JOIN</code>ing on the <code>customer</code> table. After all, we're doing a <code>JOIN</code> on the <code>customer_id</code>. But if
+            you look closely you'll see that the <code>JOIN</code> actually happens on the output of the <code>WITH</code> clause, labeled as <code>customer_query</code>. This means that
+            it's only <code>JOIN</code>ing on the specific subset of data that we got when we did the first query inside the <code>WITH</code>. Instead of having to traverse
+            the entire <code>customer</code> table, it only needs to look at one row! Yes it's a <code>JOIN</code>, but a <code>JOIN</code> on a set of data with only one row barely has
             an effect on performance at all.
             <br>
             <br>
             &emsp;&emsp;Awesome, but what about the other path through the data? With what we have now we can get all orders placed directly by a customer
             blazingly fast, but we still need to also get all the orders placed on behalf of a company. How can we possibly do that in the same query?
-            Enter the UNION clause!
+            Enter the <code>UNION</code> clause!
         </p>
         <pre>
             <code>
@@ -204,9 +204,9 @@
                 WHERE company_order.company_id = customer_query.company_id;
             </code>
         </pre>
-        <p>&emsp;&emsp;Note that we now JOIN on the same single-line subset of the customer table defined in our WITH clause as customer_query, but this time
-            we're joining by the company_id. Also note that we did the same performance optimization to get the order_id from company_order rather
-            than having to JOIN on the orders table. Ta-da! Now we have all the data we need, we didn't have to JOIN on orders or on the full customer
+        <p>&emsp;&emsp;Note that we now <code>JOIN</code> on the same single-line subset of the <code>customer</code> table defined in our <code>WITH</code> clause as <code>customer_query</code>, but this time
+            we're joining by the <code>company_id</code>. Also note that we did the same performance optimization to get the <code>order_id</code> from <code>company_order</code> rather
+            than having to <code>JOIN</code> on the <code>orders</code> table. Ta-da! Now we have all the data we need, we didn't have to <code>JOIN</code> on <code>orders</code> or on the full <code>customer</code>
             table at all, and our query will scale as we add more and more paths through our database.
             <br>
             <br>
