@@ -194,7 +194,7 @@ class CounterpointService(var randomService: RandomService) {
         }
         Success(availableNotes(randomService.nextInt(availableNotes.length)))
       } else {
-        Success(universalRulesApplied.head)
+        Success(universalRulesApplied(randomService.nextInt(universalRulesApplied.length)))
       }
     }
   }

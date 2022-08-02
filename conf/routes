@@ -16,7 +16,7 @@ GET         /blog/ongod                          controllers.BlogController.onGo
 GET         /blog/graphicsnotes                  controllers.BlogController.graphicsNotes()
 GET         /blog/renderer/tgaimages             controllers.BlogController.rendererTgaImages()
 GET         /blog/renderer/drawinglines          controllers.BlogController.rendererDrawingLines()
-GET         /blog/union                          controllers.BlogController.union()
+GET         /blog/withandunion                   controllers.BlogController.withAndUnion()
 
 # Projects page
 GET         /projects                            controllers.ProjectsController.projects()

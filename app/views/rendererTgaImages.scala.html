@@ -313,7 +313,7 @@
 <pre><code>
         struct TgaColor
         {
-            union
+            withAndUnion
             {
                 struct
                 {
@@ -327,14 +327,14 @@
         }
 </code></pre>
 <p>
-    &emsp;&emsp;Note the union field. That's to make it so you can either input 4 defined chars, 4 raw chars, or simply define a single int value all in the same field without allocating more memory than necessary. Now just like
+    &emsp;&emsp;Note the withAndUnion field. That's to make it so you can either input 4 defined chars, 4 raw chars, or simply define a single int value all in the same field without allocating more memory than necessary. Now just like
     with most classes we'll want a default constructor;
 </p>
 <pre><code>
         TgaColor() : val(0), bytesPerPixel(1) {}
 </code></pre>
 <p>
-    &emsp;&emsp;And now let's make constructors for our 3 different types in the union:
+    &emsp;&emsp;And now let's make constructors for our 3 different types in the withAndUnion:
 </p>
 <pre><code>
         TgaColor(unsigned char R, unsigned char G, unsigned char B, unsigned char A) : r(R), g(G), b(B), a(A), bytesPerPixel(4) {}
