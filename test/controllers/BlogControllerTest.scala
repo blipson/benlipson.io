@@ -17,49 +17,61 @@ class BlogControllerTest extends PlaySpec {
         """<!DOCTYPE html>
           |
           |<html lang="en">
-          |  <head>
-          |    <meta charset="utf-8">
-          |    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-          |    <meta name="viewport" content="width=device-width, initial-scale=1">
-          |    <link rel="shortcut icon" href="#" />
-          |    <title>Lipson</title>
-          |  </head>
-          |  <body>
+          |    <head>
+          |        <meta charset="utf-8">
+          |        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+          |        <meta name="viewport" content="width=device-width, initial-scale=1">
+          |        <link rel="shortcut icon" href="#" />
+          |        <title>Lipson</title>
+          |    </head>
+          |    <body>
           |        <h1>Blog</h1>
           |        <ul>
           |            <li>
+          |                <a href="/blog/withandunion">Using WITH and UNION to optimize SQL queries</a>
+          |                <br>
+          |                <i>
+          |                04:00 PM - 2 August, 2022
+          |                </i>
+          |            </li>
+          |            <li>
           |                <a href="/blog/renderer/drawinglines">Building a 3D Renderer From Scratch, Part 2: Drawing Lines</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                07:45 PM - 24 February, 2020
-          |            </i>
+          |                </i>
           |            </li>
           |            <li>
           |                <a href="/blog/renderer/tgaimages">Building a 3D Renderer From Scratch, Part 1: TGA Images</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                04:30 PM - 19 February, 2020
-          |            </i>
+          |                </i>
           |            </li>
           |            <li>
           |                <a href="/blog/graphicsnotes">Graphics Programming Notes</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                04:30 PM - 06 November, 2019
-          |            </i>
+          |                </i>
           |                <ul>
           |                    <li>Every few months I spend about a week diving into graphics programming stuff for fun. The problem: each time I've forgotten so much about it that I have to relearn a lot of what I previously already looked at. While each subsequent time is getting faster and faster, it's still rather annoying. So I've compiled this list of things that I seem to have to remind myself of every time in the hopes that it'll go faster in the future.</li>
           |                </ul>
           |            </li>
           |            <li>
           |                <a href="/blog/ongod">On God</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                02:30 AM - 30 July, 2019
-          |            </i>
+          |                </i>
           |                <ul>
           |                    <li>I've spent a lot of time on this one.</li>
           |                </ul>
           |            </li>
           |            <li>
           |                <a href="/blog/functionalenlightenment">I Pushed My Feeble Imperative Consciousness to a New Plane of Existence and So Can You</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                    12:30 AM - 15 December, 2018
           |                </i>
           |                <ul>
@@ -68,7 +80,8 @@ class BlogControllerTest extends PlaySpec {
           |            </li>
           |            <li>
           |                <a href="/blog/onsports">On Sports</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                    11:30 PM - 15 April, 2018
           |                </i>
           |                <ul>
@@ -77,7 +90,8 @@ class BlogControllerTest extends PlaySpec {
           |            </li>
           |            <li>
           |                <a href="/blog/graphicshistory">A Brief History and Summary of Graphics Programming</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                    12:30 AM - 09 February, 2018
           |                </i>
           |                <ul>
@@ -86,7 +100,8 @@ class BlogControllerTest extends PlaySpec {
           |            </li>
           |            <li>
           |                <a href="/blog/ontechnology">On Technology</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                    8:30 PM - 08 November, 2017
           |                </i>
           |                <ul>
@@ -95,7 +110,8 @@ class BlogControllerTest extends PlaySpec {
           |            </li>
           |            <li>
           |                <a href="/blog/ontravel">On Travel</a>
-          |                <br><i>
+          |                <br>
+          |                <i>
           |                    10:30 PM - 25 October, 2017
           |                </i>
           |                <ul>
