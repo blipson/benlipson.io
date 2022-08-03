@@ -390,8 +390,7 @@ class BlogControllerTest extends PlaySpec {
           |                WHERE customer.name = ?;
           |            </code>
           |        </pre>
-          |        <p>&emsp;&emsp;That's all well and good. But now let's imagine that you want to start grouping customers. Yes customers sometimes
-          |            place orders on their own as an individual, but sometimes they do it on behalf of a company. It might be interesting to track
+          |        <p>&emsp;&emsp;That's all well and good. But now let's imagine that you want to start grouping customers. It might be interesting to track
           |            which company a customer belongs to, if they belong to any at all. So you add another table called <code>company</code> with
           |            a one-to-many relationship with customers, assuming each customer can only belong to one company. But here's the kicker...
           |            let's say when someone places an order they can choose to either do it as an individual customer, or do it on behalf of
@@ -485,7 +484,7 @@ class BlogControllerTest extends PlaySpec {
           |                WHERE customer_order.customer_id = ?; -- the ? will be populated by the id returned from the previous query.
           |            </code>
           |        </pre>
-          |        <p>&emsp;&emsp;You may have noticed, but we can actually optimize this little query and remove the <code>JOIN</code> because both the <code>orders</code> table and the
+          |        <p>&emsp;&emsp;You may have noticed we can actually optimize this little query and remove the <code>JOIN</code> because both the <code>orders</code> table and the
           |            <code>customer_order</code> table have the field <code>order_id</code>. So instead of searching for the orders from the <code>orders</code> table, we can just use <code>customer_order</code>.
           |        </p>
           |        <pre>
@@ -539,15 +538,7 @@ class BlogControllerTest extends PlaySpec {
           |            table at all, and our query will scale as we add more and more paths through our database.
           |            <br>
           |            <br>
-          |            &emsp;&emsp;That's all I've got for this post! I just thought it was a cool optimization, so I decided to share it. If you're wondering how I found
-          |            out about this, I work as an engineer on the promotions team at Target. Any time there's a sale anywhere at Target, online or in store,
-          |            my team facilitated that. There was a need for people to be able to search for all the promotions that affected a given item. The problem
-          |            is that an item can be added in many distinct ways to an offer. It can be added directly by id by saying "this item is on this offer".
-          |            It can be added through the department by saying "this item is in the menswear department and the menswear department is on this offer".
-          |            It can be added through the brand by saying "this item is a part of the Levi's brand and the Levi's brand is on this offer". I won't bore
-          |            you too much, but there's 6 or 7 different paths through the data, and some of them could be combined (I.E. "this item is a part of menswear
-          |            and the Levi's brand and menswear belonging to the Levi's brand is part of this offer"). Suffice to say, doing a bunch of JOINs and having
-          |            a bunch of ORs in my WHERE clause to check the same thing wasn't going to cut it performance-wise, so I was forced to research this solution.
+          |            &emsp;&emsp;That's all I've got for this post! I just thought it was a cool optimization, so I decided to share it.
           |        </p>
           |    </body>
           |</html>""".stripMargin.replaceAll(" +", "")
