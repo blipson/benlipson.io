@@ -155,7 +155,7 @@
                 WHERE customer_order.customer_id = ?; -- the ? will be populated by the id returned from the previous query.
             </code>
         </pre>
-        <p>&emsp;&emsp;You may have noticed, but we can actually optimize this little query and remove the <code>JOIN</code> because both the <code>orders</code> table and the
+        <p>&emsp;&emsp;You may have noticed we can actually optimize this little query and remove the <code>JOIN</code> because both the <code>orders</code> table and the
             <code>customer_order</code> table have the field <code>order_id</code>. So instead of searching for the orders from the <code>orders</code> table, we can just use <code>customer_order</code>.
         </p>
         <pre>
@@ -209,8 +209,8 @@
             table at all, and our query will scale as we add more and more paths through our database.
             <br>
             <br>
-            &emsp;&emsp;That's all I've got for this post! I just thought it was a cool optimization, so I decided to share it. If you're wondering how I found
-            out about this, I work as an engineer on the promotions team at Target. Any time there's a sale anywhere at Target, online or in store,
+            &emsp;&emsp;That's all I've got for this post! I just thought it was a cool optimization, so I decided to share it. If you're wondering why I learned
+             about this, I work as an engineer on the promotions team at Target. Any time there's a sale anywhere at Target, online or in store,
             my team facilitated that. There was a need for people to be able to search for all the promotions that affected a given item. The problem
             is that an item can be added in many distinct ways to an offer. It can be added directly by id by saying "this item is on this offer".
             It can be added through the department by saying "this item is in the menswear department and the menswear department is on this offer".
