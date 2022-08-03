@@ -538,7 +538,15 @@ class BlogControllerTest extends PlaySpec {
           |            table at all, and our query will scale as we add more and more paths through our database.
           |            <br>
           |            <br>
-          |            &emsp;&emsp;That's all I've got for this post! I just thought it was a cool optimization, so I decided to share it.
+          |            &emsp;&emsp;That's all I've got for this post! I just thought it was a cool optimization, so I decided to share it. If you're wondering why I learned
+          |             about this, I work as an engineer on the promotions team at Target. Any time there's a sale anywhere at Target, online or in store,
+          |            my team facilitated that. There was a need for people to be able to search for all the promotions that affected a given item. The problem
+          |            is that an item can be added in many distinct ways to an offer. It can be added directly by id by saying "this item is on this offer".
+          |            It can be added through the department by saying "this item is in the menswear department and the menswear department is on this offer".
+          |            It can be added through the brand by saying "this item is a part of the Levi's brand and the Levi's brand is on this offer". I won't bore
+          |            you too much, but there's 6 or 7 different paths through the data, and some of them could be combined (I.E. "this item is a part of menswear
+          |            and the Levi's brand and menswear belonging to the Levi's brand is part of this offer"). Suffice to say, doing a bunch of JOINs and having
+          |            a bunch of ORs in my WHERE clause to check the same thing wasn't going to cut it performance-wise, so I was forced to research this solution.
           |        </p>
           |    </body>
           |</html>""".stripMargin.replaceAll(" +", "")
