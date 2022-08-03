@@ -61,8 +61,7 @@
                 WHERE customer.name = ?;
             </code>
         </pre>
-        <p>&emsp;&emsp;That's all well and good. But now let's imagine that you want to start grouping customers. Yes customers sometimes
-            place orders on their own as an individual, but sometimes they do it on behalf of a company. It might be interesting to track
+        <p>&emsp;&emsp;That's all well and good. But now let's imagine that you want to start grouping customers. It might be interesting to track
             which company a customer belongs to, if they belong to any at all. So you add another table called <code>company</code> with
             a one-to-many relationship with customers, assuming each customer can only belong to one company. But here's the kicker...
             let's say when someone places an order they can choose to either do it as an individual customer, or do it on behalf of
