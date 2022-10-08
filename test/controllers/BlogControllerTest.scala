@@ -78,16 +78,16 @@ class BlogControllerTest extends PlaySpec {
           |                    <li>The internet is just tubes, our brains are disjoint, consciousness and substance are derived from monadic structures, and infinite break points.</li>
           |                </ul>
           |            </li>
-          |            <li>
-          |                <a href="/blog/onsports">On Sports</a>
-          |                <br>
-          |                <i>
-          |                    11:30 PM - 15 April, 2018
-          |                </i>
-          |                <ul>
-          |                    <li>I love sports. But I have a gut feeling that maybe I shouldn't. So I tasked myself with investigating why I feel this way and what I should do about it. Then I wrote it down for you to read! I also dunk on utilitarianism, so get ready for some fun ranting.</li>
-          |                </ul>
-          |            </li>
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
           |            <li>
           |                <a href="/blog/graphicshistory">A Brief History and Summary of Graphics Programming</a>
           |                <br>
@@ -98,26 +98,26 @@ class BlogControllerTest extends PlaySpec {
           |                    <li>In college, nearly every project I did for class had some aspect of 3D graphics. But I always only learned what I needed. This post satisfies my curiosity to learn how it all works without any tunnel vision.</li>
           |                </ul>
           |            </li>
-          |            <li>
-          |                <a href="/blog/ontechnology">On Technology</a>
-          |                <br>
-          |                <i>
-          |                    8:30 PM - 08 November, 2017
-          |                </i>
-          |                <ul>
-          |                    <li>Technological progress is simultaneously the driving force behind modern capitalism, and our only potential salvation from it. So how can we use it correctly? What do we need to change before we can begin work in earnest?</li>
-          |                </ul>
-          |            </li>
-          |            <li>
-          |                <a href="/blog/ontravel">On Travel</a>
-          |                <br>
-          |                <i>
-          |                    10:30 PM - 25 October, 2017
-          |                </i>
-          |                <ul>
-          |                    <li>The pull towards adventure, excitement, and leisure. Is it worth it? How can I do it in a healthy and ethical way? Are good ethics even possible to achieve? Thoughts on these questions and more!</li>
-          |                </ul>
-          |            </li>
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
+          |
           |        </ul>
           |    </body>
           |</html>
