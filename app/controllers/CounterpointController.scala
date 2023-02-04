@@ -4,8 +4,9 @@ import domain.CounterpointResponse
 import net.liftweb.json.DefaultFormats
 import net.liftweb.json.Serialization.write
 import net.liftweb.util.StringHelpers
+import play.api.libs.json.Json
 import play.api.mvc._
-import service.CounterpointService
+import service.{CantusFirmusService, FirstSpeciesService}
 
 import javax.inject.{Inject, Singleton}
 import scala.util.{Failure, Success}
@@ -13,13 +14,25 @@ import scala.util.{Failure, Success}
 @Singleton
 class CounterpointController @Inject()(
                                         cc: ControllerComponents,
-                                        counterpointService: CounterpointService
+                                        cantusFirmusService: CantusFirmusService,
+                                        firstSpeciesService: FirstSpeciesService
                                       ) extends AbstractController(cc) {
   implicit val formats: DefaultFormats.type = DefaultFormats
 
   def generateCantusFirmus(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
-    counterpointService.generateCantusFirmus() match {
-      case Success(value) => Ok(StringHelpers.snakify(write(CounterpointResponse(counterpointService.formatCantusFirmus(value)))))
+    cantusFirmusService.generate() match {
+      case Success(value) =>
+        //        println(value)
+        //        println(cantusFirmusService.format(value))
+        Ok(StringHelpers.snakify(write(CounterpointResponse(cantusFirmusService.format(value)))))
+      case Failure(exception) => InternalServerError(exception.toString)
+    }
+  }
+
+  def generateFirstSpecies(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
+    val cantusFirmus = request.body.asJson.get.toString()
+    firstSpeciesService.generate(Json.parse(cantusFirmus).as[List[String]].map(note => firstSpeciesService.convertNoteToUpperCase(note))) match {
+      case Success(value) => Ok(StringHelpers.snakify(write(CounterpointResponse(firstSpeciesService.format(value)))))
       case Failure(exception) => InternalServerError(exception.toString)
     }
   }
