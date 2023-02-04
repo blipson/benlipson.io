@@ -4,7 +4,7 @@ import service.CounterpointService.{AVAILABLE_CANTUS_FIRMUS_NOTES, FLAT_KEYS, MA
 
 import scala.util.{Failure, Success, Try}
 
-class CounterpointRecursiveService(var randomService: RandomService) {
+class CounterpointService(var randomService: RandomService) {
   def this() = {
     this(new RandomService())
   }
@@ -70,7 +70,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     SHARP_KEYS.contains(key)
   }
 
-  def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
+  private def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
     if (cantusFirmus.length == length) {
       cantusFirmus
     } else {
@@ -88,7 +88,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     }
   }
 
-  def applyPreferenceRules(notes: Seq[String], cantusFirmus: List[String]): Seq[String] = {
+  private def applyPreferenceRules(notes: Seq[String], cantusFirmus: List[String]): Seq[String] = {
     // todo: maybe no leaps in the first few notes?
     // todo: step declination. It should ascend more than it descends.
     // todo: melodic arch would help make step declination happen.
@@ -101,11 +101,7 @@ class CounterpointRecursiveService(var randomService: RandomService) {
     }
   }
 
-  private def isStepwise(cantusFirmus: List[String], inMajorKeyNotes: List[String], note: String) = {
-    math.abs(inMajorKeyNotes.indexOf(note) - inMajorKeyNotes.indexOf(cantusFirmus.last)) == 1
-  }
-
-  def generateCantusFirmusNote(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String], invalidLines: List[List[String]]): Try[String] = {
+  private def generateCantusFirmusNote(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String], invalidLines: List[List[String]]): Try[String] = {
     if (isFirstNote(cantusFirmus)) {
       if (invalidLines.exists(line => line.length == 1)) {
         Failure(new Exception("Can not generate cantus firmus."))
@@ -125,12 +121,6 @@ class CounterpointRecursiveService(var randomService: RandomService) {
         Success(availableNotes(randomService.nextInt(availableNotes.length)))
       }
     }
-  }
-
-  private def allSecondNotesHaveBeenTried(tonic: String, inMajorKeyNotes: List[String], invalidLines: List[List[String]]) = {
-    val x = invalidLines.filter(line => line.length > 1).map(line => line(1)).distinct.length
-    val y = inMajorKeyNotes.count(note => isMelodicConsonance(tonic, note))
-    invalidLines.filter(line => line.length > 1).map(line => line(1)).distinct.length == inMajorKeyNotes.count(note => isMelodicConsonance(tonic, note))
   }
 
   private def getNoteForInterval(tonic: String, interval: Int) =
@@ -405,7 +395,7 @@ object CounterpointService {
     0, 2, 4, 5, 7, 9, 11
   )
 
-  val NOTES = List(
+  private val NOTES = List(
     "E",
     "F",
     "F#/Gb",

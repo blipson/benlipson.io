@@ -10,7 +10,7 @@ import scala.util.{Failure, Random, Success}
 class CounterpointServiceFuzzingTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
 
-  def counterpointRecursiveService = new CounterpointRecursiveService(randomService)
+  def counterpointRecursiveService = new CounterpointService(randomService)
 
   private def setUp(tonic: Int, maxTonic: Int) = {
     val length = Random.between(8, 17)

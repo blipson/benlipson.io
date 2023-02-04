@@ -27,7 +27,7 @@ GET         /projects/counterpoint               controllers.ProjectsController.
 
 # Hamming project
 GET         /hammingcodes                        controllers.HammingController.calculateHammingCode(input)
-GET         /counterpoint                        controllers.CounterpointController.generateCounterpoint()
+GET         /counterpoint                        controllers.CounterpointController.generateCantusFirmus()
 
 # Restaurant Picker project
 GET         /restaurant                          controllers.RestaurantPickerController.pickRestaurant()
