@@ -1,6 +1,7 @@
 package service
 
 import service.CantusFirmusService.{AVAILABLE_CANTUS_FIRMUS_NOTES, MAJOR_KEY_INTERVALS, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC, OCTAVE}
+import service.CounterpointService.NOTES
 
 import scala.util.{Failure, Success, Try}
 
@@ -21,7 +22,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     }
   }
 
-  override def format(cantusFirmus: List[String]): List[String] = {
+  override def formatOutput(cantusFirmus: List[String]): List[String] = {
     cantusFirmus.map(note => {
       val tonic = cantusFirmus.head.dropRight(1)
       if (counterpointService.isSecondaryNoteAndTonicOfSharpKey(note, tonic)) {
@@ -356,20 +357,6 @@ object CantusFirmusService {
     0, 2, 4, 5, 7, 9, 11
   )
 
-  private val NOTES = List(
-    "E",
-    "F",
-    "F#/Gb",
-    "G",
-    "G#/Ab",
-    "A",
-    "A#/Bb",
-    "B",
-    "C",
-    "C#/Db",
-    "D",
-    "D#/Eb"
-  )
   val AVAILABLE_CANTUS_FIRMUS_NOTES: List[String] = GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(2, 2)
   val MIN_TONIC: Int = 3
   val MAX_TONIC: Int = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7

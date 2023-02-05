@@ -24,15 +24,15 @@ class CounterpointController @Inject()(
       case Success(value) =>
         //        println(value)
         //        println(cantusFirmusService.format(value))
-        Ok(StringHelpers.snakify(write(CounterpointResponse(cantusFirmusService.format(value)))))
+        Ok(StringHelpers.snakify(write(CounterpointResponse(cantusFirmusService.formatOutput(value)))))
       case Failure(exception) => InternalServerError(exception.toString)
     }
   }
 
   def generateFirstSpecies(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     val cantusFirmus = request.body.asJson.get.toString()
-    firstSpeciesService.generate(Json.parse(cantusFirmus).as[List[String]].map(note => firstSpeciesService.convertNoteToUpperCase(note))) match {
-      case Success(value) => Ok(StringHelpers.snakify(write(CounterpointResponse(firstSpeciesService.format(value)))))
+    firstSpeciesService.generate(firstSpeciesService.formatInput(Json.parse(cantusFirmus).as[List[String]])) match {
+      case Success(value) => Ok(StringHelpers.snakify(write(CounterpointResponse(firstSpeciesService.formatOutput(value)))))
       case Failure(exception) => InternalServerError(exception.toString)
     }
   }

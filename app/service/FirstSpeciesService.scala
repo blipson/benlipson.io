@@ -9,7 +9,7 @@ class FirstSpeciesService(var counterpointService: CounterpointService) extends 
 
   override def generate(cantusFirmus: List[String]): Try[List[String]] = Success(cantusFirmus)
 
-  override def format(firstSpecies: List[String]): List[String] = {
+  override def formatOutput(firstSpecies: List[String]): List[String] = {
     firstSpecies.map(note => {
       val tonic = firstSpecies.head.dropRight(1)
       if (counterpointService.isSecondaryNoteAndTonicOfSharpKey(note, tonic)) {
@@ -22,7 +22,17 @@ class FirstSpeciesService(var counterpointService: CounterpointService) extends 
     })
   }
 
-  def convertNoteToUpperCase(note: String): String = {
-    note.split("/").map(subNote => subNote.charAt(0).toUpper.toString.concat(subNote.takeRight(subNote.length - 1))).mkString("/")
+  def formatInput(cantusFirmus: List[String]): List[String] = {
+    cantusFirmus.map(note => {
+      note.split("/").map(subNote => {
+        val upperNoteName = subNote.charAt(0).toUpper.toString
+        val sharpOrFlatSymbol = subNote.takeRight(subNote.length - 1)
+        if (sharpOrFlatSymbol.nonEmpty) {
+          counterpointService.getCorrespondingFullNote(upperNoteName.concat(sharpOrFlatSymbol))
+        } else {
+          upperNoteName.concat(sharpOrFlatSymbol)
+        }
+      }).mkString("")
+    })
   }
 }
