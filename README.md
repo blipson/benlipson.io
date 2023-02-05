@@ -8,11 +8,25 @@ article - check it out.
 
 ## Running Locally
 
-Make sure you have Play and sbt installed. Also, install the [Heroku Toolbelt](https://toolbelt.heroku.com/).
+### Dependencies
+
+- Play
+- sbt
+- [Heroku Toolbelt](https://toolbelt.heroku.com/)
+- Java 8
+
+Using SDKMan to install Java 8:
 
 ```sh
-$ git clone https://github.com/heroku/scala-getting-started.git
-$ cd scala-getting-started
+$ sdk install java 8.0.352-zulu
+$ sdk use java 8.0.352-zulu
+```
+
+### Running
+
+```sh
+$ git clone git@github.com:blipson/benlipson.io.git
+$ cd benlipson.io
 $ sbt compile stage
 $ heroku local
 ```

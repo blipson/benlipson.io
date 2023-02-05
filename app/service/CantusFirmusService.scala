@@ -23,16 +23,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
   }
 
   override def formatOutput(cantusFirmus: List[String]): List[String] = {
-    cantusFirmus.map(note => {
-      val tonic = cantusFirmus.head.dropRight(1)
-      if (counterpointService.isSecondaryNoteAndTonicOfSharpKey(note, tonic)) {
-        counterpointService.formatSharpKeySecondaryNote(note)
-      } else if (counterpointService.isSecondaryNoteAndTonicOfFlatKey(note, tonic)) {
-        counterpointService.formatFlatKeySecondaryNote(note)
-      } else {
-        counterpointService.formatPrimaryNote(note)
-      }
-    })
+    counterpointService.formatOutput(cantusFirmus)
   }
 
   private def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
