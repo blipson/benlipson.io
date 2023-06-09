@@ -708,10 +708,35 @@ class ProjectsControllerTest extends PlaySpec {
           |            });
           |        }
           |
+          |        const hitBackupApis = async (searchTerm) => {
+          |            return await fetch(`https://www.ratingraph.com/search-items/${searchTerm}`)
+          |                    .then(async response => {
+          |                        const matchingShowResults = await response.json();
+          |                        const matchingShow = matchingShowResults.items
+          |                                .filter(item => item.results.map(result => result.name.toLowerCase() === searchTerm.toLowerCase()))
+          |                                .map(item => item.results[0]);
+          |                        return {
+          |                            matchingShow: matchingShow.length ? matchingShow[0] : {},
+          |                            api: "rating-graph"
+          |                        }
+          |                    })
+          |                    .catch(async () => {
+          |                        const matchingShow = await fetch(`https://www.omdbapi.com/?t=${searchTerm}&type=series&apikey=4f09f372`)
+          |                                .then(response => response.json());
+          |                        return {
+          |                            matchingShow: matchingShow.Error ? {}: matchingShow,
+          |                            api: "omdb"
+          |                        }
+          |                    });
+          |        }
+          |
           |        const determineApiAndSearchShows = async (searchTerm) => {
           |            return await fetch(`https://imdb-api.com/en/API/searchSeries/k_9fbi3vm5/${searchTerm}`)
           |                .then(async response => {
           |                    const matchingShowResults = await response.json();
+          |                    if (matchingShowResults.errorMessage.includes("Maximum")) {
+          |                        return hitBackupApis(searchTerm);
+          |                    }
           |                    const matchingShow = matchingShowResults.results
           |                            .filter(show => show.title.toLowerCase() === searchTerm.toLowerCase());
           |                    return {
@@ -720,26 +745,7 @@ class ProjectsControllerTest extends PlaySpec {
           |                    }
           |                })
           |                .catch(async () => {
-          |                    return await fetch(`https://www.ratingraph.com/search-items/${searchTerm}`)
-          |                        .then(async response => {
-          |                            const matchingShowResults = await response.json();
-          |                            const matchingShow = matchingShowResults.items
-          |                                    .filter(item => item.results.map(result => result.name.toLowerCase() === searchTerm.toLowerCase()))
-          |                                    .map(item => item.results[0]);
-          |                            return {
-          |                                matchingShow: matchingShow.length ? matchingShow[0] : {},
-          |                                api: "rating-graph"
-          |                            }
-          |                        })
-          |                        .catch(async () => {
-          |                            const matchingShow = await fetch(`https://www.omdbapi.com/?t=${searchTerm}&type=series&apikey=4f09f372`)
-          |                                .then(response => response.json());
-          |                            return {
-          |                                matchingShow: matchingShow.Error ? {}: matchingShow,
-          |                                api: "omdb"
-          |                            }
-          |                        });
-          |
+          |                    return hitBackupApis(searchTerm);
           |                });
           |        }
           |
