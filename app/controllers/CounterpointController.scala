@@ -22,8 +22,6 @@ class CounterpointController @Inject()(
   def generateCantusFirmus(): Action[AnyContent] = Action { implicit request: Request[AnyContent] =>
     cantusFirmusService.generate() match {
       case Success(value) =>
-        //        println(value)
-        //        println(cantusFirmusService.format(value))
         Ok(StringHelpers.snakify(write(CounterpointResponse(cantusFirmusService.formatOutput(value)))))
       case Failure(exception) => InternalServerError(exception.toString)
     }

@@ -1,9 +1,11 @@
 package service
 
+import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
 
-class FirstSpeciesServiceTest extends PlaySpec {
-  val firstSpeciesService = new FirstSpeciesService(new CounterpointService())
+class FirstSpeciesServiceTest extends PlaySpec with MockFactory {
+  val randomService: RandomService = mock[RandomService]
+  val firstSpeciesService = new FirstSpeciesService(randomService, new CounterpointService())
 
   "First species service" should {
     "should format the input correctly for a sharp key" in {

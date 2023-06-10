@@ -2,13 +2,12 @@ package service
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
-import service.CantusFirmusService.GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES
 
 class CantusFirmusServiceTest extends PlaySpec with MockFactory {
   val randomService: RandomService = mock[RandomService]
   val cantusFirmusService = new CantusFirmusService(randomService, new CounterpointService())
 
-  "Counterpoint service" should {
+  "Cantus firmus service" should {
     "should format a cantus firmus in a sharp key" in {
       val cantusFirmus = List("B3", "D#/Eb3", "E3", "C#/Db3", "A#/Bb3", "B3", "C#/Db4", "B3")
       cantusFirmusService.formatOutput(cantusFirmus) mustBe List("b/3", "d#/3", "e/3", "c#/3", "a#/3", "b/3", "c#/4", "b/3")
@@ -31,48 +30,6 @@ class CantusFirmusServiceTest extends PlaySpec with MockFactory {
 
     "should construct a new service" in {
       new CantusFirmusService()
-    }
-
-    "should generate available cantus firmus notes" in {
-      GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(3, 2) mustBe
-        List(
-          "E2",
-          "F2",
-          "F#/Gb2",
-          "G2",
-          "G#/Ab2",
-          "A2",
-          "A#/Bb2",
-          "B2",
-          "C3",
-          "C#/Db3",
-          "D3",
-          "D#/Eb3",
-          "E3",
-          "F3",
-          "F#/Gb3",
-          "G3",
-          "G#/Ab3",
-          "A3",
-          "A#/Bb3",
-          "B3",
-          "C4",
-          "C#/Db4",
-          "D4",
-          "D#/Eb4",
-          "E4",
-          "F4",
-          "F#/Gb4",
-          "G4",
-          "G#/Ab4",
-          "A4",
-          "A#/Bb4",
-          "B4",
-          "C5",
-          "C#/Db5",
-          "D5",
-          "D#/Eb5"
-        )
     }
   }
 }

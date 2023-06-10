@@ -1,7 +1,7 @@
 package service
 
-import service.CantusFirmusService.{AVAILABLE_CANTUS_FIRMUS_NOTES, MAJOR_KEY_INTERVALS, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC, OCTAVE}
-import service.CounterpointService.NOTES
+import service.CantusFirmusService.{AVAILABLE_CANTUS_FIRMUS_NOTES, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC}
+import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, NOTES, OCTAVE}
 
 import scala.util.{Failure, Success, Try}
 
@@ -13,9 +13,10 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
   override def generate(cantusFirmus: List[String] = List()): Try[List[String]] = Try {
     val length = randomService.between(MIN_LENGTH, MAX_LENGTH + 1)
     val tonic = AVAILABLE_CANTUS_FIRMUS_NOTES(randomService.between(MIN_TONIC, MAX_TONIC))
-    val inMajorKeyCantusFirmusNotes = getInMajorKeyCantusFirmusNotes(tonic)
+    val inMajorKeyCantusFirmusNotes = counterpointService.getInMajorKeyNotes(tonic, AVAILABLE_CANTUS_FIRMUS_NOTES)
     val cantusFirmus = generateCantusFirmusRecursive(length, tonic, inMajorKeyCantusFirmusNotes)
     return if (cantusFirmus.nonEmpty) {
+      println(cantusFirmus)
       Success(cantusFirmus)
     } else {
       Failure(new Exception("Could not generate cantus firmus."))
@@ -58,7 +59,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
   }
 
   private def generateCantusFirmusNote(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String], invalidLines: List[List[String]]): Try[String] = {
-    if (isFirstNote(cantusFirmus)) {
+    if (counterpointService.isFirstNote(cantusFirmus)) {
       if (invalidLines.exists(line => line.length == 1)) {
         Failure(new Exception("Can not generate cantus firmus."))
       } else {
@@ -79,34 +80,8 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     }
   }
 
-  private def getNoteForInterval(tonic: String, interval: Int) =
-    AVAILABLE_CANTUS_FIRMUS_NOTES(
-      (AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(tonic) + interval) %
-        (OCTAVE * 2)
-    )
-
-  private def intervalIsInMajorKey(interval: Int) =
-    MAJOR_KEY_INTERVALS.contains(interval % OCTAVE)
-
-  private def noteIsInMajorKey(tonic: String, note: String, majorKeyIntervals: Seq[Int]) =
-    majorKeyIntervals
-      .map(interval => {
-        getNoteForInterval(tonic, interval)
-      })
-      .contains(note)
-
-  def getInMajorKeyCantusFirmusNotes(tonic: String): List[String] =
-    AVAILABLE_CANTUS_FIRMUS_NOTES.filter(note => {
-      noteIsInMajorKey(tonic, note, AVAILABLE_CANTUS_FIRMUS_NOTES.indices
-        .filter(interval => intervalIsInMajorKey(interval)))
-    })
-
   private def isLastNote(length: Int, cantusFirmus: List[String]) = {
     cantusFirmus.length == length - 1
-  }
-
-  private def isFirstNote(cantusFirmus: List[String]) = {
-    cantusFirmus.isEmpty
   }
 
   private def applyIndividualRules(inMajorKeyNotes: Seq[String], length: Int, cantusFirmus: List[String], tonic: String, notes: Seq[String]) = {
@@ -340,24 +315,13 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
 
 
 object CantusFirmusService {
-  val OCTAVE = 12
   val MIN_LENGTH = 8
   val MAX_LENGTH = 16
 
-  val MAJOR_KEY_INTERVALS: Set[Int] = Set(
-    0, 2, 4, 5, 7, 9, 11
-  )
 
-  val AVAILABLE_CANTUS_FIRMUS_NOTES: List[String] = GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(2, 2)
+  val AVAILABLE_CANTUS_FIRMUS_NOTES: List[String] = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "E4")
   val MIN_TONIC: Int = 3
   val MAX_TONIC: Int = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-
-  def GENERATE_AVAILABLE_CANTUS_FIRMUS_NOTES(numOctaves: Int, startOctave: Int): List[String] =
-    (0 until NOTES.length * numOctaves).map(noteIdx => {
-      val stepsAboveC = OCTAVE - NOTES.slice(NOTES.length - NOTES.indexOf("C"), NOTES.length).length
-      val currentOctave = startOctave + math.floor((noteIdx + stepsAboveC) / OCTAVE).toInt
-      NOTES(noteIdx % NOTES.length).concat(currentOctave.toString)
-    }).toList
 
   def MELODIC_CONSONANCES: Set[Int] = Set(
     1, 2, 3, 4, 5, 7, 8, 9, 12
