@@ -734,7 +734,7 @@ class ProjectsControllerTest extends PlaySpec {
           |            return await fetch(`https://imdb-api.com/en/API/searchSeries/k_9fbi3vm5/${searchTerm}`)
           |                .then(async response => {
           |                    const matchingShowResults = await response.json();
-          |                    if (matchingShowResults.errorMessage.includes("Maximum")) {
+          |                    if (matchingShowResults.errorMessage.includes("Maximum") || matchingShowResults.errorMessage.includes("Invalid")) {
           |                        return hitBackupApis(searchTerm);
           |                    }
           |                    const matchingShow = matchingShowResults.results
