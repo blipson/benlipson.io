@@ -3,6 +3,7 @@ package service
 import service.CounterpointService.GET_ALL_NOTES_BETWEEN_TWO_NOTES
 import service.FirstSpeciesService.AVAILABLE_FIRST_SPECIES_NOTES
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 class FirstSpeciesService(var randomService: RandomService, var counterpointService: CounterpointService) extends Counterpoint {
@@ -22,6 +23,7 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     }
   }
 
+  @tailrec
   private def generateFirstSpeciesRecursive(cantusFirmus: List[String], inMajorKeyNotes: List[String], firstSpecies: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
     if (firstSpecies.length == cantusFirmus.length) {
       firstSpecies
@@ -46,7 +48,7 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
       Failure(new Exception("Can not generate cantus firmus."))
     } else {
       val universalRulesApplied = applyUniversalRules(inMajorKeyNotes)
-      val availableNotes = applyIndividualRules(firstSpecies, universalRulesApplied, cantusFirmus.head)
+      val availableNotes = applyIndividualRules(firstSpecies, universalRulesApplied, cantusFirmus)
 
       if (availableNotes.isEmpty) {
         Failure(new Exception(s"$cantusFirmus - $firstSpecies"))
@@ -60,9 +62,11 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     notes.filter(note => AVAILABLE_FIRST_SPECIES_NOTES.contains(note))
   }
 
-  def applyIndividualRules(firstSpecies: List[String], notes: List[String], tonic: String): List[String] = {
+  def applyIndividualRules(firstSpecies: List[String], notes: List[String], cantusFirmus: List[String]): List[String] = {
     if (counterpointService.isFirstNote(firstSpecies)) {
-      notes.filter(note => List(0, 7, 12).contains(counterpointService.getInterval(tonic, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
+      notes.filter(note => List(0, 7, 12).contains(counterpointService.getInterval(cantusFirmus.head, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
+    } else if (counterpointService.isLastNote(cantusFirmus.length, firstSpecies)) {
+      notes.filter(note => List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
     } else {
       notes
     }

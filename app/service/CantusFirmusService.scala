@@ -3,6 +3,7 @@ package service
 import service.CantusFirmusService.{AVAILABLE_CANTUS_FIRMUS_NOTES, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC}
 import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, NOTES, OCTAVE}
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 class CantusFirmusService(var randomService: RandomService, var counterpointService: CounterpointService) extends Counterpoint {
@@ -27,6 +28,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     counterpointService.formatOutput(cantusFirmus)
   }
 
+  @tailrec
   private def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
     if (cantusFirmus.length == length) {
       cantusFirmus
@@ -80,10 +82,6 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     }
   }
 
-  private def isLastNote(length: Int, cantusFirmus: List[String]) = {
-    cantusFirmus.length == length - 1
-  }
-
   private def applyIndividualRules(inMajorKeyNotes: Seq[String], length: Int, cantusFirmus: List[String], tonic: String, notes: Seq[String]) = {
     val climaxMustBeInMiddleApplied = applyClimaxMustBeInMiddleRule(cantusFirmus, length, notes)
     val notePairs =
@@ -96,14 +94,14 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
           }
       }.filter(pair => pair._1 != "" && pair._2 != "")
 
-    val noMotivesApplied = if (!isPenultimateNote(length, cantusFirmus) && !isLastNote(length, cantusFirmus)) {
+    val noMotivesApplied = if (!isPenultimateNote(length, cantusFirmus) && !counterpointService.isLastNote(length, cantusFirmus)) {
       climaxMustBeInMiddleApplied.filter(note => !notePairs.contains((cantusFirmus.last, note)))
     } else {
       climaxMustBeInMiddleApplied
     }
 
 
-    if (isLastNote(length, cantusFirmus)) {
+    if (counterpointService.isLastNote(length, cantusFirmus)) {
       noMotivesApplied.filter(note => applyFinalNoteAsTonicRule(inMajorKeyNotes, cantusFirmus, tonic, note))
     } else if (isPenultimateNote(length, cantusFirmus)) {
       noMotivesApplied.filter(note => applyPenultimateStepwiseMotionRule(inMajorKeyNotes, tonic).contains(note))

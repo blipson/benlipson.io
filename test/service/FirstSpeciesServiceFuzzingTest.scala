@@ -90,6 +90,14 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
         }
       })
     }
+
+    "should ensure that the first species ends with do" in {
+      testWrapper((cantusFirmus, firstSpecies) => {
+        if (!List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, firstSpecies.last, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")))) {
+          failTest(firstSpecies)
+        }
+      })
+    }
   }
 
   private def failTest(firstSpecies: List[String]) = {

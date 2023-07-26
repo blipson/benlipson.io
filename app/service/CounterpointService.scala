@@ -8,7 +8,9 @@ class CounterpointService {
   def getInterval(bottomNote: String, topNote: String, availableNotes: List[String]): Int =
     availableNotes.indexOf(topNote) - availableNotes.indexOf(bottomNote)
 
-  def isFirstNote(line: List[String]) = line.isEmpty
+  def isFirstNote(line: List[String]): Boolean = line.isEmpty
+
+  def isLastNote(length: Int, line: List[String]): Boolean = line.length == length - 1
 
 
   def formatOutput(line: List[String]): List[String] = {
