@@ -66,6 +66,11 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     if (counterpointService.isFirstNote(firstSpecies)) {
       notes.filter(note => List(0, 7, 12).contains(counterpointService.getInterval(cantusFirmus.head, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
     } else if (counterpointService.isLastNote(cantusFirmus.length, firstSpecies)) {
+      // todo: if 2nd to last cantus note is re,
+      //       then List(12).contains()
+      //       else if 2nd to last cantus note is ti,
+      //       then List(0).contains()
+
       notes.filter(note => List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
     } else {
       notes
