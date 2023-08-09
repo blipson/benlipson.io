@@ -1,6 +1,7 @@
 package service
 
-import service.CounterpointService.{FLAT_KEYS, MAJOR_KEY_INTERVALS, NOTES, OCTAVE, SHARP_KEYS}
+import service.CantusFirmusService.AVAILABLE_CANTUS_FIRMUS_NOTES
+import service.CounterpointService.{FLAT_KEYS, MAJOR_KEY_INTERVALS, MELODIC_CONSONANCES, NOTES, OCTAVE, SHARP_KEYS}
 
 import scala.util.matching.Regex
 
@@ -45,6 +46,15 @@ class CounterpointService {
       noteIsInMajorKey(tonic, note, availableNotes.indices
         .filter(interval => intervalIsInMajorKey(interval)), availableNotes)
     })
+
+  def isMelodicConsonance(lastNote: String, note: String, availableNotes: List[String]): Boolean = {
+    val lastNoteIdx = availableNotes.indexOf(lastNote)
+    val noteIdx = availableNotes.indexOf(note)
+    lastNoteIdx != -1 && noteIdx != -1 &&
+      MELODIC_CONSONANCES
+        .contains(math.abs(availableNotes.indexOf(lastNote) - availableNotes.indexOf(note)))
+  }
+
 
   private def noteIsInMajorKey(tonic: String, note: String, majorKeyIntervals: Seq[Int], availableNotes: List[String]) =
     majorKeyIntervals
@@ -132,6 +142,11 @@ object CounterpointService {
     0, 2, 4, 5, 7, 9, 11
   )
   val OCTAVE = 12
+
+  val MELODIC_CONSONANCES: Set[Int] = Set(
+    1, 2, 3, 4, 5, 7, 8, 9, 12
+  )
+
   private val NOTE_MATCHER: Regex = """(.+)(\d+)""".r
 
   private def SEPARATE_NOTE_AND_OCTAVE(note: String): (String, Int) =

@@ -1,7 +1,7 @@
 package service
 
-import service.CantusFirmusService.{AVAILABLE_CANTUS_FIRMUS_NOTES, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC}
-import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, NOTES, OCTAVE}
+import service.CantusFirmusService._
+import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, MELODIC_CONSONANCES}
 
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
@@ -17,7 +17,6 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     val inMajorKeyCantusFirmusNotes = counterpointService.getInMajorKeyNotes(tonic, AVAILABLE_CANTUS_FIRMUS_NOTES)
     val cantusFirmus = generateCantusFirmusRecursive(length, tonic, inMajorKeyCantusFirmusNotes)
     return if (cantusFirmus.nonEmpty) {
-      println(cantusFirmus)
       Success(cantusFirmus)
     } else {
       Failure(new Exception("Could not generate cantus firmus."))
@@ -262,7 +261,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
           !invalidLines.contains(cantusFirmus :+ note) &&
           // todo: it can equal the max note if it keeps going higher than it later though
           note != cantusFirmus.maxBy(cantusFirmusNote => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmusNote)) &&
-          isMelodicConsonance(cantusFirmus.last, note)
+          counterpointService.isMelodicConsonance(cantusFirmus.last, note, AVAILABLE_CANTUS_FIRMUS_NOTES)
         applyMaxRepetitionRules(cantusFirmus, countsOfNotes, note, ret, length)
       })
   }
@@ -304,25 +303,14 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
   private def applyNoRepeatedNotesRule(cantusFirmus: List[String], note: String) = {
     note != cantusFirmus.last
   }
-
-  private def isMelodicConsonance(lastNote: String, note: String) = {
-    MELODIC_CONSONANCES
-      .contains(math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(lastNote) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)))
-  }
 }
 
 
 object CantusFirmusService {
-  val MIN_LENGTH = 8
-  val MAX_LENGTH = 16
-
-
+  private val MIN_LENGTH = 8
+  private val MAX_LENGTH = 16
   val AVAILABLE_CANTUS_FIRMUS_NOTES: List[String] = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "E4")
-  val MIN_TONIC: Int = 3
-  val MAX_TONIC: Int = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
-
-  def MELODIC_CONSONANCES: Set[Int] = Set(
-    1, 2, 3, 4, 5, 7, 8, 9, 12
-  )
+  private val MIN_TONIC: Int = 3
+  private val MAX_TONIC: Int = AVAILABLE_CANTUS_FIRMUS_NOTES.length - 7
 }
 

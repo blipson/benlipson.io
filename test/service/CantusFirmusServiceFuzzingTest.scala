@@ -2,8 +2,9 @@ package service
 
 import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
-import service.CantusFirmusService.{AVAILABLE_CANTUS_FIRMUS_NOTES, MELODIC_CONSONANCES}
+import service.CantusFirmusService.AVAILABLE_CANTUS_FIRMUS_NOTES
 import service.CantusFirmusServiceFuzzingTest.TRIES
+import service.CounterpointService.MELODIC_CONSONANCES
 
 import scala.util.{Failure, Random, Success}
 
@@ -110,6 +111,9 @@ class CantusFirmusServiceFuzzingTest extends PlaySpec with MockFactory {
         }
       })
     }
+
+    // todo: refactor these tests to make them DRY.
+    // todo: combine code with first species service fuzzing test.
 
     "should ensure that all notes are in the right major key" in {
       (1 to TRIES).map(_ => {

@@ -3,7 +3,7 @@ package service
 import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
 import service.CantusFirmusService.AVAILABLE_CANTUS_FIRMUS_NOTES
-import service.CounterpointService.GET_ALL_NOTES_BETWEEN_TWO_NOTES
+import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, MELODIC_CONSONANCES}
 import service.FirstSpeciesService.AVAILABLE_FIRST_SPECIES_NOTES
 import service.FirstSpeciesServiceFuzzingTest.TRIES
 
@@ -55,7 +55,7 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
     })
   }
 
-  "First species surface" should {
+  "First species service" should {
     "should generate a first species that's the same length as the cantus firmus" in {
       testWrapper((cantusFirmus, firstSpecies) => {
         if (firstSpecies.length != cantusFirmus.length) {
@@ -87,6 +87,24 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
         val notesInKey = counterpointService.getInMajorKeyNotes(cantusFirmus.head, AVAILABLE_FIRST_SPECIES_NOTES)
         if (firstSpecies.count(note => notesInKey.contains(note)) != firstSpecies.length) {
           failTest(firstSpecies)
+        }
+      })
+    }
+
+    "should ensure that all note-to-note progressions are melodic consonances" in {
+      testWrapper((_, firstSpecies) => {
+        firstSpecies.zipWithIndex.map {
+          case (note, i) =>
+            if (i > 0) {
+              if (!MELODIC_CONSONANCES.contains(
+                math.abs(
+                  AVAILABLE_FIRST_SPECIES_NOTES.indexOf(note) -
+                    AVAILABLE_FIRST_SPECIES_NOTES.indexOf(firstSpecies(i - 1))
+                )
+              )) {
+                failTest(firstSpecies)
+              }
+            }
         }
       })
     }
