@@ -3,7 +3,7 @@ package service
 import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
 import service.CantusFirmusService.AVAILABLE_CANTUS_FIRMUS_NOTES
-import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, MELODIC_CONSONANCES}
+import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, HARMONIC_CONSONANCES, MELODIC_CONSONANCES}
 import service.FirstSpeciesService.AVAILABLE_FIRST_SPECIES_NOTES
 import service.FirstSpeciesServiceFuzzingTest.TRIES
 
@@ -109,6 +109,24 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
       })
     }
 
+    "should ensure that all vertical intervals are harmonic consonances" in {
+      testWrapper((cantusFirmus, firstSpecies) => {
+        firstSpecies.zipWithIndex.map {
+          case (note, i) =>
+            if (!HARMONIC_CONSONANCES.contains(
+              math.abs(
+                GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4").indexOf(note) -
+                  GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4").indexOf(cantusFirmus(i))
+              )
+            )) {
+              println(note)
+              println(i)
+              failTest(firstSpecies, cantusFirmus)
+            }
+        }
+      })
+    }
+
     "should ensure that the first species ends with do" in {
       testWrapper((cantusFirmus, firstSpecies) => {
         if (!List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, firstSpecies.last, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")))) {
@@ -118,9 +136,13 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
     }
   }
 
-  private def failTest(firstSpecies: List[String]) = {
+  private def failTest(firstSpecies: List[String], cantusFirmus: List[String] = List()) = {
     println("FAILURE FOUND WITH THIS FIRST SPECIES:")
     println(firstSpecies.toString())
+    if (cantusFirmus.nonEmpty) {
+      println("AGAINST THIS CANTUS FIRMUS:")
+      println(cantusFirmus.toString())
+    }
     fail()
   }
 }

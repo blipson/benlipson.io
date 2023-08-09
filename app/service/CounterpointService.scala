@@ -1,7 +1,6 @@
 package service
 
-import service.CantusFirmusService.AVAILABLE_CANTUS_FIRMUS_NOTES
-import service.CounterpointService.{FLAT_KEYS, MAJOR_KEY_INTERVALS, MELODIC_CONSONANCES, NOTES, OCTAVE, SHARP_KEYS}
+import service.CounterpointService.{FLAT_KEYS, HARMONIC_CONSONANCES, MAJOR_KEY_INTERVALS, MELODIC_CONSONANCES, NOTES, OCTAVE, SHARP_KEYS}
 
 import scala.util.matching.Regex
 
@@ -48,13 +47,21 @@ class CounterpointService {
     })
 
   def isMelodicConsonance(lastNote: String, note: String, availableNotes: List[String]): Boolean = {
-    val lastNoteIdx = availableNotes.indexOf(lastNote)
-    val noteIdx = availableNotes.indexOf(note)
-    lastNoteIdx != -1 && noteIdx != -1 &&
-      MELODIC_CONSONANCES
-        .contains(math.abs(availableNotes.indexOf(lastNote) - availableNotes.indexOf(note)))
+    isConsonance(lastNote, note, availableNotes, MELODIC_CONSONANCES)
   }
 
+  def isHarmonicConsonance(firstNote: String, secondNote: String, availableNotes: List[String]): Boolean = {
+    isConsonance(firstNote, secondNote, availableNotes, HARMONIC_CONSONANCES)
+  }
+
+
+  private def isConsonance(firstNote: String, secondNote: String, availableNotes: List[String], consonances: Set[Int]) = {
+    val lastNoteIdx = availableNotes.indexOf(firstNote)
+    val noteIdx = availableNotes.indexOf(secondNote)
+    lastNoteIdx != -1 && noteIdx != -1 &&
+      consonances
+        .contains(math.abs(availableNotes.indexOf(firstNote) - availableNotes.indexOf(secondNote)))
+  }
 
   private def noteIsInMajorKey(tonic: String, note: String, majorKeyIntervals: Seq[Int], availableNotes: List[String]) =
     majorKeyIntervals
@@ -145,6 +152,10 @@ object CounterpointService {
 
   val MELODIC_CONSONANCES: Set[Int] = Set(
     1, 2, 3, 4, 5, 7, 8, 9, 12
+  )
+
+  val HARMONIC_CONSONANCES: Set[Int] = Set(
+    0, 3, 4, 5, 7, 8, 9, 12
   )
 
   private val NOTE_MATCHER: Regex = """(.+)(\d+)""".r
