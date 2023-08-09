@@ -46,7 +46,7 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     if (isFirstNote && invalidLines.exists(line => line.length == 1)) {
       Failure(new Exception("Can not generate first species."))
     } else {
-      val universalRulesApplied = if (!isFirstNote) applyUniversalRules(inMajorKeyNotes, firstSpecies, invalidLines) else inMajorKeyNotes
+      val universalRulesApplied = if (!isFirstNote) applyUniversalRules(inMajorKeyNotes, cantusFirmus, firstSpecies, invalidLines) else inMajorKeyNotes
       val availableNotes = applyIndividualRules(firstSpecies, universalRulesApplied, cantusFirmus)
 
       if (availableNotes.isEmpty) {
@@ -57,11 +57,12 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     }
   }
 
-  private def applyUniversalRules(inMajorKeyNotes: List[String], firstSpecies: List[String], invalidLines: List[List[String]]): List[String] = {
+  private def applyUniversalRules(inMajorKeyNotes: List[String], cantusFirmus: List[String], firstSpecies: List[String], invalidLines: List[List[String]]): List[String] = {
     inMajorKeyNotes.filter(note => {
       !invalidLines.contains(firstSpecies :+ note) &&
       AVAILABLE_FIRST_SPECIES_NOTES.contains(note) &&
-      counterpointService.isMelodicConsonance(firstSpecies.last, note, AVAILABLE_FIRST_SPECIES_NOTES)
+      counterpointService.isMelodicConsonance(firstSpecies.last, note, AVAILABLE_FIRST_SPECIES_NOTES) &&
+        counterpointService.isHarmonicConsonance(note, cantusFirmus(firstSpecies.length), GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))
     })
   }
 
