@@ -68,7 +68,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
       }
     } else {
       val universalRulesApplied = applyUniversalRules(inMajorKeyNotes, cantusFirmus, invalidLines, length)
-      val leapsRulesApplied = applyLeapsRules(inMajorKeyNotes, cantusFirmus, universalRulesApplied)
+      val leapsRulesApplied = counterpointService.applyLeapsRules(inMajorKeyNotes, AVAILABLE_CANTUS_FIRMUS_NOTES, cantusFirmus, universalRulesApplied)
       val individualRulesApplied = applyIndividualRules(inMajorKeyNotes, length, cantusFirmus, tonic, leapsRulesApplied)
       val preferenceRulesApplied = applyPreferenceRules(individualRulesApplied, cantusFirmus)
       val availableNotes = preferenceRulesApplied
@@ -82,7 +82,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
   }
 
   private def applyIndividualRules(inMajorKeyNotes: Seq[String], length: Int, cantusFirmus: List[String], tonic: String, notes: Seq[String]) = {
-    val climaxMustBeInMiddleApplied = applyClimaxMustBeInMiddleRule(cantusFirmus, length, notes)
+    val climaxMustBeInMiddleApplied = counterpointService.applyClimaxMustBeInMiddleRule(cantusFirmus, AVAILABLE_CANTUS_FIRMUS_NOTES, length, notes)
     val notePairs =
       cantusFirmus.zipWithIndex.map {
         case (note, i) =>
@@ -93,7 +93,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
           }
       }.filter(pair => pair._1 != "" && pair._2 != "")
 
-    val noMotivesApplied = if (!isPenultimateNote(length, cantusFirmus) && !counterpointService.isLastNote(length, cantusFirmus)) {
+    val noMotivesApplied = if (!counterpointService.isPenultimateNote(length, cantusFirmus) && !counterpointService.isLastNote(length, cantusFirmus)) {
       climaxMustBeInMiddleApplied.filter(note => !notePairs.contains((cantusFirmus.last, note)))
     } else {
       climaxMustBeInMiddleApplied
@@ -102,10 +102,10 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
 
     if (counterpointService.isLastNote(length, cantusFirmus)) {
       noMotivesApplied.filter(note => applyFinalNoteAsTonicRule(inMajorKeyNotes, cantusFirmus, tonic, note))
-    } else if (isPenultimateNote(length, cantusFirmus)) {
+    } else if (counterpointService.isPenultimateNote(length, cantusFirmus)) {
       noMotivesApplied.filter(note => applyPenultimateStepwiseMotionRule(inMajorKeyNotes, tonic).contains(note))
-    } else if (isLeadingTone(inMajorKeyNotes, cantusFirmus, tonic)) {
-      noMotivesApplied.filter(note => applyLeadingToneLeadsToTonicRule(cantusFirmus, note))
+    } else if (counterpointService.isLeadingTone(AVAILABLE_CANTUS_FIRMUS_NOTES, cantusFirmus, tonic)) {
+      noMotivesApplied.filter(note => counterpointService.applyLeadingToneLeadsToTonicRule(cantusFirmus, note, AVAILABLE_CANTUS_FIRMUS_NOTES))
     } else if (isAntePenultimateNote(length, cantusFirmus)) {
       noMotivesApplied.filter(note => applyAntePenultimateCannotBeLeadingToneRule(inMajorKeyNotes, tonic, note))
     } else {
@@ -113,59 +113,9 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     }
   }
 
-  private def applyClimaxMustBeInMiddleRule(cantusFirmus: List[String], length: Int, notes: Seq[String]) = {
-    if (isInBackQuarter(cantusFirmus, length)) {
-      notes.filter(note => noteIsLowerThanClimax(cantusFirmus, note))
-    } else if (isInFirstQuarter(cantusFirmus, length)) {
-      notes.filter(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) < 19)
-    } else if (isTheNoteBeforeBackQuarter(cantusFirmus, length) && climaxIsInTheBeginning(cantusFirmus, length)) {
-      notes.filter(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) > getMaxNote(cantusFirmus))
-    } else if (isInMiddle(cantusFirmus, length) && climaxIsInTheBeginning(cantusFirmus, length)) {
-      notes.filter(note => directionIsUpwards(cantusFirmus, note))
-    } else {
-      notes
-    }
-  }
-
   // perhaps give it the reason whenever it fails. like a list of pairs [invalidLine to reasonItFailed]
   // then if the reason is because the climax was at the beginning, only pick notes that are higher than
   // the note picked before in that position.
-
-  private def directionIsUpwards(cantusFirmus: List[String], note: String) = {
-    AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) > AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus.last)
-  }
-
-  private def climaxIsInTheBeginning(cantusFirmus: List[String], length: Int) = {
-    cantusFirmus.filter(note => noteIsInFirstThird(note, cantusFirmus, length)).map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).contains(getMaxNote(cantusFirmus))
-  }
-
-  private def noteIsLowerThanClimax(cantusFirmus: List[String], note: String) = {
-    AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) < getMaxNote(cantusFirmus)
-  }
-
-  private def getMaxNote(cantusFirmus: List[String]) = {
-    cantusFirmus.map(note => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)).max
-  }
-
-  private def isInBackQuarter(cantusFirmus: List[String], length: Int) = {
-    cantusFirmus.length >= (length - (length / 4))
-  }
-
-  private def isTheNoteBeforeBackQuarter(cantusFirmus: List[String], length: Int) = {
-    cantusFirmus.length == (length - (length / 4)) - 1
-  }
-
-  private def isInFirstQuarter(cantusFirmus: List[String], length: Int) = {
-    cantusFirmus.length <= (length / 4)
-  }
-
-  private def isInMiddle(cantusFirmus: List[String], length: Int) = {
-    cantusFirmus.length < (length / 4) && cantusFirmus.length < (length - (length / 4))
-  }
-
-  private def noteIsInFirstThird(note: String, cantusFirmus: List[String], length: Int) = {
-    cantusFirmus.indexOf(note) < (length / 3)
-  }
 
   private def applyFinalNoteAsTonicRule(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], tonic: String, note: String) =
     (note.filterNot(c => c.isDigit) == tonic.filterNot(c => c.isDigit)) && (math.abs(inMajorKeyNotes.indexOf(cantusFirmus.last) - inMajorKeyNotes.indexOf(note)) == 1)
@@ -176,12 +126,6 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
   private def isAntePenultimateNote(length: Int, cantusFirmus: List[String]) =
     cantusFirmus.length == length - 3
 
-  private def isLeadingTone(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], tonic: String) =
-    cantusFirmus.last.filterNot(c => c.isDigit) == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) - 1).filterNot(c => c.isDigit)
-
-  private def applyLeadingToneLeadsToTonicRule(cantusFirmus: List[String], note: String) =
-    AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus.last) == 1
-
   private def applyPenultimateStepwiseMotionRule(inMajorKeyNotes: Seq[String], tonic: String) =
     inMajorKeyNotes.filter(note => {
       // todo: if the fourth to last note is the LT use the 2
@@ -189,62 +133,6 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
       noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) - 1).filterNot(c => c.isDigit) ||
         noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) + 1).filterNot(c => c.isDigit)
     })
-
-  private def isPenultimateNote(length: Int, cantusFirmus: List[String]) =
-    cantusFirmus.length == length - 2
-
-  private def applyLeapsRules(inMajorKeyNotes: List[String], cantusFirmus: List[String], notes: Seq[String]) =
-    if (followingALargeLeap(cantusFirmus)) {
-      val next = if (isDownwardsMotion(cantusFirmus)) {
-        inMajorKeyNotes(inMajorKeyNotes.indexOf(cantusFirmus.last) + 1)
-      } else {
-        inMajorKeyNotes(inMajorKeyNotes.indexOf(cantusFirmus.last) - 1)
-      }
-      if (notes.contains(next)) {
-        Seq(next)
-      } else {
-        Seq()
-      }
-    } else if (followingALeap(cantusFirmus, inMajorKeyNotes)) {
-      if (followingTwoLeaps(cantusFirmus, inMajorKeyNotes)) {
-        notes.filter(note => !isALeap(note, cantusFirmus.last, inMajorKeyNotes))
-      } else {
-        val previousLeapDirection = if (inMajorKeyNotes.indexOf(cantusFirmus(cantusFirmus.length - 2)) - inMajorKeyNotes.indexOf(cantusFirmus.last) > 0) {
-          "down"
-        } else {
-          "up"
-        }
-        notes.filter(note => {
-          val secondLeapDirection = if (inMajorKeyNotes.indexOf(cantusFirmus.last) - inMajorKeyNotes.indexOf(note) > 0) {
-            "down"
-          } else {
-            "up"
-          }
-          !(isALeap(note, cantusFirmus.last, inMajorKeyNotes)) || previousLeapDirection != secondLeapDirection
-        })
-      }
-    } else {
-      notes
-    }
-
-  private def isDownwardsMotion(cantusFirmus: List[String]) =
-    AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(cantusFirmus.length - 2)) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus.last) > 0
-
-  private def followingALargeLeap(cantusFirmus: List[String]) =
-    cantusFirmus.length > 1 &&
-      math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus.last) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmus(cantusFirmus.length - 2))) >= 5
-
-  private def followingALeap(cantusFirmus: List[String], inMajorKeyNotes: List[String]) =
-    cantusFirmus.length > 1 &&
-      isALeap(cantusFirmus.last, cantusFirmus(cantusFirmus.length - 2), inMajorKeyNotes)
-
-  private def followingTwoLeaps(cantusFirmus: List[String], inMajorKeyNotes: List[String]) =
-    cantusFirmus.length > 2 &&
-      isALeap(cantusFirmus(cantusFirmus.length - 2), cantusFirmus(cantusFirmus.length - 3), inMajorKeyNotes) &&
-      isALeap(cantusFirmus.last, cantusFirmus(cantusFirmus.length - 2), inMajorKeyNotes)
-
-  private def isALeap(note: String, prevNote: String, inMajorKeyNotes: List[String]): Boolean =
-    math.abs(inMajorKeyNotes.indexOf(note) - inMajorKeyNotes.indexOf(prevNote)) > 1
 
   private def isALargeLeap(note: String, prevNote: String) =
     math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(prevNote)) >= 5

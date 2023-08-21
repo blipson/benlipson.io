@@ -468,5 +468,5 @@ object CantusFirmusServiceFuzzingTest {
     List("D#/Eb3", "F3", "G3", "G#/Ab3", "A#/Bb3", "C4", "D4", "D#/Eb4", "F2", "G2", "G#/Ab2", "A#/Bb2", "C3", "D3"),
   )
 
-  val TRIES = 1
+  val TRIES = 1000
 }

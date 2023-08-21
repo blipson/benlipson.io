@@ -17,12 +17,14 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     return if (firstSpecies.nonEmpty) {
       Success(firstSpecies)
     } else {
+      println("CF: " + cantusFirmus)
       Failure(new Exception("Could not generate first species."))
     }
   }
 
   @tailrec
   private def generateFirstSpeciesRecursive(cantusFirmus: List[String], inMajorKeyNotes: List[String], firstSpecies: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
+    println(firstSpecies)
     if (firstSpecies.length == cantusFirmus.length) {
       firstSpecies
     } else {
@@ -47,8 +49,12 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
       Failure(new Exception("Can not generate first species."))
     } else {
       val universalRulesApplied = if (!isFirstNote) applyUniversalRules(inMajorKeyNotes, cantusFirmus, firstSpecies, invalidLines) else inMajorKeyNotes
-      val availableNotes = applyIndividualRules(firstSpecies, universalRulesApplied, cantusFirmus)
+      println("UNIVERSAL APPLIED: " + universalRulesApplied)
+      val leapsRulesApplied =  counterpointService.applyLeapsRules(inMajorKeyNotes, AVAILABLE_FIRST_SPECIES_NOTES, firstSpecies, universalRulesApplied)
+      println("LEAPS APPLIED: " + leapsRulesApplied)
+      val availableNotes = applyIndividualRules(firstSpecies, leapsRulesApplied, cantusFirmus)
 
+      println("AVAILABLE: " + availableNotes)
       if (availableNotes.isEmpty) {
         Failure(new Exception(s"$cantusFirmus - $firstSpecies"))
       } else {
@@ -66,9 +72,12 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     })
   }
 
-  def applyIndividualRules(firstSpecies: List[String], notes: List[String], cantusFirmus: List[String]): List[String] = {
+  def applyIndividualRules(firstSpecies: List[String], notes: Seq[String], cantusFirmus: List[String]): Seq[String] = {
+    val climaxMustBeInMiddleApplied = counterpointService.applyClimaxMustBeInMiddleRule(cantusFirmus, AVAILABLE_FIRST_SPECIES_NOTES, cantusFirmus.length, notes)
+
     if (counterpointService.isFirstNote(firstSpecies)) {
-      notes.filter(note => List(0, 7, 12).contains(counterpointService.getInterval(cantusFirmus.head, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
+      // TODO: ADD 12 IN. IT'S NOT BUILT TO CHOOSE A DIFFERENT FIRST NOTE.
+      notes.filter(note => List(0, 7).contains(counterpointService.getInterval(cantusFirmus.head, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
     } else if (counterpointService.isLastNote(cantusFirmus.length, firstSpecies)) {
       // todo: if 2nd to last cantus note is re,
       //       then List(12).contains()
@@ -76,6 +85,8 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
       //       then List(0).contains()
 
       notes.filter(note => List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
+    } else if (counterpointService.isLeadingTone(AVAILABLE_FIRST_SPECIES_NOTES, firstSpecies, cantusFirmus.head)) {
+      notes.filter(note => counterpointService.applyLeadingToneLeadsToTonicRule(firstSpecies, note, AVAILABLE_FIRST_SPECIES_NOTES))
     } else {
       notes
     }

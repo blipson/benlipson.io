@@ -12,6 +12,119 @@ class CounterpointService {
 
   def isLastNote(length: Int, line: List[String]): Boolean = line.length == length - 1
 
+  def isLeadingTone(availableNotes: Seq[String], line: List[String], tonic: String): Boolean =
+    line.last.filterNot(c => c.isDigit) == availableNotes(availableNotes.map { note => note.filterNot { c => c.isDigit } }.lastIndexOf(tonic.filterNot(c => c.isDigit)) - 1).filterNot(c => c.isDigit)
+
+
+  def applyLeadingToneLeadsToTonicRule(line: List[String], note: String, availableNotes: List[String]): Boolean =
+    availableNotes.indexOf(note) - availableNotes.indexOf(line.last) == 1
+
+  private def isDownwardsMotion(line: List[String], availableNotes: Seq[String]) =
+    availableNotes.indexOf(line(line.length - 2)) - availableNotes.indexOf(line.last) > 0
+
+  private def isALeap(note: String, prevNote: String, inMajorKeyNotes: List[String]): Boolean =
+    math.abs(inMajorKeyNotes.indexOf(note) - inMajorKeyNotes.indexOf(prevNote)) > 1
+
+  private def followingALargeLeap(line: List[String], availableNotes: Seq[String]) =
+    line.length > 1 &&
+      math.abs(availableNotes.indexOf(line.last) - availableNotes.indexOf(line(line.length - 2))) >= 5
+
+  private def followingALeap(line: List[String], inMajorKeyNotes: List[String]) =
+    line.length > 1 &&
+      isALeap(line.last, line(line.length - 2), inMajorKeyNotes)
+
+  private def followingTwoLeaps(line: List[String], inMajorKeyNotes: List[String]) =
+    line.length > 2 &&
+      isALeap(line(line.length - 2), line(line.length - 3), inMajorKeyNotes) &&
+      isALeap(line.last, line(line.length - 2), inMajorKeyNotes)
+
+  def applyLeapsRules(inMajorKeyNotes: List[String], availableNotes: Seq[String], line: List[String], notes: Seq[String]): Seq[String] =
+    if (followingALargeLeap(line, availableNotes)) {
+      val next = if (isDownwardsMotion(line, availableNotes)) {
+        inMajorKeyNotes(inMajorKeyNotes.indexOf(line.last) + 1)
+      } else {
+        inMajorKeyNotes(inMajorKeyNotes.indexOf(line.last) - 1)
+      }
+      if (notes.contains(next)) {
+        Seq(next)
+      } else {
+        Seq()
+      }
+    } else if (followingALeap(line, inMajorKeyNotes)) {
+      if (followingTwoLeaps(line, inMajorKeyNotes)) {
+        notes.filter(note => !isALeap(note, line.last, inMajorKeyNotes))
+      } else {
+        val previousLeapDirection = if (inMajorKeyNotes.indexOf(line(line.length - 2)) - inMajorKeyNotes.indexOf(line.last) > 0) {
+          "down"
+        } else {
+          "up"
+        }
+        notes.filter(note => {
+          val secondLeapDirection = if (inMajorKeyNotes.indexOf(line.last) - inMajorKeyNotes.indexOf(note) > 0) {
+            "down"
+          } else {
+            "up"
+          }
+          !(isALeap(note, line.last, inMajorKeyNotes)) || previousLeapDirection != secondLeapDirection
+        })
+      }
+    } else {
+      notes
+    }
+
+
+  private def isInBackQuarter(line: List[String], length: Int) = {
+    line.length >= (length - (length / 4))
+  }
+
+  private def isTheNoteBeforeBackQuarter(line: List[String], length: Int) = {
+    line.length == (length - (length / 4)) - 1
+  }
+
+  private def isInFirstQuarter(line: List[String], length: Int) = {
+    line.length <= (length / 4)
+  }
+
+  private def isInMiddle(line: List[String], length: Int) = {
+    line.length < (length / 4) && line.length < (length - (length / 4))
+  }
+
+  private def directionIsUpwards(line: List[String], availableNotes: Seq[String], note: String) = {
+    availableNotes.indexOf(note) > availableNotes.indexOf(line.last)
+  }
+
+  private def getMaxNote(line: List[String], availableNotes: Seq[String]) = {
+    line.map(note => availableNotes.indexOf(note)).max
+  }
+
+  private def noteIsInFirstThird(note: String, line: List[String], length: Int) = {
+    line.indexOf(note) < (length / 3)
+  }
+
+  private def climaxIsInTheBeginning(line: List[String], availableNotes: Seq[String], length: Int) = {
+    line.filter(note => noteIsInFirstThird(note, line, length)).map(note => availableNotes.indexOf(note)).contains(getMaxNote(line, availableNotes))
+  }
+
+  private def noteIsLowerThanClimax(line: List[String], availableNotes: Seq[String], note: String) = {
+    availableNotes.indexOf(note) < getMaxNote(line, availableNotes)
+  }
+
+  def applyClimaxMustBeInMiddleRule(line: List[String], availableNotes: Seq[String], length: Int, notes: Seq[String]): Seq[String] = {
+    if (isInBackQuarter(line, length)) {
+      notes.filter(note => noteIsLowerThanClimax(line, availableNotes, note))
+    } else if (isInFirstQuarter(line, length)) {
+      notes.filter(note => availableNotes.indexOf(note) < 19)
+    } else if (isTheNoteBeforeBackQuarter(line, length) && climaxIsInTheBeginning(line, availableNotes, length)) {
+      notes.filter(note => availableNotes.indexOf(note) > getMaxNote(line, availableNotes))
+    } else if (isInMiddle(line, length) && climaxIsInTheBeginning(line, availableNotes, length)) {
+      notes.filter(note => directionIsUpwards(line, availableNotes, note))
+    } else {
+      notes
+    }
+  }
+
+  def isPenultimateNote(length: Int, line: List[String]): Boolean =
+    line.length == length - 2
 
   def formatOutput(line: List[String]): List[String] = {
     line.map(note => {
