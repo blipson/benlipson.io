@@ -123,6 +123,40 @@ class CounterpointService {
     }
   }
 
+  def applyNoRepeatedNotesRule(line: List[String], note: String): Boolean = {
+    note != line.last
+  }
+
+  private def applyMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean) = {
+    ret && countsOfNotes.filter(can => can._1 == note).head._2 < 2
+  }
+
+  private def applyTonicMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean, isInFirstHalf: Boolean) = {
+    if (isInFirstHalf) {
+      false
+    } else {
+      ret && countsOfNotes.filter(can => can._1 == note).head._2 < 4
+    }
+  }
+
+  private def noteIsTonic(cantusFirmus: List[String], note: String) = {
+    note == cantusFirmus.head
+  }
+
+  private def noteHasOccurredPreviously(countsOfNotes: Seq[(String, Int)], note: String) = {
+    countsOfNotes.map(nac => nac._1).contains(note)
+  }
+
+  def applyMaxRepetitionRules(line: List[String], countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean, length: Int): Boolean = {
+    if (noteIsTonic(line, note) && noteHasOccurredPreviously(countsOfNotes, note)) {
+      applyTonicMaxRepetitionRule(countsOfNotes, note, ret, line.length < length / 2)
+    } else if (noteHasOccurredPreviously(countsOfNotes, note)) {
+      applyMaxRepetitionRule(countsOfNotes, note, ret)
+    } else {
+      ret
+    }
+  }
+
   def isPenultimateNote(length: Int, line: List[String]): Boolean =
     line.length == length - 2
 

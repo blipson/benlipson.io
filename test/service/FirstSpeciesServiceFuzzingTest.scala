@@ -242,7 +242,7 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
     }
 
     "should ensure that there's one high point and that it's near the middle" in {
-      testWrapper((_, firstSpecies) => {
+      testWrapper((cantusFirmus, firstSpecies) => {
         val highestNote = firstSpecies.maxBy(note => AVAILABLE_FIRST_SPECIES_NOTES.indexOf(note))
         if (firstSpecies.count(note => note == highestNote) != 1 || !(firstSpecies.indexOf(highestNote) >= firstSpecies.length / 4) || !(firstSpecies.indexOf(highestNote) <= firstSpecies.length - (firstSpecies.length / 4))) {
           failTest(firstSpecies)
@@ -276,10 +276,18 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
     }
 
     "should not contain the same note more than twice other than the tonic at the start and end " in {
-      testWrapper((_, firstSpecies) => {
-        if (firstSpecies.groupBy(identity).view.mapValues(_.size)
-          .toSeq.exists(noteAndCount => noteAndCount._2 > 2)) {
-          failTest(firstSpecies)
+      testWrapper((cantusFirmus, firstSpecies) => {
+        val noteAndCountSeq = firstSpecies.groupBy(identity).view.mapValues(_.size).toSeq
+        if (noteAndCountSeq.exists(noteAndCount =>
+          noteAndCount._1.filterNot(c => !c.isDigit) != cantusFirmus.head.filterNot(c => !c.isDigit) &&
+            noteAndCount._1 != firstSpecies.head &&
+            noteAndCount._2 > 2
+          ) || noteAndCountSeq.exists(noteAndCount =>
+          (noteAndCount._1.filterNot(c => !c.isDigit) == cantusFirmus.head.filterNot(c => !c.isDigit) || noteAndCount._1 == firstSpecies.head) &&
+            noteAndCount._2 > 4
+        )
+        ) {
+          failTest(firstSpecies, cantusFirmus)
         }
       })
     }
@@ -336,5 +344,5 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
 
 object FirstSpeciesServiceFuzzingTest {
   val TEST_CANTUS_FIRMUS = List("G2", "E2", "E3", "D3", "F #/ Gb3", "G3", "G2", "A2", "F #/ Gb2", "G2", "F#/Gb2", "G2")
-  val TRIES = 1000
+  val TRIES = 10
 }

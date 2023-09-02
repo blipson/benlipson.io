@@ -144,52 +144,20 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     notes
       .filter(note => {
         val noteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)
-        val ret = applyNoRepeatedNotesRule(cantusFirmus, note) &&
+        val ret = counterpointService.applyNoRepeatedNotesRule(cantusFirmus, note) &&
           applyMaxRangeRule(lowestNote, highestNote, noteIdx) &&
           !invalidLines.contains(cantusFirmus :+ note) &&
           // todo: it can equal the max note if it keeps going higher than it later though
           note != cantusFirmus.maxBy(cantusFirmusNote => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmusNote)) &&
           counterpointService.isMelodicConsonance(cantusFirmus.last, note, AVAILABLE_CANTUS_FIRMUS_NOTES)
-        applyMaxRepetitionRules(cantusFirmus, countsOfNotes, note, ret, length)
+        counterpointService.applyMaxRepetitionRules(cantusFirmus, countsOfNotes, note, ret, length)
       })
   }
 
-  private def applyMaxRepetitionRules(cantusFirmus: List[String], countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean, length: Int) = {
-    if (noteIsTonic(cantusFirmus, note) && noteHasOccurredPreviously(countsOfNotes, note)) {
-      applyTonicMaxRepetitionRule(countsOfNotes, note, ret, cantusFirmus.length < length / 2)
-    } else if (noteHasOccurredPreviously(countsOfNotes, note)) {
-      applyMaxRepetitionRule(countsOfNotes, note, ret)
-    } else {
-      ret
-    }
-  }
 
-  private def applyMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean) = {
-    ret && countsOfNotes.filter(can => can._1 == note).head._2 < 2
-  }
-
-  private def applyTonicMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean, isInFirstHalf: Boolean) = {
-    if (isInFirstHalf) {
-      false
-    } else {
-      ret && countsOfNotes.filter(can => can._1 == note).head._2 < 4
-    }
-  }
-
-  private def noteIsTonic(cantusFirmus: List[String], note: String) = {
-    note == cantusFirmus.head
-  }
-
-  private def noteHasOccurredPreviously(countsOfNotes: Seq[(String, Int)], note: String) = {
-    countsOfNotes.map(nac => nac._1).contains(note)
-  }
 
   private def applyMaxRangeRule(lowestNote: Int, highestNote: Int, noteIdx: Int) = {
     (noteIdx - lowestNote <= 16 && highestNote - noteIdx <= 16)
-  }
-
-  private def applyNoRepeatedNotesRule(cantusFirmus: List[String], note: String) = {
-    note != cantusFirmus.last
   }
 }
 

@@ -12,6 +12,7 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
   }
 
   override def generate(cantusFirmus: List[String]): Try[List[String]] = Try {
+    println("\n")
     val inMajorKeyFirstSpeciesNotes = counterpointService.getInMajorKeyNotes(cantusFirmus.head, AVAILABLE_FIRST_SPECIES_NOTES)
     val firstSpecies = generateFirstSpeciesRecursive(cantusFirmus, inMajorKeyFirstSpeciesNotes)
     return if (firstSpecies.nonEmpty) {
@@ -49,12 +50,9 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
       Failure(new Exception("Can not generate first species."))
     } else {
       val universalRulesApplied = if (!isFirstNote) applyUniversalRules(inMajorKeyNotes, cantusFirmus, firstSpecies, invalidLines) else inMajorKeyNotes
-      println("UNIVERSAL APPLIED: " + universalRulesApplied)
       val leapsRulesApplied =  counterpointService.applyLeapsRules(inMajorKeyNotes, AVAILABLE_FIRST_SPECIES_NOTES, firstSpecies, universalRulesApplied)
-      println("LEAPS APPLIED: " + leapsRulesApplied)
       val availableNotes = applyIndividualRules(firstSpecies, leapsRulesApplied, cantusFirmus)
 
-      println("AVAILABLE: " + availableNotes)
       if (availableNotes.isEmpty) {
         Failure(new Exception(s"$cantusFirmus - $firstSpecies"))
       } else {
@@ -64,31 +62,55 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
   }
 
   private def applyUniversalRules(inMajorKeyNotes: List[String], cantusFirmus: List[String], firstSpecies: List[String], invalidLines: List[List[String]]): List[String] = {
+    val countsOfNotes = firstSpecies.groupBy(identity).view.mapValues(_.size).toSeq
     inMajorKeyNotes.filter(note => {
+      val ret = counterpointService.applyNoRepeatedNotesRule(firstSpecies, note) &&
       !invalidLines.contains(firstSpecies :+ note) &&
       AVAILABLE_FIRST_SPECIES_NOTES.contains(note) &&
       counterpointService.isMelodicConsonance(firstSpecies.last, note, AVAILABLE_FIRST_SPECIES_NOTES) &&
         counterpointService.isHarmonicConsonance(note, cantusFirmus(firstSpecies.length), GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))
+      counterpointService.applyMaxRepetitionRules(firstSpecies, countsOfNotes, note, ret, cantusFirmus.length)
     })
   }
 
   def applyIndividualRules(firstSpecies: List[String], notes: Seq[String], cantusFirmus: List[String]): Seq[String] = {
+    // TODO: Figure out why this breaks it so bad. Hard coded 19?
     val climaxMustBeInMiddleApplied = counterpointService.applyClimaxMustBeInMiddleRule(cantusFirmus, AVAILABLE_FIRST_SPECIES_NOTES, cantusFirmus.length, notes)
+
+    val notePairs =
+      firstSpecies.zipWithIndex.map {
+        case (note, i) =>
+          if (i > 0) {
+            (firstSpecies(i - 1), note)
+          } else {
+            ("", "")
+          }
+      }.filter(pair => pair._1 != "" && pair._2 != "")
+
+    val noMotivesApplied = if (
+      !counterpointService.isPenultimateNote(cantusFirmus.length, firstSpecies) &&
+        !counterpointService.isLastNote(cantusFirmus.length, firstSpecies) &&
+        !counterpointService.isFirstNote(firstSpecies)
+    ) {
+      notes.filter(note => !notePairs.contains((firstSpecies.last, note)))
+    } else {
+      notes
+    }
 
     if (counterpointService.isFirstNote(firstSpecies)) {
       // TODO: ADD 12 IN. IT'S NOT BUILT TO CHOOSE A DIFFERENT FIRST NOTE.
-      notes.filter(note => List(0, 7).contains(counterpointService.getInterval(cantusFirmus.head, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
+      noMotivesApplied.filter(note => List(0, 7).contains(counterpointService.getInterval(cantusFirmus.head, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
     } else if (counterpointService.isLastNote(cantusFirmus.length, firstSpecies)) {
       // todo: if 2nd to last cantus note is re,
       //       then List(12).contains()
       //       else if 2nd to last cantus note is ti,
       //       then List(0).contains()
 
-      notes.filter(note => List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
+      noMotivesApplied.filter(note => List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
     } else if (counterpointService.isLeadingTone(AVAILABLE_FIRST_SPECIES_NOTES, firstSpecies, cantusFirmus.head)) {
-      notes.filter(note => counterpointService.applyLeadingToneLeadsToTonicRule(firstSpecies, note, AVAILABLE_FIRST_SPECIES_NOTES))
+      noMotivesApplied.filter(note => counterpointService.applyLeadingToneLeadsToTonicRule(firstSpecies, note, AVAILABLE_FIRST_SPECIES_NOTES))
     } else {
-      notes
+      noMotivesApplied
     }
   }
 

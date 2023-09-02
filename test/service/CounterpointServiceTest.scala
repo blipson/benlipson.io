@@ -6,7 +6,6 @@ import service.CounterpointService.GET_ALL_NOTES_BETWEEN_TWO_NOTES
 class CounterpointServiceTest extends PlaySpec {
   // todo should be able to get the correct in major key notes when a tonic is selected below the range of available notes
 
-
   "should get all notes between two notes when it does not have to add an octave" in {
     GET_ALL_NOTES_BETWEEN_TWO_NOTES("A#/Bb2", "G5") mustBe
       List(
