@@ -38,6 +38,15 @@ class CounterpointService {
       isALeap(line(line.length - 2), line(line.length - 3), inMajorKeyNotes) &&
       isALeap(line.last, line(line.length - 2), inMajorKeyNotes)
 
+   def isAntePenultimateNote(length: Int, line: List[String]): Boolean =
+    line.length == length - 3
+
+  def applyAntePenultimateCannotBeLeadingToneRule(inMajorKeyNotes: Seq[String], tonic: String, note: String): Boolean = {
+    val lt = inMajorKeyNotes(inMajorKeyNotes.map(note => note.filterNot(c => c.isDigit)).lastIndexOf(tonic.filterNot(c => c.isDigit)) - 1)
+    note.filterNot(c => c.isDigit) != lt.filterNot(c => c.isDigit)
+  }
+
+
   def applyLeapsRules(inMajorKeyNotes: List[String], availableNotes: Seq[String], line: List[String], notes: Seq[String]): Seq[String] =
     if (followingALargeLeap(line, availableNotes)) {
       val next = if (isDownwardsMotion(line, availableNotes)) {
@@ -108,7 +117,6 @@ class CounterpointService {
   private def noteIsLowerThanClimax(line: List[String], availableNotes: Seq[String], note: String) = {
     availableNotes.indexOf(note) < getMaxNote(line, availableNotes)
   }
-
   def applyClimaxMustBeInMiddleRule(line: List[String], availableNotes: Seq[String], length: Int, notes: Seq[String]): Seq[String] = {
     if (isInBackQuarter(line, length)) {
       notes.filter(note => noteIsLowerThanClimax(line, availableNotes, note))
@@ -127,15 +135,15 @@ class CounterpointService {
     note != line.last
   }
 
-  private def applyMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean) = {
-    ret && countsOfNotes.filter(can => can._1 == note).head._2 < 2
+  private def applyMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, isValid: Boolean) = {
+    isValid && countsOfNotes.filter(can => can._1 == note).head._2 < 2
   }
 
-  private def applyTonicMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean, isInFirstHalf: Boolean) = {
+  private def applyTonicMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, isValid: Boolean, isInFirstHalf: Boolean) = {
     if (isInFirstHalf) {
       false
     } else {
-      ret && countsOfNotes.filter(can => can._1 == note).head._2 < 4
+      isValid && countsOfNotes.filter(can => can._1 == note).head._2 < 4
     }
   }
 
@@ -147,18 +155,53 @@ class CounterpointService {
     countsOfNotes.map(nac => nac._1).contains(note)
   }
 
-  def applyMaxRepetitionRules(line: List[String], countsOfNotes: Seq[(String, Int)], note: String, ret: Boolean, length: Int): Boolean = {
+  def applyMaxRepetitionRules(line: List[String], countsOfNotes: Seq[(String, Int)], note: String, isValid: Boolean, length: Int): Boolean = {
     if (noteIsTonic(line, note) && noteHasOccurredPreviously(countsOfNotes, note)) {
-      applyTonicMaxRepetitionRule(countsOfNotes, note, ret, line.length < length / 2)
+      applyTonicMaxRepetitionRule(countsOfNotes, note, isValid, line.length < length / 2)
     } else if (noteHasOccurredPreviously(countsOfNotes, note)) {
-      applyMaxRepetitionRule(countsOfNotes, note, ret)
+      applyMaxRepetitionRule(countsOfNotes, note, isValid)
     } else {
-      ret
+      isValid
     }
   }
 
   def isPenultimateNote(length: Int, line: List[String]): Boolean =
     line.length == length - 2
+
+
+  def applyPenultimateStepFromAboveRule(inMajorKeyNotes: Seq[String], tonic: String): Seq[String] = {
+    inMajorKeyNotes.filter(note => {
+      val noteWithoutOctave = note.filterNot(c => c.isDigit)
+      noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) + 1).filterNot(c => c.isDigit)
+    })
+  }
+
+  def applyPenultimateStepFromBelowRule(inMajorKeyNotes: Seq[String], tonic: String): Seq[String] = {
+    inMajorKeyNotes.filter(note => {
+      val noteWithoutOctave = note.filterNot(c => c.isDigit)
+      val lt = inMajorKeyNotes(inMajorKeyNotes.map(note => note.filterNot(c => c.isDigit)).lastIndexOf(tonic.filterNot(c => c.isDigit)) - 1)
+      noteWithoutOctave == lt
+    })
+  }
+
+  def applyPenultimateStepwiseMotionRule(inMajorKeyNotes: Seq[String], tonic: String, cantusFirmusNote: String = ""): Seq[String] = {
+    inMajorKeyNotes.filter(note => {
+      // todo: if the fourth to last note is the LT use the 2
+      val noteWithoutOctave = note.filterNot(c => c.isDigit)
+      val lt = inMajorKeyNotes(inMajorKeyNotes.map(note => note.filterNot(c => c.isDigit)).lastIndexOf(tonic.filterNot(c => c.isDigit)) - 1)
+      if (cantusFirmusNote.isEmpty) {
+        noteWithoutOctave == lt.filterNot(c => c.isDigit) ||
+          noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) + 1).filterNot(c => c.isDigit)
+      } else {
+        val cfNoteWithoutOctave = cantusFirmusNote.filterNot(c => c.isDigit)
+        if (cfNoteWithoutOctave == lt.filterNot(c => c.isDigit)) {
+          noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) + 1).filterNot(c => c.isDigit)
+        } else {
+          noteWithoutOctave == lt.filterNot(c => c.isDigit)
+        }
+      }
+    })
+  }
 
   def formatOutput(line: List[String]): List[String] = {
     line.map(note => {
@@ -203,9 +246,9 @@ class CounterpointService {
 
 
   private def isConsonance(firstNote: String, secondNote: String, availableNotes: List[String], consonances: Set[Int]) = {
-    val lastNoteIdx = availableNotes.indexOf(firstNote)
-    val noteIdx = availableNotes.indexOf(secondNote)
-    lastNoteIdx != -1 && noteIdx != -1 &&
+    val firstNoteIdx = availableNotes.indexOf(firstNote)
+    val secondNoteIdx = availableNotes.indexOf(secondNote)
+    firstNoteIdx != -1 && secondNoteIdx != -1 &&
       consonances
         .contains(math.abs(availableNotes.indexOf(firstNote) - availableNotes.indexOf(secondNote)))
   }
@@ -303,6 +346,10 @@ object CounterpointService {
 
   val HARMONIC_CONSONANCES: Set[Int] = Set(
     0, 3, 4, 5, 7, 8, 9, 12
+  )
+
+  val PERFECT_INTERVALS: Set[Int] = Set(
+    0, 5, 7, 12, 17, 19
   )
 
   private val NOTE_MATCHER: Regex = """(.+)(\d+)""".r

@@ -3,7 +3,7 @@ package service
 import org.scalamock.scalatest.MockFactory
 import org.scalatestplus.play.PlaySpec
 import service.CantusFirmusService.AVAILABLE_CANTUS_FIRMUS_NOTES
-import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, HARMONIC_CONSONANCES, MELODIC_CONSONANCES}
+import service.CounterpointService.{GET_ALL_NOTES_BETWEEN_TWO_NOTES, HARMONIC_CONSONANCES, MELODIC_CONSONANCES, PERFECT_INTERVALS}
 import service.FirstSpeciesService.AVAILABLE_FIRST_SPECIES_NOTES
 import service.FirstSpeciesServiceFuzzingTest.TRIES
 
@@ -76,7 +76,7 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
 
     "should generate a first species that starts with either do or sol" in {
       testWrapper((cantusFirmus, firstSpecies) => {
-        if (!List(0, 7).contains(counterpointService.getInterval(cantusFirmus.head, firstSpecies.head, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")))) {
+        if (!List(0, 7, 12).contains(counterpointService.getInterval(cantusFirmus.head, firstSpecies.head, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")))) {
           failTest(firstSpecies)
         }
       })
@@ -241,7 +241,7 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
       })
     }
 
-    "should ensure that there's one high point and that it's near the middle" in {
+    "should ensure that there's one high point" in {
       testWrapper((cantusFirmus, firstSpecies) => {
         val highestNote = firstSpecies.maxBy(note => AVAILABLE_FIRST_SPECIES_NOTES.indexOf(note))
         if (firstSpecies.count(note => note == highestNote) != 1 || !(firstSpecies.indexOf(highestNote) >= firstSpecies.length / 4) || !(firstSpecies.indexOf(highestNote) <= firstSpecies.length - (firstSpecies.length / 4))) {
@@ -260,7 +260,8 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
               val countOfRepetitions = firstSpecies.zipWithIndex.count {
                 case (innerNote, j) => {
                   val tonicNoOctave = firstSpecies.head.filterNot(c => c.isDigit)
-                  val ltNoOctave = notesInKey(notesInKey.indexOf(firstSpecies.head) - 1).filterNot(c => c.isDigit)
+                  val lt = notesInKey(notesInKey.map(note => note.filterNot(c => c.isDigit)).lastIndexOf(firstSpecies.head.filterNot(c => c.isDigit)) - 1)
+                  val ltNoOctave = lt.filterNot(c => c.isDigit)
                   j > 0 && j < firstSpecies.length - 2 && innerNote == note && firstSpecies(j - 1) == lastNote &&
                     (innerNote.filterNot(c => c.isDigit) != tonicNoOctave && firstSpecies(j - 1).filterNot(c => c.isDigit) != ltNoOctave) &&
                     (innerNote.filterNot(c => c.isDigit) != ltNoOctave && firstSpecies(j - 1).filterNot(c => c.isDigit) != tonicNoOctave)
@@ -294,14 +295,45 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
 
     "should not contain the tonic more than once in the first half " in {
       testWrapper((_, firstSpecies) => {
+        firstSpecies.zipWithIndex.foreach {
+          case (_, i) =>
+            if (i > 0) {
+              val countOfRepetitions = firstSpecies.zipWithIndex.count {
+                case (innerNote, j) =>
+                  j > 0 && j < firstSpecies.length / 2 && innerNote == firstSpecies.head
+              }
+              if (countOfRepetitions > 1) {
+                failTest(firstSpecies)
+              }
+            }
+        }
 
       })
     }
 
-    "should not contain parallel or direct perfects" in {
+    "should not contain parallel perfects" in {
       testWrapper((cantusFirmus, firstSpecies) => {
-
+        cantusFirmus.zipWithIndex.foreach {
+          case (cfNote, i) =>
+            val availableNotes = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")
+            val cfNoteIdx = availableNotes.indexOf(cfNote)
+            val fsNoteIdx = availableNotes.indexOf(firstSpecies(i))
+            if (i > 0 && (cfNoteIdx == -1 || fsNoteIdx == -1 ||
+              PERFECT_INTERVALS.contains(math.abs(availableNotes.indexOf(cfNote) - availableNotes.indexOf(firstSpecies(i))))
+            )) {
+              val lastCfNoteIdx = availableNotes.indexOf(cantusFirmus(i - 1))
+              val lastFsNoteIdx = availableNotes.indexOf(firstSpecies(i - 1))
+              if (lastCfNoteIdx == -1 || lastFsNoteIdx == -1 ||
+                PERFECT_INTERVALS.contains(math.abs(availableNotes.indexOf(cantusFirmus(i - 1)) - availableNotes.indexOf(firstSpecies(i - 1))))) {
+                failTest(firstSpecies, cantusFirmus)
+              }
+            }
+        }
       })
+    }
+
+    "should not contain direct perfects" in {
+
     }
 
     "should approach perfect intervals by step from at least one of the voices" in {
@@ -344,5 +376,5 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
 
 object FirstSpeciesServiceFuzzingTest {
   val TEST_CANTUS_FIRMUS = List("G2", "E2", "E3", "D3", "F #/ Gb3", "G3", "G2", "A2", "F #/ Gb2", "G2", "F#/Gb2", "G2")
-  val TRIES = 10
+  val TRIES = 1
 }

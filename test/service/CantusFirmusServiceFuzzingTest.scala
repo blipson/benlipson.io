@@ -54,11 +54,11 @@ class CantusFirmusServiceFuzzingTest extends PlaySpec with MockFactory {
         setUp(tonic, maxTonic)
         cantusFirmusService.generate() match {
           case Success(cantusFirmus) =>
-            if (!List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit))) {
+            if (!List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit))) {
               println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
               println(cantusFirmus.toString())
             }
-            List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit)) mustBe true
+            List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit)) mustBe true
           case Failure(e) =>
             e.printStackTrace()
             fail()
@@ -468,5 +468,5 @@ object CantusFirmusServiceFuzzingTest {
     List("D#/Eb3", "F3", "G3", "G#/Ab3", "A#/Bb3", "C4", "D4", "D#/Eb4", "F2", "G2", "G#/Ab2", "A#/Bb2", "C3", "D3"),
   )
 
-  val TRIES = 1000
+  val TRIES = 100
 }

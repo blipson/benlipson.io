@@ -103,11 +103,11 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     if (counterpointService.isLastNote(length, cantusFirmus)) {
       noMotivesApplied.filter(note => applyFinalNoteAsTonicRule(inMajorKeyNotes, cantusFirmus, tonic, note))
     } else if (counterpointService.isPenultimateNote(length, cantusFirmus)) {
-      noMotivesApplied.filter(note => applyPenultimateStepwiseMotionRule(inMajorKeyNotes, tonic).contains(note))
+      noMotivesApplied.filter(note => counterpointService.applyPenultimateStepwiseMotionRule(inMajorKeyNotes, tonic).contains(note))
     } else if (counterpointService.isLeadingTone(AVAILABLE_CANTUS_FIRMUS_NOTES, cantusFirmus, tonic)) {
       noMotivesApplied.filter(note => counterpointService.applyLeadingToneLeadsToTonicRule(cantusFirmus, note, AVAILABLE_CANTUS_FIRMUS_NOTES))
-    } else if (isAntePenultimateNote(length, cantusFirmus)) {
-      noMotivesApplied.filter(note => applyAntePenultimateCannotBeLeadingToneRule(inMajorKeyNotes, tonic, note))
+    } else if (counterpointService.isAntePenultimateNote(length, cantusFirmus)) {
+      noMotivesApplied.filter(note => counterpointService.applyAntePenultimateCannotBeLeadingToneRule(inMajorKeyNotes, tonic, note))
     } else {
       noMotivesApplied
     }
@@ -119,20 +119,6 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
 
   private def applyFinalNoteAsTonicRule(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], tonic: String, note: String) =
     (note.filterNot(c => c.isDigit) == tonic.filterNot(c => c.isDigit)) && (math.abs(inMajorKeyNotes.indexOf(cantusFirmus.last) - inMajorKeyNotes.indexOf(note)) == 1)
-
-  private def applyAntePenultimateCannotBeLeadingToneRule(inMajorKeyNotes: Seq[String], tonic: String, note: String) =
-    note.filterNot(c => c.isDigit) != inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) - 1).filterNot(c => c.isDigit)
-
-  private def isAntePenultimateNote(length: Int, cantusFirmus: List[String]) =
-    cantusFirmus.length == length - 3
-
-  private def applyPenultimateStepwiseMotionRule(inMajorKeyNotes: Seq[String], tonic: String) =
-    inMajorKeyNotes.filter(note => {
-      // todo: if the fourth to last note is the LT use the 2
-      val noteWithoutOctave = note.filterNot(c => c.isDigit)
-      noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) - 1).filterNot(c => c.isDigit) ||
-        noteWithoutOctave == inMajorKeyNotes(inMajorKeyNotes.indexOf(tonic) + 1).filterNot(c => c.isDigit)
-    })
 
   private def isALargeLeap(note: String, prevNote: String) =
     math.abs(AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note) - AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(prevNote)) >= 5
