@@ -10,6 +10,8 @@ class CounterpointService {
 
   def isFirstNote(line: List[String]): Boolean = line.isEmpty
 
+  def applyMaxRangeRule(lowestNote: Int, highestNote: Int, noteIdx: Int): Boolean = (noteIdx - lowestNote <= 16 && highestNote - noteIdx <= 16)
+
   def isLastNote(length: Int, line: List[String]): Boolean = line.length == length - 1
 
   def isLeadingTone(availableNotes: Seq[String], line: List[String], tonic: String): Boolean =

@@ -131,19 +131,13 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
       .filter(note => {
         val noteIdx = AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(note)
         val ret = counterpointService.applyNoRepeatedNotesRule(cantusFirmus, note) &&
-          applyMaxRangeRule(lowestNote, highestNote, noteIdx) &&
+          counterpointService.applyMaxRangeRule(lowestNote, highestNote, noteIdx) &&
           !invalidLines.contains(cantusFirmus :+ note) &&
           // todo: it can equal the max note if it keeps going higher than it later though
           note != cantusFirmus.maxBy(cantusFirmusNote => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmusNote)) &&
           counterpointService.isMelodicConsonance(cantusFirmus.last, note, AVAILABLE_CANTUS_FIRMUS_NOTES)
         counterpointService.applyMaxRepetitionRules(cantusFirmus, countsOfNotes, note, ret, length)
       })
-  }
-
-
-
-  private def applyMaxRangeRule(lowestNote: Int, highestNote: Int, noteIdx: Int) = {
-    (noteIdx - lowestNote <= 16 && highestNote - noteIdx <= 16)
   }
 }
 

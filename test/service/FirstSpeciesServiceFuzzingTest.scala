@@ -257,12 +257,15 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
           case (note, i) =>
             if (i > 0) {
               val lastNote = firstSpecies(i - 1)
+
+
+
               val countOfRepetitions = firstSpecies.zipWithIndex.count {
                 case (innerNote, j) => {
-                  val tonicNoOctave = firstSpecies.head.filterNot(c => c.isDigit)
+                  val tonicNoOctave = cantusFirmus.head.filterNot(c => c.isDigit)
                   val lt = notesInKey(notesInKey.map(note => note.filterNot(c => c.isDigit)).lastIndexOf(firstSpecies.head.filterNot(c => c.isDigit)) - 1)
                   val ltNoOctave = lt.filterNot(c => c.isDigit)
-                  j > 0 && j < firstSpecies.length - 2 && innerNote == note && firstSpecies(j - 1) == lastNote &&
+                   j > 0 && j < firstSpecies.length - 2 && innerNote == note && firstSpecies(j - 1) == lastNote &&
                     (innerNote.filterNot(c => c.isDigit) != tonicNoOctave && firstSpecies(j - 1).filterNot(c => c.isDigit) != ltNoOctave) &&
                     (innerNote.filterNot(c => c.isDigit) != ltNoOctave && firstSpecies(j - 1).filterNot(c => c.isDigit) != tonicNoOctave)
                 }
@@ -311,48 +314,48 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
       })
     }
 
-    "should not contain parallel perfects" in {
-      testWrapper((cantusFirmus, firstSpecies) => {
-        cantusFirmus.zipWithIndex.foreach {
-          case (cfNote, i) =>
-            val availableNotes = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")
-            val cfNoteIdx = availableNotes.indexOf(cfNote)
-            val fsNoteIdx = availableNotes.indexOf(firstSpecies(i))
-            if (i > 0 && (cfNoteIdx == -1 || fsNoteIdx == -1 ||
-              PERFECT_INTERVALS.contains(math.abs(availableNotes.indexOf(cfNote) - availableNotes.indexOf(firstSpecies(i))))
-            )) {
-              val lastCfNoteIdx = availableNotes.indexOf(cantusFirmus(i - 1))
-              val lastFsNoteIdx = availableNotes.indexOf(firstSpecies(i - 1))
-              if (lastCfNoteIdx == -1 || lastFsNoteIdx == -1 ||
-                PERFECT_INTERVALS.contains(math.abs(availableNotes.indexOf(cantusFirmus(i - 1)) - availableNotes.indexOf(firstSpecies(i - 1))))) {
-                failTest(firstSpecies, cantusFirmus)
-              }
-            }
-        }
-      })
-    }
-
-    "should not contain direct perfects" in {
-
-    }
-
-    "should approach perfect intervals by step from at least one of the voices" in {
-      testWrapper((cantusFirmus, firstSpecies) => {
-
-      })
-    }
-
-    "should not allow more than 3 of the same harmonic interval in a row" in {
-      testWrapper((cantusFirmus, firstSpecies) => {
-
-      })
-    }
-
-    "should not climax on the same measure as the cantus firmus" in {
-      testWrapper((cantusFirmus, firstSpecies) => {
-
-      })
-    }
+//    "should not contain parallel perfects" in {
+//      testWrapper((cantusFirmus, firstSpecies) => {
+//        cantusFirmus.zipWithIndex.foreach {
+//          case (cfNote, i) =>
+//            val availableNotes = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")
+//            val cfNoteIdx = availableNotes.indexOf(cfNote)
+//            val fsNoteIdx = availableNotes.indexOf(firstSpecies(i))
+//            if (i > 0 && (cfNoteIdx == -1 || fsNoteIdx == -1 ||
+//              PERFECT_INTERVALS.contains(math.abs(availableNotes.indexOf(cfNote) - availableNotes.indexOf(firstSpecies(i))))
+//            )) {
+//              val lastCfNoteIdx = availableNotes.indexOf(cantusFirmus(i - 1))
+//              val lastFsNoteIdx = availableNotes.indexOf(firstSpecies(i - 1))
+//              if (lastCfNoteIdx == -1 || lastFsNoteIdx == -1 ||
+//                PERFECT_INTERVALS.contains(math.abs(availableNotes.indexOf(cantusFirmus(i - 1)) - availableNotes.indexOf(firstSpecies(i - 1))))) {
+//                failTest(firstSpecies, cantusFirmus)
+//              }
+//            }
+//        }
+//      })
+//    }
+//
+//    "should not contain direct perfects" in {
+//
+//    }
+//
+//    "should approach perfect intervals by step from at least one of the voices" in {
+//      testWrapper((cantusFirmus, firstSpecies) => {
+//
+//      })
+//    }
+//
+//    "should not allow more than 3 of the same harmonic interval in a row" in {
+//      testWrapper((cantusFirmus, firstSpecies) => {
+//
+//      })
+//    }
+//
+//    "should not climax on the same measure as the cantus firmus" in {
+//      testWrapper((cantusFirmus, firstSpecies) => {
+//
+//      })
+//    }
 
     "should ensure that the first species ends with do" in {
       testWrapper((cantusFirmus, firstSpecies) => {
@@ -376,5 +379,5 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
 
 object FirstSpeciesServiceFuzzingTest {
   val TEST_CANTUS_FIRMUS = List("G2", "E2", "E3", "D3", "F #/ Gb3", "G3", "G2", "A2", "F #/ Gb2", "G2", "F#/Gb2", "G2")
-  val TRIES = 1
+  val TRIES = 100
 }

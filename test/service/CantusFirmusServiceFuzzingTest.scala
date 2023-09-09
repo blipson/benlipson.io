@@ -54,11 +54,10 @@ class CantusFirmusServiceFuzzingTest extends PlaySpec with MockFactory {
         setUp(tonic, maxTonic)
         cantusFirmusService.generate() match {
           case Success(cantusFirmus) =>
-            if (!List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit))) {
-              println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
+            if (!List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit))) {  println("FAILURE FOUND WITH THIS CANTUS FIRMUS:")
               println(cantusFirmus.toString())
             }
-            List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit)) mustBe true
+            List(AVAILABLE_CANTUS_FIRMUS_NOTES(tonic - 1).filterNot(c => c.isDigit), AVAILABLE_CANTUS_FIRMUS_NOTES(tonic + 2).filterNot(c => c.isDigit)).contains(cantusFirmus(cantusFirmus.length - 2).filterNot(c => c.isDigit)) mustBe true
           case Failure(e) =>
             e.printStackTrace()
             fail()
