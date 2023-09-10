@@ -167,7 +167,7 @@ class CounterpointService {
     }
   }
 
-  def fsMaxRepetitionRules(countsOfNotes: Seq[(String, Int)], note: String): Boolean = {
+  def applyFsMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String): Boolean = {
     if (noteHasOccurredPreviously(countsOfNotes, note)) {
       countsOfNotes.filter(can => can._1 == note).head._2 < 4
     } else {

@@ -101,6 +101,19 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     firstNoteIdx != -1 && secondNoteIdx != -1 && math.abs(firstNoteIdx - secondNoteIdx) == 12
   }
 
+  private def applyParallelFifthRule(note: String, firstSpecies: List[String], cantusFirmus: List[String]): Boolean = {
+    val availableNotes = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")
+    if (isPerfectFifth(note, cantusFirmus(firstSpecies.length), availableNotes)) {
+      if (isPerfectFifth(firstSpecies.last, cantusFirmus(firstSpecies.length - 1), availableNotes)) {
+        return false
+      } else {
+        return true
+      }
+    } else {
+      return true
+    }
+  }
+
   private def isParallelPerfect(firstNote: String, secondNote: String, prevFirstNote: String, prevSecondNote: String, availableNotes: List[String]): Boolean = {
     if (isPerfectFourth(firstNote, secondNote, availableNotes)) {
       if (isPerfectFourth(prevFirstNote, prevSecondNote, availableNotes)) {
@@ -139,9 +152,8 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
           counterpointService.applySingleClimaxRule(note, firstSpecies, AVAILABLE_FIRST_SPECIES_NOTES) &&
           counterpointService.isMelodicConsonance(firstSpecies.last, note, AVAILABLE_FIRST_SPECIES_NOTES) &&
           counterpointService.isHarmonicConsonance(note, cantusFirmus(firstSpecies.length), GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")) &&
-          counterpointService.fsMaxRepetitionRules(countsOfNotes, note)
-        // todo: parallel and direct perfects
-        //        !isParallelPerfect(note, cantusFirmus(firstSpecies.length), firstSpecies.last, cantusFirmus(firstSpecies.length - 1), GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))
+          counterpointService.applyFsMaxRepetitionRule(countsOfNotes, note) &&
+          applyParallelFifthRule(note, firstSpecies, cantusFirmus)
       })
   }
 
@@ -191,9 +203,6 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     }
     }
   }
-
-  private def applyFinalNoteAsTonicRule(inMajorKeyNotes: Seq[String], cantusFirmus: List[String], tonic: String, note: String) =
-    (note.filterNot(c => c.isDigit) == tonic.filterNot(c => c.isDigit)) && (math.abs(inMajorKeyNotes.indexOf(cantusFirmus.last) - inMajorKeyNotes.indexOf(note)) == 1)
 
   override def formatOutput(firstSpecies: List[String]): List[String] =
     counterpointService.formatOutput(firstSpecies)

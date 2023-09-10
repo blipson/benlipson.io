@@ -290,26 +290,27 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
       })
     }
 
-//    "should not contain parallel perfects" in {
-//      testWrapper((cantusFirmus, firstSpecies) => {
-//        cantusFirmus.zipWithIndex.foreach {
-//          case (cfNote, i) =>
-//            val availableNotes = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")
-//            val cfNoteIdx = availableNotes.indexOf(cfNote)
-//            val fsNoteIdx = availableNotes.indexOf(firstSpecies(i))
-//            if (i > 0 && (cfNoteIdx == -1 || fsNoteIdx == -1 ||
-//              PERFECT_INTERVALS.contains(math.abs(availableNotes.indexOf(cfNote) - availableNotes.indexOf(firstSpecies(i))))
-//            )) {
-//              val lastCfNoteIdx = availableNotes.indexOf(cantusFirmus(i - 1))
-//              val lastFsNoteIdx = availableNotes.indexOf(firstSpecies(i - 1))
-//              if (lastCfNoteIdx == -1 || lastFsNoteIdx == -1 ||
-//                PERFECT_INTERVALS.contains(math.abs(availableNotes.indexOf(cantusFirmus(i - 1)) - availableNotes.indexOf(firstSpecies(i - 1))))) {
-//                failTest(firstSpecies, cantusFirmus)
-//              }
-//            }
-//        }
-//      })
-//    }
+    "should not contain parallel fifths" in {
+      testWrapper((cantusFirmus, firstSpecies) => {
+        cantusFirmus.zipWithIndex.foreach {
+          case (cfNote, i) =>
+            val availableNotes = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")
+            val cfNoteIdx = availableNotes.indexOf(cfNote)
+            val fsNoteIdx = availableNotes.indexOf(firstSpecies(i))
+            if (i > 0 && (cfNoteIdx == -1 || fsNoteIdx == -1 ||
+              math.abs(availableNotes.indexOf(cfNote) - availableNotes.indexOf(firstSpecies(i))) == 7
+            )) {
+              val lastCfNoteIdx = availableNotes.indexOf(cantusFirmus(i - 1))
+              val lastFsNoteIdx = availableNotes.indexOf(firstSpecies(i - 1))
+              if (lastCfNoteIdx == -1 || lastFsNoteIdx == -1 ||
+                math.abs(availableNotes.indexOf(cantusFirmus(i - 1)) - availableNotes.indexOf(firstSpecies(i - 1))) == 7
+              ) {
+                failTest(firstSpecies, cantusFirmus)
+              }
+            }
+        }
+      })
+    }
 //
 //    "should not contain direct perfects" in {
 //
@@ -350,8 +351,14 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
     println("FAILURE FOUND WITH THIS FIRST SPECIES:")
     println(firstSpecies.toString())
     if (cantusFirmus.nonEmpty) {
+      val availableNotes = GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")
       println("AGAINST THIS CANTUS FIRMUS:")
       println(cantusFirmus.toString())
+      println("WITH THESE HARMONIC INTERVALS:")
+      println(cantusFirmus.zipWithIndex.map {
+        case (cfNote, i) =>
+          math.abs(availableNotes.indexOf(cfNote) - availableNotes.indexOf(firstSpecies(i)))
+      })
     }
     fail()
   }
