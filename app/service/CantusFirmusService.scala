@@ -134,7 +134,7 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
           counterpointService.applyMaxRangeRule(lowestNote, highestNote, noteIdx) &&
           !invalidLines.contains(cantusFirmus :+ note) &&
           // todo: it can equal the max note if it keeps going higher than it later though
-          note != cantusFirmus.maxBy(cantusFirmusNote => AVAILABLE_CANTUS_FIRMUS_NOTES.indexOf(cantusFirmusNote)) &&
+          counterpointService.applySingleClimaxRule(note, cantusFirmus, AVAILABLE_CANTUS_FIRMUS_NOTES) &&
           counterpointService.isMelodicConsonance(cantusFirmus.last, note, AVAILABLE_CANTUS_FIRMUS_NOTES) &&
           counterpointService.applyMaxRepetitionRules(cantusFirmus, countsOfNotes, note, length)
       })

@@ -226,6 +226,10 @@ class CounterpointService {
     })
   }
 
+  def applySingleClimaxRule(note: String, line: List[String], availableNotes: List[String]): Boolean = {
+    note != line.maxBy(cantusFirmusNote => availableNotes.indexOf(cantusFirmusNote))
+  }
+
   def formatInput(line: List[String]): List[String] = {
     line.map(note => {
       note.split("/").map(subNote => {
