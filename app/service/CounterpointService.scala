@@ -137,33 +137,41 @@ class CounterpointService {
     note != line.last
   }
 
-  private def applyMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, isValid: Boolean) = {
-    isValid && countsOfNotes.filter(can => can._1 == note).head._2 < 2
+  private def applyMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String) = {
+    countsOfNotes.filter(can => can._1 == note).head._2 < 2
   }
 
-  private def applyTonicMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, isValid: Boolean, isInFirstHalf: Boolean) = {
+  private def applyTonicMaxRepetitionRule(countsOfNotes: Seq[(String, Int)], note: String, isInFirstHalf: Boolean) = {
     if (isInFirstHalf) {
       false
     } else {
-      isValid && countsOfNotes.filter(can => can._1 == note).head._2 < 4
+      countsOfNotes.filter(can => can._1 == note).head._2 < 4
     }
   }
 
-  private def noteIsTonic(cantusFirmus: List[String], note: String) = {
-    note == cantusFirmus.head
+  private def noteIsTonic(line: List[String], note: String) = {
+    note == line.head
   }
 
   private def noteHasOccurredPreviously(countsOfNotes: Seq[(String, Int)], note: String) = {
     countsOfNotes.map(nac => nac._1).contains(note)
   }
 
-  def applyMaxRepetitionRules(line: List[String], countsOfNotes: Seq[(String, Int)], note: String, isValid: Boolean, length: Int): Boolean = {
+  def applyMaxRepetitionRules(line: List[String], countsOfNotes: Seq[(String, Int)], note: String, length: Int): Boolean = {
     if (noteIsTonic(line, note) && noteHasOccurredPreviously(countsOfNotes, note)) {
-      applyTonicMaxRepetitionRule(countsOfNotes, note, isValid, line.length < length / 2)
+      applyTonicMaxRepetitionRule(countsOfNotes, note, line.length < length / 2)
     } else if (noteHasOccurredPreviously(countsOfNotes, note)) {
-      applyMaxRepetitionRule(countsOfNotes, note, isValid)
+      applyMaxRepetitionRule(countsOfNotes, note)
     } else {
-      isValid
+      true
+    }
+  }
+
+  def fsMaxRepetitionRules(countsOfNotes: Seq[(String, Int)], note: String): Boolean = {
+    if (noteHasOccurredPreviously(countsOfNotes, note)) {
+      countsOfNotes.filter(can => can._1 == note).head._2 < 4
+    } else {
+      true
     }
   }
 

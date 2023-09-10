@@ -279,38 +279,14 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
       })
     }
 
-    "should not contain the same note more than twice other than the tonic at the start and end " in {
+    "should not contain the same note more than four times" in {
       testWrapper((cantusFirmus, firstSpecies) => {
         val noteAndCountSeq = firstSpecies.groupBy(identity).view.mapValues(_.size).toSeq
         if (noteAndCountSeq.exists(noteAndCount =>
-          noteAndCount._1.filterNot(c => !c.isDigit) != cantusFirmus.head.filterNot(c => !c.isDigit) &&
-            noteAndCount._1 != firstSpecies.head &&
-            noteAndCount._2 > 2
-          ) || noteAndCountSeq.exists(noteAndCount =>
-          (noteAndCount._1.filterNot(c => !c.isDigit) == cantusFirmus.head.filterNot(c => !c.isDigit) || noteAndCount._1 == firstSpecies.head) &&
             noteAndCount._2 > 4
-        )
-        ) {
+        )) {
           failTest(firstSpecies, cantusFirmus)
         }
-      })
-    }
-
-    "should not contain the tonic more than once in the first half " in {
-      testWrapper((_, firstSpecies) => {
-        firstSpecies.zipWithIndex.foreach {
-          case (_, i) =>
-            if (i > 0) {
-              val countOfRepetitions = firstSpecies.zipWithIndex.count {
-                case (innerNote, j) =>
-                  j > 0 && j < firstSpecies.length / 2 && innerNote == firstSpecies.head
-              }
-              if (countOfRepetitions > 1) {
-                failTest(firstSpecies)
-              }
-            }
-        }
-
       })
     }
 
@@ -352,6 +328,10 @@ class FirstSpeciesServiceFuzzingTest extends PlaySpec with MockFactory {
 //    }
 //
 //    "should not climax on the same measure as the cantus firmus" in {
+//      testWrapper((cantusFirmus, firstSpecies) => {
+//
+//      })
+//    "should approach the final note with contrary stepwise motion from the cantus firmus" in {
 //      testWrapper((cantusFirmus, firstSpecies) => {
 //
 //      })

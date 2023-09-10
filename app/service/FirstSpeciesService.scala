@@ -14,11 +14,11 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
   override def generate(cantusFirmus: List[String]): Try[List[String]] = Try {
     val inMajorKeyFirstSpeciesNotes = counterpointService.getInMajorKeyNotes(cantusFirmus.head, AVAILABLE_FIRST_SPECIES_NOTES)
     val firstSpecies = generateFirstSpeciesRecursive(cantusFirmus, inMajorKeyFirstSpeciesNotes)
-    println("CF: " + cantusFirmus)
-    println("\n")
     return if (firstSpecies.nonEmpty) {
       Success(firstSpecies)
     } else {
+      println("CF: " + cantusFirmus)
+      println("\n")
       Failure(new Exception("Could not generate first species."))
     }
   }
@@ -59,6 +59,13 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
       val universalRulesApplied = applyUniversalRules(inMajorKeyNotes, cantusFirmus, firstSpecies, invalidLines)
       val leapsRulesApplied =  counterpointService.applyLeapsRules(inMajorKeyNotes, AVAILABLE_FIRST_SPECIES_NOTES, firstSpecies, universalRulesApplied)
       val availableNotes = applyIndividualRules(firstSpecies, leapsRulesApplied, cantusFirmus, inMajorKeyNotes)
+//      if (universalRulesApplied.isEmpty) {
+//        println("UNIVERSAL FAILED.")
+//      } else if (leapsRulesApplied.isEmpty) {
+//        println("LEAPS FAILED.")
+//      } else if (availableNotes.isEmpty) {
+//        println("INDIVIDUAL FAILED.")
+//      }
 
       if (availableNotes.isEmpty) {
         Failure(new Exception(s"$cantusFirmus - $firstSpecies"))
@@ -129,7 +136,7 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     val lowestNote = firstSpecies.map(note => AVAILABLE_FIRST_SPECIES_NOTES.indexOf(note)).min
     val highestNote = firstSpecies.map(note => AVAILABLE_FIRST_SPECIES_NOTES.indexOf(note)).max
     val countsOfNotes = firstSpecies.groupBy(identity).view.mapValues(_.size).toSeq
-    val tonicWithoutOctave = cantusFirmus.head.filterNot(c => c.isDigit)
+    // todo: no voice crossing.
     notes
       .filter(note => {
         val noteIdx = AVAILABLE_FIRST_SPECIES_NOTES.indexOf(note)
@@ -138,12 +145,16 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
           !invalidLines.contains(firstSpecies :+ note) &&
           note != firstSpecies.maxBy(firstSpeciesNote => AVAILABLE_FIRST_SPECIES_NOTES.indexOf(firstSpeciesNote)) &&
           counterpointService.isMelodicConsonance(firstSpecies.last, note, AVAILABLE_FIRST_SPECIES_NOTES) &&
-          counterpointService.isHarmonicConsonance(note, cantusFirmus(firstSpecies.length), GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))
+          counterpointService.isHarmonicConsonance(note, cantusFirmus(firstSpecies.length), GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")) &&
+          counterpointService.fsMaxRepetitionRules(countsOfNotes, note)
+//          counterpointService.applyMaxRepetitionRules(firstSpecies, countsOfNotes, note, cantusFirmus.length)
+        // todo: parallel and direct perfects
         //        !isParallelPerfect(note, cantusFirmus(firstSpecies.length), firstSpecies.last, cantusFirmus(firstSpecies.length - 1), GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))
       })
   }
 
   def applyIndividualRules(firstSpecies: List[String], notes: Seq[String], cantusFirmus: List[String], inMajorKeyNotes: List[String]): Seq[String] = {
+    // todo: climax on different measure from the CF
     val climaxMustBeInMiddleApplied = counterpointService.applyClimaxMustBeInMiddleRule(firstSpecies, AVAILABLE_FIRST_SPECIES_NOTES, cantusFirmus.length, notes)
 
     val notePairs =
@@ -165,6 +176,11 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
     } else {
       climaxMustBeInMiddleApplied
     }
+    if (climaxMustBeInMiddleApplied.isEmpty) {
+      println("CLIMAX FAILED.")
+    } else if (noMotivesApplied.isEmpty) {
+      println("MOTIVES FAILED.")
+    }
 
     if (counterpointService.isLastNote(cantusFirmus.length, firstSpecies)) {
       // todo: if 2nd to last cantus note is re,
@@ -173,9 +189,14 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
       //       then List(0).contains()
 
 //      noMotivesApplied.filter(note => applyFinalNoteAsTonicRule(inMajorKeyNotes, cantusFirmus, cantusFirmus.head, note))
+      if (noMotivesApplied.filter(note => List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4")))).isEmpty) {
+        println("LAST NOTE FAILED.")
+      }
       noMotivesApplied.filter(note => List(0, 12).contains(counterpointService.getInterval(cantusFirmus.last, note, GET_ALL_NOTES_BETWEEN_TWO_NOTES("E2", "A4"))))
-    } else
+    } else {
+      // List(G3, D3, E3, C3, D3, C3, C4, B3)
       if (counterpointService.isPenultimateNote(cantusFirmus.length, firstSpecies)) {
+        // todo: contrary stepwise motion
       noMotivesApplied.filter(note => counterpointService.applyPenultimateStepwiseMotionRule(inMajorKeyNotes, cantusFirmus.head, cantusFirmus(firstSpecies.length - 1)).contains(note))
     } else if (counterpointService.isLeadingTone(AVAILABLE_FIRST_SPECIES_NOTES, firstSpecies, cantusFirmus.head)) {
       noMotivesApplied.filter(note => counterpointService.applyLeadingToneLeadsToTonicRule(firstSpecies, note, AVAILABLE_FIRST_SPECIES_NOTES))
@@ -183,6 +204,7 @@ class FirstSpeciesService(var randomService: RandomService, var counterpointServ
       noMotivesApplied.filter(note => counterpointService.applyAntePenultimateCannotBeLeadingToneRule(inMajorKeyNotes, cantusFirmus.head, note))
     } else {
       noMotivesApplied
+    }
     }
   }
 
