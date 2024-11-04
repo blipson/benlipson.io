@@ -3,6 +3,7 @@ package service
 import service.CantusFirmusService.{AVAILABLE_CANTUS_FIRMUS_NOTES, MAJOR_KEY_INTERVALS, MAX_LENGTH, MAX_TONIC, MELODIC_CONSONANCES, MIN_LENGTH, MIN_TONIC, OCTAVE}
 import service.CounterpointService.NOTES
 
+import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 
 class CantusFirmusService(var randomService: RandomService, var counterpointService: CounterpointService) extends Counterpoint {
@@ -14,10 +15,13 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     val length = randomService.between(MIN_LENGTH, MAX_LENGTH + 1)
     val tonic = AVAILABLE_CANTUS_FIRMUS_NOTES(randomService.between(MIN_TONIC, MAX_TONIC))
     val inMajorKeyCantusFirmusNotes = getInMajorKeyCantusFirmusNotes(tonic)
-    val cantusFirmus = generateCantusFirmusRecursive(length, tonic, inMajorKeyCantusFirmusNotes)
-    return if (cantusFirmus.nonEmpty) {
-      Success(cantusFirmus)
+    val cantusFirmusDepthFirst = generateCantusFirmusDepthFirst(length, tonic, inMajorKeyCantusFirmusNotes)
+    println(cantusFirmusDepthFirst)
+    return if (cantusFirmusDepthFirst.nonEmpty) {
+      println(cantusFirmusDepthFirst)
+      Success(cantusFirmusDepthFirst)
     } else {
+      println(cantusFirmusDepthFirst)
       Failure(new Exception("Could not generate cantus firmus."))
     }
   }
@@ -26,19 +30,20 @@ class CantusFirmusService(var randomService: RandomService, var counterpointServ
     counterpointService.formatOutput(cantusFirmus)
   }
 
-  private def generateCantusFirmusRecursive(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
+  @tailrec
+  private def generateCantusFirmusDepthFirst(length: Int, tonic: String, inMajorKeyNotes: List[String], cantusFirmus: List[String] = List(), invalidLines: List[List[String]] = List(), invalidNotePos: Int = -1): List[String] = {
     if (cantusFirmus.length == length) {
       cantusFirmus
     } else {
       generateCantusFirmusNote(length, tonic, inMajorKeyNotes, cantusFirmus, invalidLines) match {
         case Success(nextNote) =>
-          generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus :+ nextNote, invalidLines, invalidNotePos)
+          generateCantusFirmusDepthFirst(length, tonic, inMajorKeyNotes, cantusFirmus :+ nextNote, invalidLines, invalidNotePos)
         case Failure(invalidNoteException) =>
           val invalidNoteMessage = invalidNoteException.getMessage
           if (invalidNoteMessage == "Can not generate cantus firmus.") {
             cantusFirmus
           } else {
-            generateCantusFirmusRecursive(length, tonic, inMajorKeyNotes, cantusFirmus.dropRight(1), invalidLines :+ invalidNoteMessage.filter(c => !"List()".contains(c)).replace(" ", "").split(",").toList, invalidNoteMessage.last.toInt)
+            generateCantusFirmusDepthFirst(length, tonic, inMajorKeyNotes, cantusFirmus.dropRight(1), invalidLines :+ invalidNoteMessage.filter(c => !"List()".contains(c)).replace(" ", "").split(",").toList, invalidNoteMessage.last.toInt)
           }
       }
     }
